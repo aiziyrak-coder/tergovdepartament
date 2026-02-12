@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Temp / extracted docx
+docx_temp/
+docx_text_extract.txt
+jabrlanuvchi_sorogi.docx
+jabrlanuvchi_sorogi.zip

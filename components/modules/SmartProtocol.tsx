@@ -73,6 +73,10 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [transcriptText, setTranscriptText] = useState("");
 
+  // --- REAL-TIME SPEECH-TO-TEXT (display only; does not affect recording or bayonnoma) ---
+  const [liveTranscript, setLiveTranscript] = useState("");
+  const [interimTranscript, setInterimTranscript] = useState("");
+
   // --- REFS ---
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -81,6 +85,8 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
   const analyserRef = useRef<AnalyserNode | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const speechRecognitionRef = useRef<InstanceType<Window["SpeechRecognition"]> | null>(null);
+  const liveTranscriptEndRef = useRef<HTMLDivElement | null>(null);
 
   const stopEverything = useCallback(() => {
     if (timerRef.current) {
@@ -94,6 +100,15 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
         // ignore
       }
     }
+    if (speechRecognitionRef.current) {
+      try {
+        speechRecognitionRef.current.abort();
+      } catch {
+        // ignore
+      }
+      speechRecognitionRef.current = null;
+    }
+    setInterimTranscript("");
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
     if (audioContextRef.current) {
@@ -110,6 +125,10 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
   useEffect(() => {
     return () => stopEverything();
   }, [stopEverything]);
+
+  useEffect(() => {
+    liveTranscriptEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [liveTranscript, interimTranscript]);
 
   const startRecording = useCallback(async () => {
     try {
@@ -160,6 +179,55 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
 
       recorder.start(1000); // Collect data every second
       mediaRecorderRef.current = recorder;
+
+      // Real-time speech-to-text (display only; does not affect recording or bayonnoma)
+      setLiveTranscript("");
+      setInterimTranscript("");
+      const SpeechRecognitionCtor =
+        typeof window !== "undefined"
+          ? (window.SpeechRecognition || (window as Window & { webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition)
+          : null;
+      if (SpeechRecognitionCtor) {
+        try {
+          const recognition = new SpeechRecognitionCtor();
+          recognition.continuous = true;
+          recognition.interimResults = true;
+          recognition.lang = "uz-UZ"; // fallback handled below
+          recognition.onresult = (e: SpeechRecognitionEvent) => {
+            let interim = "";
+            let finalText = "";
+            for (let i = e.resultIndex; i < e.results.length; i++) {
+              const result = e.results[i];
+              const text = (result[0]?.transcript ?? "").trim();
+              if (result.isFinal) {
+                finalText += (finalText ? " " : "") + text;
+              } else {
+                interim += (interim ? " " : "") + text;
+              }
+            }
+            if (finalText) {
+              setLiveTranscript((prev) => (prev ? prev + " " + finalText : finalText));
+            }
+            setInterimTranscript(interim);
+          };
+          recognition.onerror = () => {
+            // Silent; optional: setInterimTranscript("") on no-speech
+          };
+          recognition.onend = () => {
+            if (speechRecognitionRef.current === recognition && mediaRecorderRef.current?.state === "recording") {
+              try {
+                recognition.start();
+              } catch {
+                // already ended
+              }
+            }
+          };
+          speechRecognitionRef.current = recognition;
+          recognition.start();
+        } catch {
+          // Browser may not support or mic busy
+        }
+      }
 
       // Start timer
       setRecordingTime(0);
@@ -263,6 +331,8 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
   const clearRecording = useCallback(() => {
     setAudioBlob(null);
     setTranscriptText("");
+    setLiveTranscript("");
+    setInterimTranscript("");
     setRecordingTime(0);
     toast("Yozuv o'chirildi", "info");
   }, [toast]);
@@ -382,6 +452,33 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
         {/* CENTER: RECORDING AREA */}
         <div className="flex-1 flex flex-col bg-gradient-to-br from-slate-50 to-slate-100 relative">
           <div className="flex-1 flex flex-col items-center justify-center p-10">
+            {/* Real-time speech-to-text (display only; does not affect recording or bayonnoma) */}
+            <div className="w-full max-w-2xl mb-6">
+              <div className="rounded-2xl border border-slate-200 bg-white/95 shadow-lg shadow-slate-200/50 overflow-hidden">
+                <div className="px-4 py-2.5 border-b border-slate-100 bg-slate-50/80 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                    Gap ketayotgan matn (real vaqt) — faqat ko‘rinish, yozuv va bayonnoma bundan mustaqil
+                  </span>
+                </div>
+                <div
+                  className="min-h-[120px] max-h-[200px] overflow-y-auto p-4 text-base leading-relaxed font-medium text-slate-800 custom-scrollbar"
+                  style={{ scrollBehavior: "smooth" }}
+                >
+                  {liveTranscript && <span>{liveTranscript}</span>}
+                  {interimTranscript && (
+                    <span className="text-slate-400 italic">{liveTranscript ? " " : ""}{interimTranscript}</span>
+                  )}
+                  {!liveTranscript && !interimTranscript && (
+                    <span className="text-slate-400">
+                      {isRecording ? "Gapiring — matn shu yerda paydo bo‘ladi..." : "Yozishni boshlang — suhbat matni real vaqtda ko‘rinadi."}
+                    </span>
+                  )}
+                  <div ref={liveTranscriptEndRef} />
+                </div>
+              </div>
+            </div>
+
             {/* Recording visualization */}
             <div className="relative mb-8">
               {/* Outer rings animation */}

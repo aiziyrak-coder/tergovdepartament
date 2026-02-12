@@ -1,4 +1,5 @@
 import { GoogleGenAI, Type, Modality } from "@google/genai";
+import { PROTOCOL_TEMPLATES } from "../config/protocolTemplates";
 import {
   ProtocolMetadata,
   MentorMode,
@@ -14,6 +15,7 @@ import {
   QuizQuestion,
   VideoGenerationResult,
 } from "../types";
+import { buildRealProtocolHtml } from "./realProtocolHtml";
 
 const API_KEY_ENV = typeof process !== "undefined" ? process.env?.API_KEY : undefined;
 const GEMINI_KEY_ENV = typeof process !== "undefined" ? process.env?.GEMINI_API_KEY : undefined;
@@ -433,35 +435,22 @@ export interface ProtocolTemplateDetails {
 }
 
 /**
- * Generates a legal protocol document (HTML for Word) strictly aligned with the given template.
- * Document structure: title, code reference, legal preamble (legalInfo), metadata, then transcript dialogue.
+ * Generates a legal protocol document (HTML for Word) in the exact format of the real interrogation protocol (bayonnoma).
+ * Uses the official structure: title (Cyrillic), date, times, person data 1–15, legal preamble, Savol/Javob dialogue.
  */
 export async function generateLegalProtocol(
-  type: string,
+  _type: string,
   transcript: DialogSegment[],
   template: ProtocolType,
   metadata: ProtocolMetadata | Record<string, unknown>,
-  lang: ProtocolLanguage,
+  _lang: ProtocolLanguage,
   _appLang: AppLanguage,
-  userApiKey?: string,
+  _userApiKey?: string,
   templateDetails?: ProtocolTemplateDetails
 ): Promise<string> {
-  const ai = getAiClient(userApiKey);
-  const title = templateDetails?.title ?? String(template);
-  const code = templateDetails?.code ?? "";
-  const legalInfo = templateDetails?.legalInfo ?? "";
-  const role = templateDetails?.role ?? "Ishtirokchi";
-  const prompt = `Generate a legal protocol as HTML for Word (.doc). STRICT REQUIREMENTS:
-1. Document title (h1 or similar): exactly "${title}".
-2. Legal reference: ${code}.
-3. Include this legal preamble (yuridik ma'lumotnoma) in the document body: "${legalInfo}".
-4. Second speaker in dialogue must be labeled as "${role}" where appropriate.
-5. Metadata: ${JSON.stringify(metadata)}.
-6. Transcript (dialogue): ${JSON.stringify(transcript)}.
-7. Language: ${lang}. Use Uzbekistan Criminal Procedural Code (ЖПК) compliant formatting.
-Output ONLY valid HTML (no markdown), suitable for saving as .doc. Include styles for body, headings, dialogue blocks, timestamps.`;
-  const response = await ai.models.generateContent({ model: "gemini-3-flash-preview", contents: prompt });
-  return response.text ?? "";
+  const templateEntry =
+    templateDetails ?? PROTOCOL_TEMPLATES[template] ?? PROTOCOL_TEMPLATES[ProtocolType.GUVOH];
+  return buildRealProtocolHtml(templateEntry, metadata, transcript, { useCyrillicTitle: true });
 }
 
 // --- PHOTOROBOT GENERATION ---
