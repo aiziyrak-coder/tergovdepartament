@@ -17,16 +17,13 @@ const DRAFT_STORAGE_KEY = "smart_protocol_draft_v2";
 
 /**
  * Remove noise from speech recognition (pure digits, garbage codes).
+ * Simplified to be less aggressive.
  */
 function cleanChunk(text: string): string {
   const t = text.trim().replace(/\s+/g, " ");
   if (!t) return "";
-  const tokens = t.split(" ").filter((tok) => {
-    if (/^\d+$/.test(tok)) return false;
-    if (/[a-zA-Z\u0400-\u04FF]/.test(tok) && /\d{2,}/.test(tok)) return false;
-    return true;
-  });
-  return tokens.join(" ").trim();
+  // For now, just return the text with normalized spaces - minimal filtering
+  return t;
 }
 
 
@@ -175,11 +172,17 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
    * No AI processing during recording, just accumulate text.
    */
   const addFinalChunk = useCallback((text: string) => {
+    console.log("addFinalChunk called with:", text);
     const t = cleanChunk(text);
-    if (!t) return;
+    console.log("After cleanChunk:", t);
+    if (!t) {
+      console.log("Text was empty after cleaning, skipping");
+      return;
+    }
     setRawText((prev) => {
-      const sep = prev.length > 0 ? " " : "";
-      return prev + sep + t;
+      const newText = prev + (prev.length > 0 ? " " : "") + t;
+      console.log("New rawText:", newText);
+      return newText;
     });
     setInterimText("");
   }, []);
@@ -220,6 +223,7 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
     };
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
+      console.log("onresult triggered, results count:", event.results.length);
       let interim = "";
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
@@ -230,16 +234,20 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
             alternatives.push({ transcript: alt.transcript, confidence: Number(alt.confidence) || 0 });
         }
         const best = alternatives.length > 0 ? alternatives.reduce((b, a) => (a.confidence > b.confidence ? a : b), alternatives[0]) : null;
+        console.log("Result isFinal:", result.isFinal, "transcript:", best?.transcript || result[0]?.transcript);
         if (result.isFinal) {
           const toAdd = (best ? best.transcript : result[0]?.transcript) ?? "";
+          console.log("Final text to add:", toAdd);
           if (toAdd.trim()) addFinalChunk(toAdd);
         } else {
           const transcriptText = result[0]?.transcript ?? "";
           interim += transcriptText;
         }
       }
-      const cleanedInterim = cleanChunk(interim);
-      if (cleanedInterim) setInterimText(cleanedInterim);
+      if (interim) {
+        console.log("Interim text:", interim);
+        setInterimText(interim);
+      }
     };
 
     recognition.onerror = (e: SpeechRecognitionErrorEvent) => {
