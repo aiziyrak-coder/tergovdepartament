@@ -214,12 +214,12 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
         return;
       }
 
-      // Convert to DialogSegment format
+      // Convert to DialogSegment format (no timestamps for protocol - only stenogram needs them)
       const dialogSegments: DialogSegment[] = segments.map((seg, idx) => ({
         speakerId: seg.speaker?.toLowerCase().includes("tergov") ? "investigator" : "suspect",
         speakerName: seg.speaker || (idx % 2 === 0 ? "Tergovchi" : getTemplateEntry(selectedTemplate).role),
         text: seg.text || "",
-        timestamp: seg.timestamp || new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        timestamp: "", // No timestamp for live questioning protocol
       }));
 
       // Store transcript for display
