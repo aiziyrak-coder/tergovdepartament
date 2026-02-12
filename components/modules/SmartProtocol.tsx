@@ -206,11 +206,17 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
     recognition.lang = recognitionLang;
     recognition.maxAlternatives = 3;
 
+    // Track if this is the first start (to show toast only once)
+    let isFirstStart = true;
+
     recognition.onstart = () => {
       recordingIntentRef.current = true;
       setIsRecording(true);
-      startVisualizer();
-      toast("Mikrofon yoqildi — gapiring, matn yoziladi", "success");
+      if (isFirstStart) {
+        isFirstStart = false;
+        startVisualizer();
+        toast("Mikrofon yoqildi — gapiring, matn yoziladi", "success");
+      }
     };
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
@@ -237,6 +243,7 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
     };
 
     recognition.onerror = (e: SpeechRecognitionErrorEvent) => {
+      console.error("Speech recognition error:", e.error);
       if (e.error === "no-speech" || e.error === "aborted") return;
       const msg =
         e.error === "not-allowed"
@@ -251,11 +258,16 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
 
     recognition.onend = () => {
       if (recognitionRef.current === recognition && recordingIntentRef.current) {
-        try {
-          recognition.start();
-        } catch {
-          // ignore
-        }
+        // Add small delay before restart to prevent rapid cycling
+        setTimeout(() => {
+          if (recordingIntentRef.current && recognitionRef.current === recognition) {
+            try {
+              recognition.start();
+            } catch (err) {
+              console.error("Recognition restart failed:", err);
+            }
+          }
+        }, 200);
       }
     };
 
