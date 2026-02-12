@@ -1,0 +1,478 @@
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { Upload, ArrowLeft, Save, FileAudio, Trash2, Loader2, Clock, Edit2, Check, User, Users, FileText, Download, UserPlus, ChevronDown, AlertCircle, Activity, CheckCircle2, Mic } from "lucide-react";
+import { transcribeAudio } from "../../services/geminiService";
+import { TranscriptSegment, ProtocolType } from "../../types";
+import { PROTOCOL_TEMPLATES } from "../../config/protocolTemplates";
+import { storageService } from "../../services/storageService";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { useToast } from "../../contexts/ToastContext";
+import { ConfirmModal } from "../ui/ConfirmModal";
+
+interface StenogramProps {
+  onBack: () => void;
+}
+
+// Maksimal fayl hajmi 25MB (Base64 encoding bilan hisoblaganda API limiti uchun xavfsiz chegara)
+const MAX_FILE_SIZE = 25 * 1024 * 1024; 
+
+const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
+  const { language } = useLanguage();
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState<'UPLOAD' | 'DOC'>('UPLOAD');
+  
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [mediaUrl, setMediaUrl] = useState<string | null>(null);
+  const audioPlayerRef = useRef<HTMLAudioElement>(null);
+
+  const [segments, setSegments] = useState<TranscriptSegment[]>([]);
+  const [loading, setLoading] = useState(false);
+  
+  // --- PROTOCOL METADATA STATE ---
+  const [protocolData, setProtocolData] = useState({
+      city: 'Фарғона шаҳри',
+      date: new Date().toISOString().split('T')[0],
+      startTime: '15:30',
+      endTime: '16:35',
+      investigatorRank: 'подполковник',
+      investigatorName: 'Ш.Р.Дадажонов',
+      deviceInfo: '4 гб. хотирага эга бўлган "Flesh card"',
+      caseDetails: 'Фуқаро Х.Ш.Каримовнинг аризаси юзасидан ўтказилаётган терговга қадар текширув материали бўйича',
+      fileName: 'audio_2025'
+  });
+
+  const [allSpeakers, setAllSpeakers] = useState<string[]>([]);
+  const [deleteSegmentId, setDeleteSegmentId] = useState<string | null>(null);
+  /** Protocol type (tergov turi) – aligns document and stenogram with same template as SmartProtocol. */
+  const [selectedTemplate, setSelectedTemplate] = useState<ProtocolType>(ProtocolType.GUVOH);
+
+  useEffect(() => {
+    return () => { if (mediaUrl) URL.revokeObjectURL(mediaUrl); }
+  }, [mediaUrl]);
+
+  // Sync unique speakers from segments on load or update (but preserve existing manual edits)
+  useEffect(() => {
+    if (segments.length > 0) {
+        const detectedSpeakers = Array.from(new Set(segments.map(s => s.speaker)));
+        setAllSpeakers(prev => {
+            const combined = new Set([...prev, ...detectedSpeakers]);
+            return Array.from(combined);
+        });
+    }
+  }, [segments.length]); // Depend only on length changes to avoid loops
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files[0]) {
+          const file = e.target.files[0];
+          
+          if (file.size > MAX_FILE_SIZE) {
+              toast("Fayl hajmi juda katta! Maksimal 25 MB.", "error");
+              return;
+          }
+
+          setMediaFile(file);
+          setMediaUrl(URL.createObjectURL(file));
+          setProtocolData(prev => ({ ...prev, fileName: file.name }));
+          toast("Audio fayl yuklandi.", "info");
+      }
+  };
+
+  const processAudioFile = async () => {
+      if (!mediaFile) return;
+      setLoading(true);
+      setSegments([]);
+      
+      try {
+          // Convert to Base64 (Whole file)
+          const base64 = await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                  const res = reader.result as string;
+                  const data = res.split(',')[1];
+                  if (data) resolve(data);
+                  else reject("Base64 conversion failed");
+              };
+              reader.onerror = reject;
+              reader.readAsDataURL(mediaFile);
+          });
+
+          // Send to API
+          const results = await transcribeAudio(base64, mediaFile.type, 'AUTO', false, language);
+          
+          if (results && results.length > 0) {
+              setSegments(results);
+              // Initialize speakers based on result
+              const initialSpeakers = Array.from(new Set(results.map(r => r.speaker)));
+              setAllSpeakers(initialSpeakers.length > 0 ? initialSpeakers : ['Speaker 1', 'Speaker 2']);
+              setActiveTab('DOC');
+              toast("Tahlil muvaffaqiyatli yakunlandi.", "success");
+          } else {
+              toast("Matn aniqlanmadi yoki audio sifati past.", "warning");
+          }
+
+      } catch (e) {
+          console.error(e);
+          const msg = e instanceof Error ? e.message : "Noma'lum";
+          toast("Tizim xatoligi: " + msg, "error");
+      } finally {
+          setLoading(false);
+      }
+  };
+
+  // --- SPEAKER MANAGEMENT FUNCTIONS ---
+
+  // 1. Rename a speaker globally (sidebar input)
+  const handleGlobalRename = (oldName: string, newName: string) => {
+      if (!newName.trim()) return;
+      // Update the list itself
+      setAllSpeakers(prev => prev.map(s => s === oldName ? newName : s));
+      // Update all segments using this speaker name
+      setSegments(prev => prev.map(s => s.speaker === oldName ? { ...s, speaker: newName } : s));
+  };
+
+  // 2. Add a new manual speaker
+  const handleAddSpeaker = () => {
+      const newSpeakerName = `Speaker ${allSpeakers.length + 1}`;
+      if (!allSpeakers.includes(newSpeakerName)) {
+          setAllSpeakers(prev => [...prev, newSpeakerName]);
+          toast("Yangi ishtirokchi ro'yxatga qo'shildi", "success");
+      }
+  };
+
+  // 3. Change speaker for ONE specific segment (dropdown in transcript)
+  const handleChangeSegmentSpeaker = (segmentId: string, newSpeaker: string) => {
+      setSegments(prev => prev.map(s => s.id === segmentId ? { ...s, speaker: newSpeaker } : s));
+  };
+
+  const handleTextEdit = (id: string, newText: string) => {
+      setSegments(prev => prev.map(s => s.id === id ? { ...s, text: newText } : s));
+  };
+
+  const deleteSegment = (id: string) => setDeleteSegmentId(id);
+  const confirmDeleteSegment = useCallback(() => {
+    if (deleteSegmentId) {
+      setSegments((prev) => prev.filter((s) => s.id !== deleteSegmentId));
+      setDeleteSegmentId(null);
+      toast("Qator o'chirildi", "info");
+    }
+  }, [deleteSegmentId, toast]);
+
+  // --- WORD GENERATION (template-aligned with protocol type) ---
+  const downloadWordDocument = () => {
+      const tpl = PROTOCOL_TEMPLATES[selectedTemplate];
+      const dialoguesHtml = segments.map(s =>
+          `<p style="margin-bottom: 5px;">
+              <span style="color: #444; font-size: 10pt; font-family: monospace;">[${s.timestamp}]</span>
+              <strong>${s.speaker}:</strong> ${s.text}
+           </p>`
+      ).join('');
+
+      const templateHtml = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        <head>
+            <meta charset="utf-8">
+            <style>
+                body { font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.5; }
+                h1 { text-align: center; text-transform: uppercase; font-weight: bold; margin-bottom: 10px; }
+                .subtitle { text-align: center; margin-bottom: 20px; font-size: 11pt; }
+                .code { text-align: center; margin-bottom: 15px; font-size: 10pt; color: #333; }
+                .justify { text-align: justify; text-indent: 30px; }
+                .right { text-align: right; }
+                .dialogue-box { margin-top: 15px; margin-bottom: 15px; }
+            </style>
+        </head>
+        <body>
+            <h1>${tpl.title}</h1>
+            <div class="code">${tpl.code}</div>
+            <div class="subtitle">
+                ${protocolData.deviceInfo} даги аудиоёзувларни эшитиш ҳақида
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                 <div>${protocolData.date} йил</div>
+                 <div>${protocolData.city}</div>
+            </div>
+            <br>
+            <p class="justify">${tpl.legalInfo}</p>
+            <br>
+            <p class="justify">
+                ИИБ ҳузуридаги тергов бошқармаси терговчиси ${protocolData.investigatorRank} ${protocolData.investigatorName},
+                ${protocolData.caseDetails} бўйича тақдим қилинган ${protocolData.deviceInfo} га ёзилган аудиоёзувларни
+                эшитиб кўриб, ЖПКнинг 90-92-моддаларига риоя қилган ҳолда мазкур баённомани тузди.
+            </p>
+            <div class="right">Эшитиш соат ${protocolData.startTime} да бошланди.</div>
+            <p class="justify">
+                Ушбу қурилма компьютер техникасига солинганда, унда <strong>"${protocolData.fileName}"</strong> номли аудиофайл мавжудлиги аниқланди ва қуйидаги мазмундаги сўзлашувлар қайд қилинган:
+            </p>
+            <div class="dialogue-box">${dialoguesHtml}</div>
+            <div class="right">Аудиоёзувларни эшитиш соат ${protocolData.endTime} да тамомланди.</div>
+            <br><br>
+            <div style="font-weight: bold;">
+                Баённома туздим:<br>
+                Терговчи ${protocolData.investigatorRank} ________________ ${protocolData.investigatorName}
+            </div>
+        </body>
+        </html>
+      `;
+
+      const blob = new Blob([templateHtml], { type: 'application/msword' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Bayonnoma_${tpl.title.replace(/\s+/g, '_')}_${protocolData.date}.doc`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast("Bayonnoma (.doc) yuklab olindi", "success");
+  };
+
+  return (
+    <div className="w-full h-full flex flex-col bg-[#F8FAFC] overflow-hidden relative font-sans text-slate-900">
+        <div className="h-20 border-b border-slate-200 bg-white flex items-center justify-between px-8 shrink-0 z-20 shadow-sm">
+            <div className="flex items-center gap-6">
+                <button type="button" onClick={onBack} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-all" aria-label="Orqaga">
+                    <ArrowLeft size={20} className="text-slate-500"/>
+                </button>
+                <div>
+                    <h2 className="text-xl font-black text-slate-900 flex items-center gap-3 tracking-tight uppercase">
+                        <Mic className="text-blue-600" size={24}/>
+                        <span className="text-blue-600">Stenogramma</span>
+                    </h2>
+                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Audio Tahlil Moduli</p>
+                </div>
+            </div>
+            {/* Steps */}
+            <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+                <button type="button" onClick={() => setActiveTab('UPLOAD')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === 'UPLOAD' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'}`} aria-pressed={activeTab === 'UPLOAD'}>1. Yuklash</button>
+                <button type="button" disabled={segments.length===0} onClick={() => setActiveTab('DOC')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === 'DOC' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'}`} aria-pressed={activeTab === 'DOC'}>2. Tahrirlash</button>
+            </div>
+        </div>
+
+        <div className="flex-1 overflow-hidden relative z-10 p-6 flex flex-col">
+            {activeTab === 'UPLOAD' && (
+                <div className="w-full h-full flex items-center justify-center">
+                    <div className="w-full max-w-4xl bg-white p-12 rounded-3xl border border-slate-200 shadow-xl flex flex-col relative overflow-hidden">
+                        {loading && (
+                             <div className="absolute inset-0 bg-white/95 z-20 flex flex-col items-center justify-center p-10 text-center animate-in fade-in">
+                                 <Loader2 size={64} className="text-blue-600 animate-spin mb-6"/>
+                                 <h3 className="text-2xl font-black text-slate-800 uppercase mb-2">AI Tahlil Qilmoqda...</h3>
+                                 <p className="text-base text-slate-500 font-medium mb-8">AI ovozlar sonini va matnni aniqlamoqda. Iltimos kuting.</p>
+                             </div>
+                        )}
+
+                        <div className="flex flex-col items-center justify-center gap-8 py-10">
+                            <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 shadow-inner">
+                                <FileAudio size={48}/>
+                            </div>
+                            
+                            <div className="text-center">
+                                <h3 className="text-2xl font-black text-slate-800 uppercase mb-2">Audio Faylni Yuklash</h3>
+                                <p className="text-slate-500 font-medium">MP3, WAV, M4A formatlar. Maksimal hajm: 25 MB.</p>
+                            </div>
+
+                            {!mediaFile ? (
+                                <label className="w-full max-w-lg h-48 border-3 border-dashed border-slate-300 bg-slate-50 rounded-3xl flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all group">
+                                    <div className="p-4 bg-white rounded-full mb-4 shadow-sm group-hover:shadow-md transition-all">
+                                        <Upload size={32} className="text-slate-400 group-hover:text-blue-600"/>
+                                    </div>
+                                    <span className="text-sm font-bold text-slate-600 group-hover:text-blue-700">Faylni tanlash uchun bosing</span>
+                                    <input type="file" accept="audio/*" onChange={handleFileSelect} className="hidden"/>
+                                </label>
+                            ) : (
+                                <div className="w-full max-w-lg space-y-4">
+                                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 flex items-center justify-between">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 font-bold">AUDIO</div>
+                                            <div className="text-left">
+                                                <div className="font-bold text-slate-800 text-sm">{mediaFile.name}</div>
+                                                <div className="text-xs text-slate-500 font-medium">{(mediaFile.size / (1024*1024)).toFixed(2)} MB</div>
+                                            </div>
+                                        </div>
+                                        <button onClick={() => {setMediaFile(null); setMediaUrl(null)}} className="p-2 text-slate-400 hover:text-red-500"><Trash2 size={20}/></button>
+                                    </div>
+                                    <audio ref={audioPlayerRef} src={mediaUrl || ''} controls className="w-full" />
+                                    
+                                    <div className="bg-amber-50 p-4 rounded-xl border border-amber-200 flex gap-3 items-start">
+                                        <AlertCircle className="text-amber-500 shrink-0 mt-0.5" size={18}/>
+                                        <p className="text-xs text-amber-800 font-medium">
+                                            AI avtomatik ravishda spikerlarni ajratadi. Agar xatolik bo'lsa, keyingi bosqichda qo'lda to'g'irlash mumkin.
+                                        </p>
+                                    </div>
+
+                                    <button onClick={processAudioFile} disabled={loading} className="w-full py-5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-sm shadow-xl shadow-blue-200 flex justify-center gap-3 transition-all active:scale-95 disabled:opacity-50 uppercase tracking-widest">
+                                        {loading ? <Activity className="animate-spin"/> : <CheckCircle2/>} 
+                                        {loading ? 'Yuborilmoqda...' : 'Tahlilni Boshlash'}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'DOC' && (
+                <div className="w-full h-full flex gap-6">
+                    {/* LEFT: MAIN TRANSCRIPT EDITOR */}
+                    <div className="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+                        <div className="h-16 border-b border-slate-200 px-6 flex items-center justify-between bg-slate-50">
+                            <h3 className="text-sm font-black text-slate-600 uppercase">Tahrirlash Rejimi</h3>
+                            <button onClick={downloadWordDocument} className="text-xs font-bold bg-slate-900 text-white px-4 py-2 rounded-xl hover:bg-slate-700 transition-all flex items-center gap-2 shadow-lg shadow-slate-300">
+                                <Download size={16}/> WORD YUKLASH
+                            </button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar bg-slate-50/50">
+                            {segments.length === 0 && (
+                                <div className="text-center p-10 text-slate-400">
+                                    Matn topilmadi. Qayta urinib ko'ring.
+                                </div>
+                            )}
+                            {segments.map((seg, idx) => (
+                                <div key={idx} className="group relative pl-6 border-l-4 border-slate-200 hover:border-blue-500 transition-colors bg-white p-4 rounded-r-xl shadow-sm hover:shadow-md">
+                                    <div className="flex justify-between items-center mb-2">
+                                        {/* Dropdown for selecting speaker per segment (LOCAL CHANGE) */}
+                                        <div className="relative group/speaker">
+                                            <select
+                                                value={seg.speaker}
+                                                onChange={(e) => handleChangeSegmentSpeaker(seg.id, e.target.value)}
+                                                className="appearance-none bg-blue-50 text-blue-600 text-xs font-black uppercase px-3 py-1 rounded-lg outline-none cursor-pointer hover:bg-blue-100 transition-colors pr-8 border border-transparent hover:border-blue-200"
+                                            >
+                                                {allSpeakers.map((s, i) => (
+                                                    <option key={i} value={s}>{s}</option>
+                                                ))}
+                                            </select>
+                                            <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-blue-400 pointer-events-none"/>
+                                        </div>
+
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-[10px] text-slate-400 font-mono flex items-center gap-1"><Clock size={10}/> {seg.timestamp}</span>
+                                            <button onClick={() => deleteSegment(seg.id)} className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-red-500 transition-opacity"><Trash2 size={14}/></button>
+                                        </div>
+                                    </div>
+                                    
+                                    <textarea 
+                                        value={seg.text}
+                                        onChange={(e) => handleTextEdit(seg.id, e.target.value)}
+                                        className="w-full bg-transparent text-base text-slate-800 leading-relaxed outline-none resize-none overflow-hidden h-auto focus:bg-blue-50/50 focus:p-2 rounded-lg transition-all"
+                                        style={{ height: 'auto', minHeight: '60px' }}
+                                        onFocus={(e) => {
+                                            e.target.style.height = 'auto';
+                                            e.target.style.height = e.target.scrollHeight + 'px';
+                                        }}
+                                        onInput={(e) => {
+                                            (e.target as HTMLTextAreaElement).style.height = 'auto';
+                                            (e.target as HTMLTextAreaElement).style.height = (e.target as HTMLTextAreaElement).scrollHeight + 'px';
+                                        }}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* RIGHT: PROTOCOL DETAILS & SPEAKER MANAGER */}
+                    <div className="w-96 flex flex-col gap-6 h-full overflow-hidden">
+                        
+                        {/* 1. PROTOCOL METADATA */}
+                        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col h-[40%]">
+                             <h3 className="text-xs font-black text-slate-500 uppercase mb-4 flex items-center gap-2"><FileText size={14}/> Bayonnoma Ma'lumotlari</h3>
+                             <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-2">
+                                 <div>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Ish turi (Protokol)</label>
+                                    <select value={selectedTemplate} onChange={e => setSelectedTemplate(e.target.value as ProtocolType)} className="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold text-slate-700 outline-none mt-1">
+                                        {Object.entries(PROTOCOL_TEMPLATES).map(([k, v]) => <option key={k} value={k}>{v.title}</option>)}
+                                    </select>
+                                 </div>
+                                 <div>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Sana va Vaqt</label>
+                                    <div className="flex gap-2">
+                                        <input type="date" value={protocolData.date} onChange={e=>setProtocolData({...protocolData, date:e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
+                                        <input type="time" value={protocolData.startTime} onChange={e=>setProtocolData({...protocolData, startTime:e.target.value})} className="w-1/2 bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
+                                    </div>
+                                 </div>
+                                 <div>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Shahar</label>
+                                    <input value={protocolData.city} onChange={e=>setProtocolData({...protocolData, city:e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
+                                 </div>
+                                 <div>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Tergovchi (Unvon va F.I.SH)</label>
+                                    <div className="flex gap-2">
+                                        <input value={protocolData.investigatorRank} onChange={e=>setProtocolData({...protocolData, investigatorRank:e.target.value})} placeholder="Unvon" className="w-1/3 bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
+                                        <input value={protocolData.investigatorName} onChange={e=>setProtocolData({...protocolData, investigatorName:e.target.value})} placeholder="F.I.SH" className="w-2/3 bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
+                                    </div>
+                                 </div>
+                                 <div>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Qurilma / Fayl Turi</label>
+                                    <input value={protocolData.deviceInfo} onChange={e=>setProtocolData({...protocolData, deviceInfo:e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
+                                 </div>
+                                 <div>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Ish Mazmuni (Preamble)</label>
+                                    <textarea value={protocolData.caseDetails} onChange={e=>setProtocolData({...protocolData, caseDetails:e.target.value})} className="w-full h-20 bg-slate-50 border border-slate-200 rounded p-2 text-xs font-medium resize-none"/>
+                                 </div>
+                             </div>
+                        </div>
+
+                        {/* 2. SPEAKER MAPPER (GLOBAL RENAME) */}
+                        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col flex-1">
+                             <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-xs font-black text-slate-500 uppercase flex items-center gap-2"><Users size={14}/> Ishtirokchilar</h3>
+                                <button onClick={handleAddSpeaker} className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-lg font-bold hover:bg-blue-100 transition-colors flex items-center gap-1">
+                                    <UserPlus size={12}/> Qo'shish
+                                </button>
+                             </div>
+                             
+                             <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-2">
+                                 {allSpeakers.length === 0 && <div className="text-center text-xs text-slate-400 italic py-4">Ishtirokchilar topilmadi</div>}
+                                 {allSpeakers.map((speaker, i) => (
+                                     <div key={i} className="flex flex-col gap-1">
+                                         <div className="flex items-center gap-2">
+                                             <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 shrink-0 font-bold text-xs">
+                                                 {i + 1}
+                                             </div>
+                                             {/* Global Rename Input */}
+                                             <input 
+                                                 value={speaker} 
+                                                 onChange={(e) => handleGlobalRename(speaker, e.target.value)}
+                                                 className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:border-blue-500 transition-colors"
+                                                 placeholder={`Ishtirokchi ${i+1}`}
+                                                 title="Nomni o'zgartirsangiz, butun matn bo'ylab o'zgaradi"
+                                             />
+                                         </div>
+                                     </div>
+                                 ))}
+                             </div>
+                             <div className="bg-blue-50 p-3 rounded-xl mt-2">
+                                 <p className="text-[10px] text-blue-700 font-medium flex items-start gap-1">
+                                     <AlertCircle size={10} className="mt-0.5 shrink-0"/>
+                                     Izoh: Bu yerdan o'zgartirish butun matnga ta'sir qiladi. Alohida qator uchun chap tarafdagi ro'yxatdan tanlang.
+                                 </p>
+                             </div>
+                        </div>
+
+                        <button onClick={() => {
+                                    const tpl = PROTOCOL_TEMPLATES[selectedTemplate];
+                                    storageService.saveDocument({
+                                        title: `${tpl.title} – ${protocolData.date}`,
+                                        category: 'STENOGRAM',
+                                        tags: ['AI', 'EDITED', selectedTemplate],
+                                        content: JSON.stringify(segments),
+                                        metadata: { protocolType: selectedTemplate, ...protocolData }
+                                    });
+                                    toast("Arxivga saqlandi", "success");
+                                }} className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-xs flex justify-center gap-2 hover:bg-slate-800 transition-all shadow-lg"><Save size={16}/> LOYIHANI SAQLASH</button>
+                    </div>
+                </div>
+            )}
+        </div>
+
+        <ConfirmModal
+          open={deleteSegmentId !== null}
+          title="Qatorni o'chirish"
+          message="Ushbu stenogramma qatori o'chiriladi. Davom etasizmi?"
+          confirmLabel="O'chirish"
+          cancelLabel="Bekor qilish"
+          variant="danger"
+          onConfirm={confirmDeleteSegment}
+          onCancel={() => setDeleteSegmentId(null)}
+        />
+    </div>
+  );
+};
+export default Stenogram;

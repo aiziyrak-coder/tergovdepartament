@@ -1,0 +1,8 @@
+{
+  "name": "Tergov_fergana_6",
+  "description": "O'zbekiston tergovchilari uchun sun'iy intellektga asoslangan universal yordamchi platforma.",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ]
+}
