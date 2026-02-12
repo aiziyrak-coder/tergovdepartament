@@ -71,7 +71,7 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
   // --- TEXT STATE (simple continuous text) ---
   const [rawText, setRawText] = useState("");
   const [interimText, setInterimText] = useState("");
-  const [recognitionLang, setRecognitionLang] = useState<"uz-UZ" | "uz" | "ru-RU">("uz-UZ");
+  const [recognitionLang, setRecognitionLang] = useState<"uz-UZ" | "uz" | "ru-RU">("ru-RU");
 
   // --- REFS ---
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
