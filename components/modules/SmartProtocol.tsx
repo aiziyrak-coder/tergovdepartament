@@ -17,13 +17,17 @@ const DRAFT_STORAGE_KEY = "smart_protocol_draft_v2";
 
 /**
  * Remove noise from speech recognition (pure digits, garbage codes).
- * Simplified to be less aggressive.
  */
 function cleanChunk(text: string): string {
   const t = text.trim().replace(/\s+/g, " ");
   if (!t) return "";
-  // For now, just return the text with normalized spaces - minimal filtering
-  return t;
+  // Filter out pure digit sequences (like "30224030224") which are recognition garbage
+  const tokens = t.split(" ").filter((tok) => {
+    // Remove pure digit strings longer than 4 (keep years like 2024)
+    if (/^\d{5,}$/.test(tok)) return false;
+    return true;
+  });
+  return tokens.join(" ").trim();
 }
 
 
@@ -426,48 +430,34 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
               <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:24px_24px] opacity-40 pointer-events-none"></div>
 
               <div className="flex-1 overflow-y-auto p-6 relative z-10">
-                  {!rawText && !interimText && (
-                      <div className="h-full flex flex-col items-center justify-center opacity-30">
-                          <Brain size={64} className="text-slate-400 mb-6"/>
-                          <h3 className="text-xl font-black text-slate-400 uppercase tracking-widest">Tizim Tayyor</h3>
-                          <p className="text-sm font-medium text-slate-500 mt-2 text-center max-w-md">
-                              "Start" tugmasini bosing. Gapirgan matn doimiy yozib boriladi.
-                          </p>
-                          <p className="text-xs text-slate-400 mt-4 text-center max-w-sm">
-                              Ovozni yaxshi tanishi uchun: jimjit joyda gapiring, aniq va tushunarli, mikrofonga yaqinroq.
-                          </p>
+                  {/* Always show textarea */}
+                  <div className="h-full flex flex-col">
+                      <div className="flex items-center justify-between mb-3">
+                          <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                              <MessageSquare size={12}/> So'roq Matni
+                          </h3>
+                          <span className="text-[10px] text-slate-400">
+                              {rawText.split(/\s+/).filter(Boolean).length} so'z
+                          </span>
                       </div>
-                  )}
-
-                  {/* Editable textarea for the raw text */}
-                  {(rawText || interimText) && (
-                      <div className="h-full flex flex-col">
-                          <div className="flex items-center justify-between mb-3">
-                              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                  <MessageSquare size={12}/> So'roq Matni
-                              </h3>
-                              <span className="text-[10px] text-slate-400">
-                                  {rawText.split(/\s+/).filter(Boolean).length} so'z
-                              </span>
+                      <textarea
+                          value={rawText + (interimText ? (rawText ? " " : "") + interimText : "")}
+                          onChange={(e) => {
+                              if (!isRecording) {
+                                  setRawText(e.target.value);
+                              }
+                          }}
+                          readOnly={isRecording}
+                          className={`flex-1 w-full p-4 text-base leading-relaxed font-medium text-slate-800 bg-white border border-slate-200 rounded-xl resize-none outline-none focus:ring-2 focus:ring-uzblue/30 focus:border-uzblue ${isRecording ? 'cursor-text' : ''}`}
+                          placeholder={isRecording ? "Gapiring... matn shu yerda paydo bo'ladi" : "Start bosib, gapiring yoki bu yerga yozing..."}
+                      />
+                      {isRecording && (
+                          <div className="mt-2 px-3 py-1.5 bg-green-50 text-green-700 text-xs rounded-lg flex items-center gap-2 border border-green-200">
+                              <span className="animate-pulse text-green-500">●</span> 
+                              {interimText ? `Yozilmoqda: "${interimText}"` : "Kutilmoqda... gapiring"}
                           </div>
-                          <textarea
-                              value={rawText + (interimText ? (rawText ? " " : "") + interimText : "")}
-                              onChange={(e) => {
-                                  if (!isRecording) {
-                                      setRawText(e.target.value);
-                                  }
-                              }}
-                              readOnly={isRecording}
-                              className={`flex-1 w-full p-4 text-base leading-relaxed font-medium text-slate-800 bg-white border border-slate-200 rounded-xl resize-none outline-none focus:ring-2 focus:ring-uzblue/30 focus:border-uzblue ${isRecording ? 'cursor-text' : ''}`}
-                              placeholder="Matn bu yerda paydo bo'ladi..."
-                          />
-                          {interimText && isRecording && (
-                              <div className="mt-2 px-3 py-1.5 bg-amber-50 text-amber-700 text-xs rounded-lg flex items-center gap-2">
-                                  <span className="animate-pulse">●</span> Yozilmoqda...
-                              </div>
-                          )}
-                      </div>
-                  )}
+                      )}
+                  </div>
 
                   {isProcessing && (
                     <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
