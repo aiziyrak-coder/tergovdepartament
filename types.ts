@@ -54,6 +54,7 @@ export interface ISpeechRecognition extends EventTarget {
   start: () => void;
   stop: () => void;
   abort: () => void;
+  onstart: (() => void) | null;
   onresult: ((e: SpeechRecognitionEvent) => void) | null;
   onerror: ((e: SpeechRecognitionErrorEvent) => void) | null;
   onend: (() => void) | null;

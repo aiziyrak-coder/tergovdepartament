@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Upload, ArrowLeft, Save, FileAudio, Trash2, Loader2, Clock, Edit2, Check, User, Users, FileText, Download, UserPlus, ChevronDown, AlertCircle, Activity, CheckCircle2, Mic } from "lucide-react";
 import { transcribeAudio } from "../../services/geminiService";
-import { TranscriptSegment, ProtocolType } from "../../types";
-import { PROTOCOL_TEMPLATES } from "../../config/protocolTemplates";
+import { TranscriptSegment } from "../../types";
 import { storageService } from "../../services/storageService";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useToast } from "../../contexts/ToastContext";
@@ -14,6 +13,14 @@ interface StenogramProps {
 
 // Maksimal fayl hajmi 25MB (Base64 encoding bilan hisoblaganda API limiti uchun xavfsiz chegara)
 const MAX_FILE_SIZE = 25 * 1024 * 1024; 
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;");
+}
 
 const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
   const { language } = useLanguage();
@@ -29,21 +36,21 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
   
   // --- PROTOCOL METADATA STATE ---
   const [protocolData, setProtocolData] = useState({
+      applicants: 'Р.Т.Рахманова ва О.А.Шарипова',
       city: 'Фарғона шаҳри',
       date: new Date().toISOString().split('T')[0],
       startTime: '15:30',
       endTime: '16:35',
       investigatorRank: 'подполковник',
       investigatorName: 'Ш.Р.Дадажонов',
-      deviceInfo: '4 гб. хотирага эга бўлган "Flesh card"',
+      deviceInfo: '"DVD-R" диск',
+      legalArticles: '90-92',
       caseDetails: 'Фуқаро Х.Ш.Каримовнинг аризаси юзасидан ўтказилаётган терговга қадар текширув материали бўйича',
       fileName: 'audio_2025'
   });
 
   const [allSpeakers, setAllSpeakers] = useState<string[]>([]);
   const [deleteSegmentId, setDeleteSegmentId] = useState<string | null>(null);
-  /** Protocol type (tergov turi) – aligns document and stenogram with same template as SmartProtocol. */
-  const [selectedTemplate, setSelectedTemplate] = useState<ProtocolType>(ProtocolType.GUVOH);
 
   useEffect(() => {
     return () => { if (mediaUrl) URL.revokeObjectURL(mediaUrl); }
@@ -156,13 +163,11 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
     }
   }, [deleteSegmentId, toast]);
 
-  // --- WORD GENERATION (template-aligned with protocol type) ---
+  // --- WORD GENERATION (official stenogram format) ---
   const downloadWordDocument = () => {
-      const tpl = PROTOCOL_TEMPLATES[selectedTemplate];
       const dialoguesHtml = segments.map(s =>
           `<p style="margin-bottom: 5px;">
-              <span style="color: #444; font-size: 10pt; font-family: monospace;">[${s.timestamp}]</span>
-              <strong>${s.speaker}:</strong> ${s.text}
+              <strong>${escapeHtml(s.speaker)}:</strong> ${escapeHtml(s.text)}
            </p>`
       ).join('');
 
@@ -174,40 +179,36 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
                 body { font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.5; }
                 h1 { text-align: center; text-transform: uppercase; font-weight: bold; margin-bottom: 10px; }
                 .subtitle { text-align: center; margin-bottom: 20px; font-size: 11pt; }
-                .code { text-align: center; margin-bottom: 15px; font-size: 10pt; color: #333; }
                 .justify { text-align: justify; text-indent: 30px; }
                 .right { text-align: right; }
                 .dialogue-box { margin-top: 15px; margin-bottom: 15px; }
             </style>
         </head>
         <body>
-            <h1>${tpl.title}</h1>
-            <div class="code">${tpl.code}</div>
+            <h1>Фуқаро ${escapeHtml(protocolData.applicants)} томонидан тақдим қилинган дискдаги аудио ва видеоёзувларнинг<br/>СТЕНОГРАММАСИ</h1>
             <div class="subtitle">
-                ${protocolData.deviceInfo} даги аудиоёзувларни эшитиш ҳақида
+                ${escapeHtml(protocolData.deviceInfo)} даги аудиоёзувларни эшитиш ҳақида
             </div>
             <div style="display: flex; justify-content: space-between;">
-                 <div>${protocolData.date} йил</div>
-                 <div>${protocolData.city}</div>
+                 <div>${escapeHtml(protocolData.date)} йил</div>
+                 <div>${escapeHtml(protocolData.city)}</div>
             </div>
             <br>
-            <p class="justify">${tpl.legalInfo}</p>
-            <br>
             <p class="justify">
-                ИИБ ҳузуридаги тергов бошқармаси терговчиси ${protocolData.investigatorRank} ${protocolData.investigatorName},
-                ${protocolData.caseDetails} бўйича тақдим қилинган ${protocolData.deviceInfo} га ёзилган аудиоёзувларни
-                эшитиб кўриб, ЖПКнинг 90-92-моддаларига риоя қилган ҳолда мазкур баённомани тузди.
+                Фарғона шаҳар ИИО ФМБ ҳузуридаги тергов бўлими катта терговчиси ${escapeHtml(protocolData.investigatorRank)} ${escapeHtml(protocolData.investigatorName)},
+                ${escapeHtml(protocolData.caseDetails)} бўйича фуқаро ${escapeHtml(protocolData.applicants)} томонидан тақдим қилинган ${escapeHtml(protocolData.deviceInfo)} даги аудиоёзувларни эшитиб кўриб,
+                ЖПКнинг ${escapeHtml(protocolData.legalArticles)}-моддаларига риоя қилган ҳолда мазкур баённомани тузди.
             </p>
-            <div class="right">Эшитиш соат ${protocolData.startTime} да бошланди.</div>
+            <div>Эшитиш соат ${escapeHtml(protocolData.startTime)} да бошланди.</div>
             <p class="justify">
-                Ушбу қурилма компьютер техникасига солинганда, унда <strong>"${protocolData.fileName}"</strong> номли аудиофайл мавжудлиги аниқланди ва қуйидаги мазмундаги сўзлашувлар қайд қилинган:
+                Ушбу ${escapeHtml(protocolData.deviceInfo)} "HP" русумли компьютерга солинганда, унда <strong>"${escapeHtml(protocolData.fileName)}"</strong> номли аудиофайл мавжудлиги аниқланди ва қуйидаги мазмундаги сўзлашувлар қайд қилинган:
             </p>
             <div class="dialogue-box">${dialoguesHtml}</div>
-            <div class="right">Аудиоёзувларни эшитиш соат ${protocolData.endTime} да тамомланди.</div>
+            <div>Аудиоёзувларни эшитиш соат ${escapeHtml(protocolData.endTime)} да тамомланди.</div>
             <br><br>
             <div style="font-weight: bold;">
                 Баённома туздим:<br>
-                Терговчи ${protocolData.investigatorRank} ________________ ${protocolData.investigatorName}
+                Тергов бўлими катта терговчиси ${escapeHtml(protocolData.investigatorRank)} ________________ ${escapeHtml(protocolData.investigatorName)}
             </div>
         </body>
         </html>
@@ -217,12 +218,12 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Bayonnoma_${tpl.title.replace(/\s+/g, '_')}_${protocolData.date}.doc`;
+      a.download = `Stenogramma_${protocolData.date}.doc`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      toast("Bayonnoma (.doc) yuklab olindi", "success");
+      toast("Stenogramma (.doc) yuklab olindi", "success");
   };
 
   return (
@@ -367,25 +368,23 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
                         </div>
                     </div>
 
-                    {/* RIGHT: PROTOCOL DETAILS & SPEAKER MANAGER */}
-                    <div className="w-96 flex flex-col gap-6 h-full overflow-hidden">
-                        
-                        {/* 1. PROTOCOL METADATA */}
+                    {/* RIGHT: METADATA & SPEAKER MAP */}
+                    <div className="w-[360px] h-full flex flex-col gap-4">
+                        {/* 1. STENOGRAM METADATA */}
                         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col h-[40%]">
-                             <h3 className="text-xs font-black text-slate-500 uppercase mb-4 flex items-center gap-2"><FileText size={14}/> Bayonnoma Ma'lumotlari</h3>
+                             <h3 className="text-xs font-black text-slate-500 uppercase mb-4 flex items-center gap-2"><FileText size={14}/> Stenogramma Ma'lumotlari</h3>
                              <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-2">
                                  <div>
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Ish turi (Protokol)</label>
-                                    <select value={selectedTemplate} onChange={e => setSelectedTemplate(e.target.value as ProtocolType)} className="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold text-slate-700 outline-none mt-1">
-                                        {Object.entries(PROTOCOL_TEMPLATES).map(([k, v]) => <option key={k} value={k}>{v.title}</option>)}
-                                    </select>
+                                   <label className="text-[10px] font-bold text-slate-400 uppercase">Taqdim etgan fuqarolar</label>
+                                   <input value={protocolData.applicants} onChange={e=>setProtocolData({...protocolData, applicants:e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
                                  </div>
                                  <div>
                                     <label className="text-[10px] font-bold text-slate-400 uppercase">Sana va Vaqt</label>
-                                    <div className="flex gap-2">
-                                        <input type="date" value={protocolData.date} onChange={e=>setProtocolData({...protocolData, date:e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
-                                        <input type="time" value={protocolData.startTime} onChange={e=>setProtocolData({...protocolData, startTime:e.target.value})} className="w-1/2 bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
+                                    <div className="grid grid-cols-3 gap-2 mt-1">
+                                        <input type="date" value={protocolData.date} onChange={e=>setProtocolData({...protocolData, date:e.target.value})} className="col-span-2 bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
+                                        <input type="time" value={protocolData.startTime} onChange={e=>setProtocolData({...protocolData, startTime:e.target.value})} className="bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
                                     </div>
+                                    <input type="time" value={protocolData.endTime} onChange={e=>setProtocolData({...protocolData, endTime:e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold mt-2"/>
                                  </div>
                                  <div>
                                     <label className="text-[10px] font-bold text-slate-400 uppercase">Shahar</label>
@@ -401,6 +400,10 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
                                  <div>
                                     <label className="text-[10px] font-bold text-slate-400 uppercase">Qurilma / Fayl Turi</label>
                                     <input value={protocolData.deviceInfo} onChange={e=>setProtocolData({...protocolData, deviceInfo:e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
+                                 </div>
+                                 <div>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase">ЖПК моддалари</label>
+                                    <input value={protocolData.legalArticles} onChange={e=>setProtocolData({...protocolData, legalArticles:e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
                                  </div>
                                  <div>
                                     <label className="text-[10px] font-bold text-slate-400 uppercase">Ish Mazmuni (Preamble)</label>
@@ -447,13 +450,12 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
                         </div>
 
                         <button onClick={() => {
-                                    const tpl = PROTOCOL_TEMPLATES[selectedTemplate];
                                     storageService.saveDocument({
-                                        title: `${tpl.title} – ${protocolData.date}`,
+                                        title: `Stenogramma – ${protocolData.date}`,
                                         category: 'STENOGRAM',
-                                        tags: ['AI', 'EDITED', selectedTemplate],
+                                        tags: ['AI', 'EDITED', 'STENOGRAM'],
                                         content: JSON.stringify(segments),
-                                        metadata: { protocolType: selectedTemplate, ...protocolData }
+                                        metadata: { ...protocolData }
                                     });
                                     toast("Arxivga saqlandi", "success");
                                 }} className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-xs flex justify-center gap-2 hover:bg-slate-800 transition-all shadow-lg"><Save size={16}/> LOYIHANI SAQLASH</button>

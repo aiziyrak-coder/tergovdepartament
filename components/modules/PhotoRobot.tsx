@@ -157,13 +157,15 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
           toast("Iltimos, API kalitni kiriting", "error");
           return;
       }
-      setUserApiKey(tempKeyInput);
+      const trimmedKey = tempKeyInput.trim();
+      setUserApiKey(trimmedKey);
+      setTempKeyInput("");
       setShowKeyModal(false);
-      generate(tempKeyInput);
+      generate(trimmedKey);
   };
 
   const generate = async (key?: string) => {
-    const activeKey = key || userApiKey || process.env.API_KEY;
+    const activeKey = key || userApiKey;
     if (!activeKey) {
         setShowKeyModal(true);
         return;
@@ -262,9 +264,14 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
 
   const applyEdit = async () => {
     if (!selectedImage || !editPrompt) return;
+    const activeKey = userApiKey;
+    if (!activeKey) {
+      setShowKeyModal(true);
+      toast("Tahrirlash uchun API kalit kiriting", "error");
+      return;
+    }
     setIsEditing(true);
     try {
-      const activeKey = userApiKey || process.env.API_KEY;
       const currentImg = history[historyIndex];
       // EDIT PROMPT ALSO NEEDS STRICTURE
       const realisticEditPrompt = `

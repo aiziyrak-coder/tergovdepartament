@@ -20,7 +20,12 @@ const Settings: React.FC<SettingsProps> = ({ onBack }) => {
     setClearing(true);
     setShowClearConfirm(false);
     setTimeout(() => {
-      localStorage.clear();
+      const appKeys: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key?.startsWith("TERGOV_AI_")) appKeys.push(key);
+      }
+      appKeys.forEach((key) => localStorage.removeItem(key));
       setClearing(false);
       toast("Tizim keshlari tozalandi. Barcha mahalliy ma'lumotlar o'chirildi.", "success");
     }, 800);

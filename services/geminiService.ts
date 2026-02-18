@@ -20,12 +20,9 @@ import { buildRealProtocolHtml } from "./realProtocolHtml";
 const API_KEY_ENV = typeof process !== "undefined" ? process.env?.API_KEY : undefined;
 const GEMINI_KEY_ENV = typeof process !== "undefined" ? process.env?.GEMINI_API_KEY : undefined;
 
-// Fallback API key for deployment
-const FALLBACK_API_KEY = "AIzaSyDF-enFCC2vdzLG84TIjX58QFWN7BxZLLs";
-
-/** Resolves API key: customKey > API_KEY > GEMINI_API_KEY > FALLBACK. */
+/** Resolves API key: customKey > API_KEY > GEMINI_API_KEY. */
 function resolveApiKey(customKey?: string): string {
-  const key = customKey?.trim() || API_KEY_ENV || GEMINI_KEY_ENV || FALLBACK_API_KEY;
+  const key = customKey?.trim() || API_KEY_ENV || GEMINI_KEY_ENV;
   if (!key) throw new Error("API kalit topilmadi. Sozlamalarda GEMINI_API_KEY ni kiriting yoki .env da belgilang.");
   return key;
 }
@@ -65,7 +62,7 @@ async function decodeAudioData(
 }
 
 /** Camera view type for forensic video generation. */
-export type ForensicCameraView = 'CCTV_STREET' | 'DASHCAM_CAR' | 'DRONE_TOP';
+export type ForensicCameraView = 'CCTV_STREET' | 'DASHCAM_CAR' | 'DRONE_TOP' | 'WITNESS_PHONE';
 
 function normalizeApiError(e: unknown): string {
   if (e && typeof e === "object" && "error" in e) {
@@ -88,7 +85,9 @@ export async function generateForensicVideo(
 
   const viewLabel =
     view === "CCTV_STREET" ? "High angle CCTV security camera view" :
-    view === "DRONE_TOP" ? "Top-down drone view" : "Dashcam view from a car";
+    view === "DRONE_TOP" ? "Top-down drone view" :
+    view === "WITNESS_PHONE" ? "Handheld witness smartphone camera view" :
+    "Dashcam view from a car";
 
   const prompt = `CCTV footage simulation of a traffic accident. Context: ${analysis.summary}. Details: Vehicle 1 (${analysis.vehicle1Type}) colliding with Vehicle 2 (${analysis.vehicle2Type}). Conditions: ${analysis.weather}, ${analysis.timeOfDay}. Viewpoint: ${viewLabel}. Style: Realistic, grainy security footage.`;
 
