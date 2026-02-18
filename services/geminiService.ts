@@ -17,12 +17,15 @@ import {
 } from "../types";
 import { buildRealProtocolHtml } from "./realProtocolHtml";
 
+declare const __GEMINI_API_KEY__: string | undefined;
+
 const API_KEY_ENV = typeof process !== "undefined" ? process.env?.API_KEY : undefined;
 const GEMINI_KEY_ENV = typeof process !== "undefined" ? process.env?.GEMINI_API_KEY : undefined;
+const BUILD_TIME_GEMINI_KEY = typeof __GEMINI_API_KEY__ === "string" ? __GEMINI_API_KEY__ : undefined;
 
 /** Resolves API key: customKey > API_KEY > GEMINI_API_KEY. */
 function resolveApiKey(customKey?: string): string {
-  const key = customKey?.trim() || API_KEY_ENV || GEMINI_KEY_ENV;
+  const key = customKey?.trim() || BUILD_TIME_GEMINI_KEY || API_KEY_ENV || GEMINI_KEY_ENV;
   if (!key) throw new Error("API kalit topilmadi. Sozlamalarda GEMINI_API_KEY ni kiriting yoki .env da belgilang.");
   return key;
 }
