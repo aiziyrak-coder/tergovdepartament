@@ -271,7 +271,7 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
       const segments = await transcribeAudio(
         base64,
         audioBlob.type || "audio/webm",
-        "INTERVIEW",
+        "STENOGRAM",
         true,
         AppLanguage.UZ_CYRL
       );

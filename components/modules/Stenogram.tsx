@@ -103,7 +103,7 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
           });
 
           // Send to API
-          const results = await transcribeAudio(base64, mediaFile.type, 'AUTO', false, language);
+          const results = await transcribeAudio(base64, mediaFile.type, "STENOGRAM", true, language);
           
           if (results && results.length > 0) {
               setSegments(results);

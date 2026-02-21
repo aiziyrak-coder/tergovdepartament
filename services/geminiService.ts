@@ -651,6 +651,41 @@ export async function generateAcademyQuiz(
 }
 
 // --- AUDIO TRANSCRIPTION ---
+/** Lang label for prompt (Uzbek Cyrillic/Latin, Russian, etc.) */
+function getLangLabel(lang: AppLanguage): string {
+  switch (lang) {
+    case AppLanguage.UZ_CYRL:
+      return "o'zbek (kirill)";
+    case AppLanguage.UZ_LATN:
+      return "o'zbek (lotin)";
+    case AppLanguage.RU:
+      return "rus";
+    default:
+      return "o'zbek";
+  }
+}
+
+/** High-quality prompt: accurate transcription + multi-speaker diarization. Used for both Stenogram and Jonli so'roq. */
+const HIGH_QUALITY_TRANSCRIBE_PROMPT = (langLabel: string) => `Siz tergov, guvohlik yoki so'roq audio yozuvini transkripsiya qilasiz. HUQUQIY HUJJAT — har bir so'z muhim.
+
+MATN ANIQLIGI (eng muhim):
+- Har bir so'zni, har bir tovushni AYNAN eshitilganidek yozing. Parafraz qilmang, qisqartirmang.
+- Ismlar, familiyalar, manzillar, telefon raqamlari, sanalar, summastlar — barchasini aniq va to'g'ri yozing.
+- Huquqiy atamalar (ЖПК, жиноят, айбланувчи, гувоҳ, терговчи va boshqalar) to'g'ri yozilsin.
+- Past ovoz, shovqin ortida gapirilgan so'zlar — diqqat bilan tinglang va yozing.
+- Shubhali bo'lsa ham, eshitilganidek yozing (keyin tuzatish mumkin).
+
+SHAXSLAR (DIARIZATSIYA):
+- Har bir ALOHIDA OVOZ = alohida shaxs. Speaker 1, Speaker 2, Speaker 3, Speaker 4, Speaker 5 va hokazo — gapiruvchilar soni qancha bo'lsa shuncha.
+- Bitta odamning barcha replikalari bir xil Speaker. Boshqa odam = yangi Speaker.
+- 2 kishi gapirsa: Speaker 1, Speaker 2. 4 kishi gapirsa: Speaker 1, 2, 3, 4. Hech qachon boshqa odamni bitta Speaker ga birlashtirmang.
+
+VAQT: Har bir replika boshlanishi uchun timestamp MM:SS (masalan 00:15, 01:42).
+
+TIL: ${langLabel}.
+
+Chiqish: faqat JSON massiv. Har bir element: id ("seg_1", "seg_2"...), speaker ("Speaker 1", "Speaker 2"...), text (to'liq matn), timestamp (MM:SS).`;
+
 export async function transcribeAudio(
   base64: string,
   mimeType: string,
@@ -660,15 +695,18 @@ export async function transcribeAudio(
   userApiKey?: string
 ): Promise<TranscriptSegment[]> {
   const ai = getAiClient(userApiKey);
+  const prompt = HIGH_QUALITY_TRANSCRIBE_PROMPT(getLangLabel(lang));
+
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
     contents: {
       parts: [
         { inlineData: { mimeType, data: base64 } },
-        { text: `Transcribe this audio. Language: ${lang}. Identify speakers if possible. Return JSON array.` },
+        { text: prompt },
       ],
     },
     config: {
+      temperature: 0.1,
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.ARRAY,
@@ -688,7 +726,18 @@ export async function transcribeAudio(
   });
 
   const jsonText = response.text ?? "[]";
-  return safeParseJson<TranscriptSegment[]>(jsonText, []);
+  const parsed = safeParseJson<TranscriptSegment[]>(jsonText, []);
+  return ensureSegmentIds(parsed);
+}
+
+function ensureSegmentIds(segments: TranscriptSegment[]): TranscriptSegment[] {
+  return segments.map((s, i) => ({
+    ...s,
+    id: s.id || `seg_${i + 1}`,
+    speaker: (s.speaker || "").trim() || `Speaker ${i + 1}`,
+    text: (s.text || "").trim(),
+    timestamp: s.timestamp || "",
+  }));
 }
 
 export async function generateTimelineFromText(
