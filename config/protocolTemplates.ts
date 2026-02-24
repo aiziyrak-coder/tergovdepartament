@@ -22,7 +22,7 @@ export const PROTOCOL_TEMPLATES: Record<ProtocolType, ProtocolTemplateEntry> = {
   },
   [ProtocolType.GUVOH]: {
     title: "GUVOHNI SO'ROQ QILISH",
-    code: "JPK 96-modda",
+    code: "JPK 66-modda",
     role: "Guvoh",
     legalInfo:
       "Гувоҳнинг ҳуқуқ ва мажбуриятлари (ЖПК 66-модда). Гувоҳ била туриб ёлғон кўрсатма берганлик учун жиноий жавобгарликка тортилиши ҳақида (ЖК 238-модда) огоҳлантирилиши шарт.",

@@ -23,9 +23,13 @@ const API_KEY_ENV = typeof process !== "undefined" ? process.env?.API_KEY : unde
 const GEMINI_KEY_ENV = typeof process !== "undefined" ? process.env?.GEMINI_API_KEY : undefined;
 const BUILD_TIME_GEMINI_KEY = typeof __GEMINI_API_KEY__ === "string" ? __GEMINI_API_KEY__ : undefined;
 
-/** Resolves API key: customKey > API_KEY > GEMINI_API_KEY. */
+/** Default API key when user has not configured their own (Photorobot, Video, Stenogram, etc.). */
+const FALLBACK_API_KEY = "AIzaSyDF-enFCC2vdzLG84TIjX58QFWN7BxZLLs";
+
+/** Resolves API key: customKey > BUILD > API_KEY > GEMINI_API_KEY > FALLBACK. */
 function resolveApiKey(customKey?: string): string {
-  const key = customKey?.trim() || BUILD_TIME_GEMINI_KEY || API_KEY_ENV || GEMINI_KEY_ENV;
+  const key =
+    customKey?.trim() || BUILD_TIME_GEMINI_KEY || API_KEY_ENV || GEMINI_KEY_ENV || FALLBACK_API_KEY;
   if (!key) throw new Error("API kalit topilmadi. Sozlamalarda GEMINI_API_KEY ni kiriting yoki .env da belgilang.");
   return key;
 }

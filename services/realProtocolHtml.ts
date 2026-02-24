@@ -58,7 +58,6 @@ function getPersonDataValues(
   meta: ProtocolMetadata | Record<string, unknown>,
   templateRole: string
 ): string[] {
-  const personRole = templateRoleToCyrillicLabel(templateRole);
   return [
     getMeta(meta, "personName"),
     getMeta(meta, "birthDate"),
@@ -72,7 +71,7 @@ function getPersonDataValues(
     getMeta(meta, "idDocument"),
     getMeta(meta, "conviction"),
     getMeta(meta, "deputyStatus"),
-    getMeta(meta, "relationVictim") || personRole,
+    getMeta(meta, "relationVictim"),
     getMeta(meta, "relationSuspect"),
     getMeta(meta, "phoneNumber"),
   ];
@@ -192,8 +191,7 @@ export function buildRealProtocolHtml(
         needRoleHeader = false;
       }
       dialogueBlocks.push(`<p class="qa"><strong>Жавоб:</strong> ${escapeHtml(text)}</p>`);
-      dialogueBlocks.push(`<p class="role-sign"><strong>${escapeHtml(roleLabel)}</strong> _________ ${escapeHtml(personShortName || "____________")}</p>`);
-      needRoleHeader = true;
+      /* Guvoh/role ikki marta chiqmasin — faqat birinchi Javob oldida role-sign */
     }
   }
   const dialogueHtml = dialogueBlocks.length
@@ -210,27 +208,28 @@ export function buildRealProtocolHtml(
 <meta charset="UTF-8"/>
 <title>${escapeHtml(title)}</title>
 <style>
-  body { font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.35; margin: 2.2cm 2cm 2cm 2cm; color: #000; }
-  h1 { font-size: 16pt; text-align: center; margin: 0 0 14pt 0; font-weight: bold; text-transform: uppercase; letter-spacing: 0.2px; }
+  body { font-family: 'Times New Roman', serif; font-size: 14pt; line-height: 1.35; margin: 2cm auto; max-width: 21cm; padding: 0 2cm; color: #000; }
+  h1 { font-size: 14pt; text-align: center; margin: 0 0 14pt 0; font-weight: bold; text-transform: uppercase; letter-spacing: 0.2px; }
+  .doc-wrap { max-width: 21cm; margin: 0 auto; }
   .date-city { width: 100%; border-collapse: collapse; margin-bottom: 12pt; }
-  .date-city td { width: 50%; vertical-align: top; font-size: 12pt; }
+  .date-city td { width: 50%; vertical-align: top; font-size: 14pt; }
   .date-city td:last-child { text-align: right; }
-  .intro { text-align: justify; text-indent: 30pt; margin: 0 0 10pt 0; }
+  .intro { text-align: justify; text-indent: 30pt; margin: 0 0 10pt 0; font-size: 14pt; }
   .time-row { width: 100%; border-collapse: collapse; margin: 10pt 0 6pt 0; }
-  .time-row td { width: 50%; font-weight: bold; text-decoration: underline; }
+  .time-row td { width: 50%; font-weight: bold; text-decoration: underline; font-size: 14pt; }
   .time-row td:last-child { text-align: right; }
-  table.person-data { width: 100%; border-collapse: collapse; margin: 8pt 0 12pt 0; }
-  table.person-data td { border: 1px solid #000; padding: 3.5pt 6pt; vertical-align: top; }
+  table.person-data { width: 100%; border-collapse: collapse; margin: 8pt 0 12pt 0; table-layout: fixed; }
+  table.person-data td { border: 1px solid #000; padding: 3.5pt 6pt; vertical-align: top; font-size: 14pt; }
   table.person-data td:first-child { width: 41%; font-weight: bold; }
-  .legal-title { font-weight: bold; text-align: justify; margin: 10pt 0 6pt 0; }
-  .legal-paragraph { text-align: justify; text-indent: 30pt; margin: 0 0 4pt 0; }
-  .legal-note { text-align: justify; margin: 8pt 0 10pt 0; text-indent: 30pt; }
+  .legal-title { font-weight: bold; text-align: justify; margin: 10pt 0 6pt 0; font-size: 14pt; }
+  .legal-paragraph { text-align: justify; text-indent: 30pt; margin: 0 0 4pt 0; font-size: 14pt; }
+  .legal-note { text-align: justify; margin: 8pt 0 10pt 0; text-indent: 30pt; font-size: 14pt; }
   .role-sign { text-align: right; font-size: 14pt; font-weight: bold; margin: 9pt 0 5pt 0; }
-  .qa { text-align: justify; margin: 2pt 0 6pt 0; font-size: 15pt; line-height: 1.3; }
+  .qa { text-align: justify; margin: 2pt 0 6pt 0; font-size: 14pt; line-height: 1.3; }
   .answer-lines { margin: 4pt 0 12pt 0; }
   .answer-lines hr { border: none; border-top: 1px solid #000; margin: 6pt 0; }
   .bottom-signatures { width: 100%; border-collapse: collapse; margin-top: 14pt; }
-  .bottom-signatures td { width: 50%; font-size: 16pt; font-weight: bold; vertical-align: top; }
+  .bottom-signatures td { width: 50%; font-size: 14pt; font-weight: bold; vertical-align: top; }
   .bottom-signatures td:last-child { text-align: right; }
 </style>
 </head>

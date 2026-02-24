@@ -13,6 +13,95 @@ function getTemplateEntry(selected: ProtocolType | string): ProtocolTemplateEntr
   return PROTOCOL_TEMPLATES[selected as ProtocolType] ?? PROTOCOL_TEMPLATES[ProtocolType.GUVOH];
 }
 
+/** Demo anketa defaults per protocol type — template o'zgarganda mos ravishda qo'llanadi */
+const DEMO_ANKETA_BY_TYPE: Record<ProtocolType, Partial<ExtendedMetadata>> = {
+  [ProtocolType.GUVOH]: {
+    personName: "Жураев Фарходжон Абдумуталибович",
+    birthDate: "24.08.1965",
+    birthPlace: "Фарғона тумани",
+    nationality: "Ўзбек",
+    citizenship: "Ўзбекистон Республикаси",
+    education: "Олий, Фарғона давлат университети",
+    workPlace: "Олиев Солий Саноат МЧЖ, бухгалтер",
+    address: "Фарғона шаҳри, Сўхи кўчаси 15-уй",
+    familyStatus: "Оилали, 3 нафар фарзанд",
+    conviction: "Судланмаган",
+    idDocument: "AB 1234567",
+    relationVictim: "Таниш эмас",
+    relationSuspect: "Таниш эмас",
+    deputyStatus: "Хизмат қилган",
+    phoneNumber: "+998 97 276-21-63",
+  },
+  [ProtocolType.GUMONLANUVCHI]: {
+    personName: "Каримов Хуршид Шукруллаевич",
+    birthDate: "15.03.1988",
+    birthPlace: "Марғилон шаҳри",
+    nationality: "Ўзбек",
+    citizenship: "Ўзбекистон Республикаси",
+    education: "Ўрта махсус, автомобиль техники",
+    workPlace: "Такси ҳайдовчи",
+    address: "Фарғона шаҳри, Навоий кўчаси 42-уй",
+    familyStatus: "Турмуш қурмаган",
+    conviction: "Судланмаган",
+    idDocument: "AC 7890123",
+    relationVictim: "Қўшни",
+    relationSuspect: "—",
+    deputyStatus: "Хизмат қилмаган",
+    phoneNumber: "+998 91 234-56-78",
+  },
+  [ProtocolType.AYBLANUVCHI]: {
+    personName: "Турсунов Акмалжон Отабекович",
+    birthDate: "02.11.1990",
+    birthPlace: "Қўқон шаҳри",
+    nationality: "Ўзбек",
+    citizenship: "Ўзбекистон Республикаси",
+    education: "Ўрта махсус",
+    workPlace: "Ишсиз",
+    address: "Фарғона шаҳри, Амира Темура 78-уй",
+    familyStatus: "Оилали, 2 нафар фарзанд",
+    conviction: "2019 йилда ҲК 167-модда",
+    idDocument: "AD 3456789",
+    relationVictim: "Таниш эмас",
+    relationSuspect: "—",
+    deputyStatus: "Хизмат қилган",
+    phoneNumber: "+998 93 456-78-90",
+  },
+  [ProtocolType.JABRLANUVCHI]: {
+    personName: "Рахмонова Ойша Абдурахимовна",
+    birthDate: "18.05.1975",
+    birthPlace: "Фарғона шаҳри",
+    nationality: "Ўзбек",
+    citizenship: "Ўзбекистон Республикаси",
+    education: "Олий, педагоника",
+    workPlace: "20-мактаб, ўқитувчи",
+    address: "Фарғона шаҳри, Ислом Каримов кўчаси 25-уй",
+    familyStatus: "Оилали, 2 нафар фарзанд",
+    conviction: "Судланмаган",
+    idDocument: "AB 5678901",
+    relationVictim: "Жабрланувчи",
+    relationSuspect: "Таниш эмас",
+    deputyStatus: "Хизмат қилмаган",
+    phoneNumber: "+998 94 567-89-01",
+  },
+  [ProtocolType.YUZLASHTIRISH]: {
+    personName: "Қодиров Бобур Жасур ўғли",
+    birthDate: "30.07.1982",
+    birthPlace: "Андижон вилояти",
+    nationality: "Ўзбек",
+    citizenship: "Ўзбекистон Республикаси",
+    education: "Олий",
+    workPlace: "Савдо маркази, менежер",
+    address: "Фарғона шаҳри, Мустақиллик 100-уй",
+    familyStatus: "Оилали",
+    conviction: "Судланмаган",
+    idDocument: "AB 2345678",
+    relationVictim: "Иккинчи тараф билан таниш",
+    relationSuspect: "Иккинчи тараф билан таниш",
+    deputyStatus: "Хизмат қилган",
+    phoneNumber: "+998 90 123-45-67",
+  },
+};
+
 /** Format seconds to mm:ss */
 function formatTime(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -37,7 +126,7 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
 
   // --- CONFIGURATION ---
   const [selectedTemplate, setSelectedTemplate] = useState<ProtocolType>(ProtocolType.GUVOH);
-  const [metadata, setMetadata] = useState<ExtendedMetadata>({
+  const getBaseMeta = () => ({
     caseNumber: "300001/2025-15ГУ",
     city: "Фарғона шаҳри",
     investigatorName: "Ш.Р.Дадажонов",
@@ -46,23 +135,22 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
     date: new Date().toISOString().split("T")[0],
     startTime: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     endTime: "",
-    personName: "",
-    birthDate: "",
-    birthPlace: "",
-    nationality: "",
-    citizenship: "",
-    education: "",
-    workPlace: "",
-    address: "",
-    familyStatus: "",
-    conviction: "",
-    idDocument: "",
-    relationSuspect: "",
-    relationVictim: "",
-    deputyStatus: "",
-    phoneNumber: "",
     participants: [],
   });
+
+  const [metadata, setMetadata] = useState<ExtendedMetadata>(() => ({
+    ...getBaseMeta(),
+    ...DEMO_ANKETA_BY_TYPE[ProtocolType.GUVOH],
+  }));
+
+  useEffect(() => {
+    const tpl = selectedTemplate as ProtocolType;
+    const anketa = DEMO_ANKETA_BY_TYPE[tpl] ?? DEMO_ANKETA_BY_TYPE[ProtocolType.GUVOH];
+    setMetadata((prev) => ({
+      ...prev,
+      ...anketa,
+    }));
+  }, [selectedTemplate]);
 
   // --- RECORDING STATE ---
   const [isRecording, setIsRecording] = useState(false);
@@ -162,7 +250,7 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
       const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
         ? "audio/webm;codecs=opus"
         : "audio/webm";
-      const recorder = new MediaRecorder(stream, { mimeType, audioBitsPerSecond: 128000 });
+      const recorder = new MediaRecorder(stream, { mimeType, audioBitsPerSecond: 192000 });
       audioChunksRef.current = [];
 
       recorder.ondataavailable = (e) => {
@@ -442,7 +530,12 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
                   <input value={metadata.workPlace} onChange={(e) => setMetadata({ ...metadata, workPlace: e.target.value })} placeholder="7. Ish joyi" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
                   <input value={metadata.address} onChange={(e) => setMetadata({ ...metadata, address: e.target.value })} placeholder="8. Yashash joyi" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
                   <input value={metadata.familyStatus} onChange={(e) => setMetadata({ ...metadata, familyStatus: e.target.value })} placeholder="9. Oilaviy ahvoli" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
-                  <input value={metadata.phoneNumber} onChange={(e) => setMetadata({ ...metadata, phoneNumber: e.target.value })} placeholder="10. Telefon" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                  <input value={metadata.idDocument} onChange={(e) => setMetadata({ ...metadata, idDocument: e.target.value })} placeholder="10. Pasporti" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                  <input value={metadata.conviction} onChange={(e) => setMetadata({ ...metadata, conviction: e.target.value })} placeholder="11. Sudlanganligi" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                  <input value={metadata.deputyStatus} onChange={(e) => setMetadata({ ...metadata, deputyStatus: e.target.value })} placeholder="12. Harbiy xizmat" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                  <input value={metadata.relationVictim} onChange={(e) => setMetadata({ ...metadata, relationVictim: e.target.value })} placeholder="13. Jabrlanuvchiga aloqasi" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                  <input value={metadata.relationSuspect} onChange={(e) => setMetadata({ ...metadata, relationSuspect: e.target.value })} placeholder="14. Ayblanuvchiga aloqasi" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                  <input value={metadata.phoneNumber} onChange={(e) => setMetadata({ ...metadata, phoneNumber: e.target.value })} placeholder="15. Telefoni" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
                 </div>
               </div>
             </div>

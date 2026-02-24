@@ -4,7 +4,7 @@ import { ModuleType, SavedDocument, NotificationItem } from '../types';
 import { storageService } from '../services/storageService';
 import { 
   Mic2, FileSignature, UserSquare2, GraduationCap, 
-  Database, ArrowRight, Video, Bell, Search,
+  Database, ArrowRight, Video, Bell,
   Activity, History, Star, ChevronRight, LayoutTemplate,
   ShieldCheck, FileText, Scale, X, Check, Info, AlertTriangle, CheckCircle2,
   Clock, CloudSun, CalendarDays, Signal
@@ -12,7 +12,6 @@ import {
 
 interface DashboardProps {
   setModule: (m: ModuleType) => void;
-  onSearchDocuments?: (query: string) => void;
 }
 
 /** Farg'ona shahri koordinatalari */
@@ -40,10 +39,9 @@ interface WeatherState {
   error: boolean;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ setModule, onSearchDocuments }) => {
+const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
   const [time, setTime] = useState(new Date());
   const [recentDocs, setRecentDocs] = useState<SavedDocument[]>([]);
-  const [globalSearchQuery, setGlobalSearchQuery] = useState("");
   const [weather, setWeather] = useState<WeatherState>({ temp: null, code: null, loading: true, error: false });
 
   // Notification State
@@ -99,17 +97,6 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule, onSearchDocuments }) =
       setShowNotifications(false);
   };
 
-  const handleGlobalSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    const q = globalSearchQuery.trim();
-    if (q && onSearchDocuments) {
-      onSearchDocuments(q);
-      setGlobalSearchQuery("");
-    } else if (q) {
-      setModule(ModuleType.DOCUMENTS);
-    }
-  };
-
   return (
     <div className="relative w-full h-full bg-[#F1F5F9] overflow-hidden flex flex-col font-sans text-slate-900">
       
@@ -140,12 +127,6 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule, onSearchDocuments }) =
           </div>
 
           <div className="flex items-center gap-6">
-              <form onSubmit={handleGlobalSearch} className="flex items-center gap-3 bg-white/80 border border-slate-200 rounded-xl px-4 py-2.5 focus-within:ring-2 focus-within:ring-uzblue/20 transition-all shadow-sm w-80 group" role="search">
-                  <Search size={18} className="text-slate-400 group-focus-within:text-uzblue transition-colors" aria-hidden/>
-                  <input type="search" value={globalSearchQuery} onChange={(e) => setGlobalSearchQuery(e.target.value)} placeholder="Arxivda qidirish..." className="bg-transparent outline-none text-sm font-medium text-slate-700 w-full placeholder-slate-400" aria-label="Arxiv hujjatlarida qidiruv" />
-                  <button type="submit" className="text-[10px] font-bold text-slate-400 hover:text-uzblue border border-slate-200 hover:border-uzblue px-1.5 py-0.5 rounded transition-colors">Qidirish</button>
-              </form>
-
               <div className="flex items-center gap-4 relative">
                   <button 
                     type="button"
