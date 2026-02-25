@@ -618,13 +618,29 @@ export async function transcribeAudio(
   const { mime, ext } = normalizeAudioMimeType(mimeType);
   const audioFile = base64ToFile(base64, mime, `audio.${ext}`);
 
+  // #region agent log
+  fetch('http://127.0.0.1:7243/ingest/9ad0c230-685e-454d-89c2-4864437e5aa8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'geminiService.ts:transcribeAudio',message:'Groq call params',data:{rawMimeType:mimeType,normalizedMime:mime,ext,fileName:audioFile.name,fileType:audioFile.type,fileSize:audioFile.size,lang},hypothesisId:'A-B-C',runId:'run1',timestamp:Date.now()})}).catch(()=>{});
+  // #endregion
+
   // verbose_json gives us per-segment timestamps
-  const transcriptionRaw = await groqClient.audio.transcriptions.create({
-    file: audioFile,
-    model: AUDIO_MODEL,
-    language: getLangCode(lang),
-    response_format: "verbose_json",
-  });
+  let transcriptionRaw;
+  try {
+    transcriptionRaw = await groqClient.audio.transcriptions.create({
+      file: audioFile,
+      model: AUDIO_MODEL,
+      language: getLangCode(lang),
+      response_format: "verbose_json",
+    });
+    // #region agent log
+    fetch('http://127.0.0.1:7243/ingest/9ad0c230-685e-454d-89c2-4864437e5aa8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'geminiService.ts:transcribeAudio:success',message:'Groq call succeeded',data:{textLength:(transcriptionRaw as {text?:string}).text?.length??0},hypothesisId:'D',runId:'run1',timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
+  } catch (groqErr) {
+    // #region agent log
+    const errMsg = groqErr instanceof Error ? groqErr.message : String(groqErr);
+    fetch('http://127.0.0.1:7243/ingest/9ad0c230-685e-454d-89c2-4864437e5aa8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'geminiService.ts:transcribeAudio:error',message:'Groq call FAILED',data:{error:errMsg,rawMimeType:mimeType,normalizedMime:mime,ext,fileName:audioFile.name},hypothesisId:'C-D',runId:'run1',timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
+    throw groqErr;
+  }
 
   type VerboseSegment = { id?: number; start?: number; end?: number; text?: string };
   const verboseResult = transcriptionRaw as unknown as {
