@@ -81,12 +81,45 @@ cd /var/www/tergov && git pull origin main && npm ci && npm run build && sudo sy
 Agar serverda `.env` yoki `.env.local` ishlatilsa, `git pull` ularni o‘zgartirmaydi. API kalitni alohida saqlang va kerak bo‘lsa qo‘lda tahrirlang:
 
 ```bash
-# .env.local faylini yaratish yoki tahrirlash
-nano .env.local
-# Keyingi qator qo'shing (aslini kiritmasdan):
-# GEMINI_API_KEY=vazifaning_asl_api_kalitingiz_buni_kiriting
+# .env faylini yaratish yoki tahrirlash
+nano /var/www/tergov/.env
+# Keyingi qator qo'shing:
+GEMINI_API_KEY=aslini_kiriting_shu_yerga
 ```
 
-Build dan keyin env o‘qiladi; Vite loyihalarda `.env.local` build vaqtida ishlatiladi.
+Build dan keyin env o‘qiladi; Vite loyihalarda `.env` build vaqtida ishlatiladi.
 
 Eslatma: API kalitingizni hech qachon GitHub kabi ommaviy repozitoriyalarga commit qilmang.
+
+## Yangilangan deploy buyrug'i (API kalit bilan)
+
+Serverga yangilash va API kalitni qo'llash uchun quyidagi ketma-ketlikni bajaring:
+
+```bash
+# 1. GitHubga push qiling
+# 2. Serverga kirin va yangilang
+ssh root@tergov.cdcgroup.uz
+
+# 3. Loyiha papkasiga o'ting
+cd /var/www/tergov
+
+# 4. API kalitni o'rnating (aslini kiritishni unutmang)
+nano .env
+# Quyidagilarni kiriting:
+# GEMINI_API_KEY=aslini_kiriting_shu_yerga
+
+# 5. Loyihadan yangiliklarni oling
+git pull origin main
+
+# 6. Dependency'ni o'rnating va build qiling
+npm ci && npm run build
+
+# 7. Nginxni qayta yuklang
+sudo systemctl reload nginx
+```
+
+Yoki quyidagi bitta buyruqdan foydalaning (faqat agar .env allaqachon to'g'ri sozlangan bo'lsa):
+
+```bash
+cd /var/www/tergov && git pull origin main && npm ci && npm run build && sudo systemctl reload nginx
+```
