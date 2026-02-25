@@ -17,11 +17,8 @@ import {
 } from "../types";
 import { buildRealProtocolHtml } from "./realProtocolHtml";
 
-// API key resolution - embedded at build time from .env, with fallback
-const GEMINI_API_KEY = 
-  typeof process !== "undefined" && process.env?.GEMINI_API_KEY
-    ? process.env.GEMINI_API_KEY.trim()
-    : ""; // Fallback key from server's .env (set in .env file on server)
+// API key resolution - securely read from environment variables
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 
 /** Resolves API key: customKey > embedded GEMINI_API_KEY. */
 function resolveApiKey(customKey?: string): string {
@@ -388,7 +385,7 @@ export async function transcribeAndDiarizeByVoice(
 
 ЖАВОБ: Фақат JSON массив кириллицада. Ҳар бир элемент: speakerId, speakerName, text (кириллица), timestamp.
 
-МУҲИМ: ҲАР БИР СЎЗНИ ЎЗБЕК КИРИЛЛИЦАСИДА ЁЗИНГ!`;
+МУҲИМ: ҲАММА СЎЗНИ ЎЗБЕК КИРИЛЛИЦАСИДА ЁЗИНГ!`;
 
   try {
     const response = await withTimeout(
