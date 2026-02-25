@@ -603,9 +603,29 @@ export async function generateLegalProtocol(
 }
 
 // --- PHOTOROBOT IMAGE GENERATION (DALL-E via OpenRouter) ---
+/** Fetches an image from Pollinations.ai and returns it as a base64 data URL. */
+async function pollinationsImage(prompt: string): Promise<string> {
+  const seed = Math.floor(Math.random() * 9_000_000) + 1_000_000;
+  const url =
+    `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}` +
+    `?width=1024&height=1024&seed=${seed}&nologo=true&enhance=true&model=flux`;
+
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Pollinations ${res.status}: ${res.statusText}`);
+
+  const blob = await res.blob();
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
 /**
  * Generates photorobot image variants using Pollinations.ai — free, no API key required.
- * Each variant uses a different random seed to produce unique results.
+ * Images are fully fetched and converted to base64 before returning,
+ * so they display immediately without additional loading.
  */
 export async function generatePhotorobotVariants(
   prompt: string,
@@ -615,18 +635,24 @@ export async function generatePhotorobotVariants(
 ): Promise<string[]> {
   const actualCount = Math.max(1, Math.min(count, 4));
   const fullPrompt =
-    `Forensic identification photo, realistic portrait: ${prompt}. ` +
-    `Sharp facial details, neutral solid white background, professional lighting, photorealistic.`;
+    `Forensic identification portrait, photorealistic: ${prompt}. ` +
+    `Sharp facial details, neutral solid white background, professional studio lighting.`;
 
-  const urls: string[] = [];
-  for (let i = 0; i < actualCount; i++) {
-    const seed = Math.floor(Math.random() * 9_000_000) + 1_000_000;
-    const url =
-      `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}` +
-      `?width=1024&height=1024&seed=${seed}&nologo=true&enhance=true&model=flux`;
-    urls.push(url);
+  // Fetch all variants in parallel — each takes ~20-40s, parallel = same total wait
+  const settled = await Promise.allSettled(
+    Array.from({ length: actualCount }, () => pollinationsImage(fullPrompt)),
+  );
+
+  const images = settled
+    .filter((r): r is PromiseFulfilledResult<string> => r.status === "fulfilled")
+    .map((r) => r.value);
+
+  if (images.length === 0) {
+    throw new Error(
+      "Rasm yaratilmadi. Pollinations.ai xizmatiga ulanib bo'lmadi. Internet aloqasini tekshiring.",
+    );
   }
-  return urls;
+  return images;
 }
 
 /**
@@ -661,12 +687,9 @@ export async function editPhotorobotImage(
   );
   const finalPrompt = desc.fullDescription || editInstruction;
 
-  // Re-generate with the updated description via Pollinations.ai
-  const seed = Math.floor(Math.random() * 9_000_000) + 1_000_000;
-  return (
-    `https://image.pollinations.ai/prompt/${encodeURIComponent(
-      `Forensic identification portrait: ${finalPrompt}. Realistic, neutral white background, photorealistic, sharp details.`,
-    )}?width=1024&height=1024&seed=${seed}&nologo=true&enhance=true&model=flux`
+  // Re-generate with the updated description via Pollinations.ai and return as base64
+  return pollinationsImage(
+    `Forensic identification portrait: ${finalPrompt}. Realistic, neutral white background, photorealistic, sharp details.`,
   );
 }
 
