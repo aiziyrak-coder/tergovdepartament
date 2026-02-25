@@ -270,7 +270,7 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
       recorder.start(1000); // Collect data every second
       mediaRecorderRef.current = recorder;
 
-      // Real-time speech-to-text (display only; does not affect recording or bayonnoma)
+      // Ҳақиқий вақтда аваздан-матнга (фақат кўрсатиш; язува ёки баённомага таъсир қилмайди)
       setLiveTranscript("");
       setInterimTranscript("");
       const SpeechRecognitionCtor =

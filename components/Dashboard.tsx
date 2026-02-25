@@ -20,7 +20,7 @@ const FERGANA_LAT = 40.3864;
 const FERGANA_LON = 71.7864;
 const WEATHER_REFRESH_MS = 10 * 60 * 1000; // 10 min
 
-/** Open-Meteo WMO weather_code → o'zbekcha tavsif */
+/** Open-Meteo WMO weather_code → ўзбекча тавсиф */
 function weatherCodeToLabel(code: number): string {
   if (code === 0) return "Ochiq, quyoshli";
   if (code >= 1 && code <= 3) return code === 1 ? "Asosan ochiq" : code === 2 ? "O'rtacha bulutli" : "Qorong'u bulutli";
@@ -49,9 +49,9 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
   // Notification State
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([
-      { id: '1', title: "Yangi topshiriq", message: "Boshqarma boshlig'idan 2 ta yangi ish kelib tushdi.", time: "10:30", read: false, type: 'info' },
-      { id: '2', title: "Muddati oz qoldi", message: "№300002/2025 ish bo'yicha tergov muddati tugamoqda.", time: "09:15", read: false, type: 'alert' },
-      { id: '3', title: "Tizim yangilandi", message: "Ziyrak AI 2.4 versiyasiga muvaffaqiyatli o'tdi.", time: "Kecha", read: true, type: 'success' },
+      { id: '1', title: "Янги топшириқ", message: "Бошқарма бошлиғидан 2 та янги иш келиб тушди.", time: "10:30", read: false, type: 'info' },
+      { id: '2', title: "Муддати оз қолди", message: "№300002/2025 иш бўйича тергов муддати тугамоқда.", time: "09:15", read: false, type: 'alert' },
+      { id: '3', title: "Тизим янгиланди", message: "Ziyrak AI 2.4 версиясига муваффақиятли ўтди.", time: "Кеча", read: true, type: 'success' },
   ]);
 
   useEffect(() => {
@@ -231,7 +231,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
                                 {weather.loading ? (
                                   <span className="text-lg font-bold text-slate-400">Yuklanmoqda...</span>
                                 ) : weather.error ? (
-                                  <span className="text-sm font-bold text-slate-500">Farg'ona — ma'lumot yo'q</span>
+                                  <span className="text-sm font-bold text-slate-500">Фарғона — маълумот йўқ</span>
                                 ) : (
                                   <>
                                     <span className="text-3xl font-tech font-bold text-slate-800">
@@ -263,7 +263,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
                   <div>
                       <h3 className="text-sm font-black text-slate-800 uppercase mb-4 flex items-center gap-2">
                           <ShieldCheck className="text-uzblue" size={18}/>
-                          Tezkor Modullar
+                          {t('sec_intel_title')}
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                           
@@ -276,13 +276,13 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
                                   <FileSignature size={24}/>
                               </div>
                               <div>
-                                  <h4 className="text-xl font-tech font-bold text-slate-900 group-hover:text-uzblue transition-colors">Jonli So'roq</h4>
+                                  <h4 className="text-xl font-tech font-bold text-slate-900 group-hover:text-uzblue transition-colors">{t('protocol')}</h4>
                                   <p className="text-xs text-slate-500 mt-2 font-medium leading-relaxed">
                                       Ovozli so'roq jarayonini avtomatik bayonnomaga aylantirish va yuridik tahlil.
                                   </p>
                               </div>
                               <div className="flex items-center gap-2 text-xs font-bold text-slate-400 group-hover:text-uzblue mt-4">
-                                  Ochish <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform"/>
+                                  {t('settings')} <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform"/>
                               </div>
                           </div>
 
@@ -295,13 +295,13 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
                                   <Mic2 size={24}/>
                               </div>
                               <div>
-                                  <h4 className="text-xl font-tech font-bold text-slate-900 group-hover:text-purple-600 transition-colors">Stenogramma</h4>
+                                  <h4 className="text-xl font-tech font-bold text-slate-900 group-hover:text-purple-600 transition-colors">{t('stenogram')}</h4>
                                   <p className="text-xs text-slate-500 mt-2 font-medium leading-relaxed">
-                                      Audio yozuvlarni matnga o'girish, spikerlarni ajratish va kalit so'zlarni topish.
+                                      {t('card_steno_desc')}
                                   </p>
                               </div>
                               <div className="flex items-center gap-2 text-xs font-bold text-slate-400 group-hover:text-purple-600 mt-4">
-                                  Ochish <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform"/>
+                                  {t('settings')} <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform"/>
                               </div>
                           </div>
 
@@ -314,13 +314,13 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
                                   <Video size={24}/>
                               </div>
                               <div>
-                                  <h4 className="text-xl font-tech font-bold text-slate-900 group-hover:text-uzred transition-colors">Video Ekspertiza</h4>
+                                  <h4 className="text-xl font-tech font-bold text-slate-900 group-hover:text-uzred transition-colors">Видео Экспертиза</h4>
                                   <p className="text-xs text-slate-500 mt-2 font-medium leading-relaxed">
-                                      YTH va voqea joyini 3D formatda vizual rekonstruksiya qilish (AI Simulation).
+                                      ЁТҲ ва воқеа жойини 3D форматда визуал реконструкция қилиш (AI Simulation).
                                   </p>
                               </div>
                               <div className="flex items-center gap-2 text-xs font-bold text-slate-400 group-hover:text-uzred mt-4">
-                                  Ochish <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform"/>
+                                  {t('settings')} <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform"/>
                               </div>
                           </div>
                           
@@ -339,7 +339,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
                                   </p>
                               </div>
                               <div className="flex items-center gap-2 text-xs font-bold text-slate-400 group-hover:text-indigo-600 mt-4">
-                                  Ochish <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform"/>
+                                  {t('settings')} <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform"/>
                               </div>
                           </div>
 
@@ -358,7 +358,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
                                   </p>
                               </div>
                               <div className="flex items-center gap-2 text-xs font-bold text-slate-400 group-hover:text-amber-600 mt-4">
-                                  Ochish <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform"/>
+                                  {t('settings')} <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform"/>
                               </div>
                           </div>
 
@@ -377,7 +377,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
                                   </p>
                               </div>
                               <div className="flex items-center gap-2 text-xs font-bold text-slate-400 group-hover:text-emerald-600 mt-4">
-                                  Ochish <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform"/>
+                                  {t('settings')} <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform"/>
                               </div>
                           </div>
 
@@ -418,20 +418,20 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
 
               <div className="p-6 bg-slate-50 border-t border-slate-100">
                   <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-4">
-                      <Star size={14}/> Tezkor Havolalar
+                      <Star size={14}/> {t('dev_by')} Ҳаволалар
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
                       <button type="button" onClick={() => setModule(ModuleType.TEMPLATES)} className="p-3 bg-white border border-slate-200 rounded-xl text-[10px] font-bold text-slate-600 hover:text-uzblue hover:border-uzblue transition-all shadow-sm">
-                          NAMUNALAR
+                          {t('templates')}
                       </button>
                       <button type="button" onClick={() => setModule(ModuleType.LEGAL_SEARCH)} className="p-3 bg-white border border-slate-200 rounded-xl text-[10px] font-bold text-slate-600 hover:text-uzblue hover:border-uzblue transition-all shadow-sm">
-                          KODEKSLAR
+                          {t('legal_search')}
                       </button>
                       <button type="button" onClick={() => setModule(ModuleType.STATISTICS)} className="p-3 bg-white border border-slate-200 rounded-xl text-[10px] font-bold text-slate-600 hover:text-uzblue hover:border-uzblue transition-all shadow-sm">
-                          STATISTIKA
+                          {t('settings')}
                       </button>
                       <button type="button" onClick={() => setModule(ModuleType.SETTINGS)} className="p-3 bg-white border border-slate-200 rounded-xl text-[10px] font-bold text-slate-600 hover:text-uzblue hover:border-uzblue transition-all shadow-sm">
-                          SOZLAMALAR
+                          {t('settings')}
                       </button>
                   </div>
               </div>
