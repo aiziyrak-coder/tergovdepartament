@@ -662,9 +662,7 @@ export async function transcribeAudio(
 
   if (!groqResponse.ok) {
     const errBody = await groqResponse.text().catch(() => groqResponse.statusText);
-    throw new Error(
-      `Groq ${groqResponse.status}: ${errBody} | file: ${audioFile.name} (type:${audioFile.type}) | rawMime: ${mimeType} → ext: ${ext}`
-    );
+    throw new Error(`Groq transkriptsiya xatosi ${groqResponse.status}: ${errBody}`);
   }
 
   const transcriptionRaw = await groqResponse.json() as unknown;
