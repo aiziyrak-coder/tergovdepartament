@@ -660,7 +660,9 @@ export async function transcribeAudioFile(
   lang: AppLanguage,
   _userApiKey?: string,
 ): Promise<TranscriptSegment[]> {
-  const rawMime = file.type || "audio/webm";
+  // Use filename extension as primary source of truth — more reliable than file.type
+  const nameExt = file.name.split(".").pop()?.toLowerCase() ?? "";
+  const rawMime = nameExt ? `audio/${nameExt}` : (file.type || "audio/webm");
   const { ext } = normalizeAudioMimeType(rawMime);
   const groqFile = wrapFileForGroq(file, ext);
 
@@ -678,7 +680,9 @@ export async function transcribeAudioFile(
 
   if (!groqResponse.ok) {
     const errBody = await groqResponse.text().catch(() => groqResponse.statusText);
-    throw new Error(`Groq transkriptsiya xatosi ${groqResponse.status}: ${errBody}`);
+    throw new Error(
+      `Groq 400 | originalName="${file.name}" type="${file.type}" nameExt="${nameExt}" → rawMime="${rawMime}" ext="${ext}" sent="${groqFile.name}"(${groqFile.type}) | ${errBody}`,
+    );
   }
 
   return parseGroqTranscription(await groqResponse.json() as unknown);
