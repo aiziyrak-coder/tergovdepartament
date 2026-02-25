@@ -603,17 +603,8 @@ export async function generateLegalProtocol(
 }
 
 // --- PHOTOROBOT IMAGE GENERATION (DALL-E via OpenRouter) ---
-/** Fetches an image from Pollinations.ai and returns it as a base64 data URL. */
-async function pollinationsImage(prompt: string): Promise<string> {
-  const seed = Math.floor(Math.random() * 9_000_000) + 1_000_000;
-  const url =
-    `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}` +
-    `?width=1024&height=1024&seed=${seed}&nologo=true&enhance=true&model=flux`;
-
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Pollinations ${res.status}: ${res.statusText}`);
-
-  const blob = await res.blob();
+/** Converts a response Blob to a base64 data URL. */
+async function blobToDataUrl(blob: Blob): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onloadend = () => resolve(reader.result as string);
@@ -623,9 +614,56 @@ async function pollinationsImage(prompt: string): Promise<string> {
 }
 
 /**
- * Generates photorobot image variants using Pollinations.ai — free, no API key required.
- * Images are fully fetched and converted to base64 before returning,
- * so they display immediately without additional loading.
+ * Generates an image via HuggingFace Inference API — free, no API key required.
+ * Falls back through multiple models in case one is loading or unavailable.
+ */
+async function hfImage(prompt: string): Promise<string> {
+  const models = [
+    "stabilityai/stable-diffusion-xl-base-1.0",
+    "stabilityai/stable-diffusion-2-1",
+    "runwayml/stable-diffusion-v1-5",
+  ];
+
+  for (const model of models) {
+    try {
+      const res = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inputs: prompt }),
+      });
+
+      if (res.status === 503) continue; // Model warming up — try next
+      if (!res.ok) continue;
+
+      const blob = await res.blob();
+      if (blob.size < 2000) continue; // Error JSON disguised as blob
+
+      return await blobToDataUrl(blob);
+    } catch {
+      continue;
+    }
+  }
+  throw new Error("HuggingFace: barcha modellar band.");
+}
+
+/** Generates an image via Pollinations.ai (fallback). */
+async function pollinationsImage(prompt: string): Promise<string> {
+  const seed = Math.floor(Math.random() * 9_000_000) + 1_000_000;
+  const url =
+    `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}` +
+    `?width=512&height=512&seed=${seed}&nologo=true`;
+
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Pollinations ${res.status}`);
+
+  const blob = await res.blob();
+  return await blobToDataUrl(blob);
+}
+
+/**
+ * Generates photorobot image variants.
+ * Primary: HuggingFace Inference API (free, no key).
+ * Fallback: Pollinations.ai.
  */
 export async function generatePhotorobotVariants(
   prompt: string,
@@ -636,11 +674,18 @@ export async function generatePhotorobotVariants(
   const actualCount = Math.max(1, Math.min(count, 4));
   const fullPrompt =
     `Forensic identification portrait, photorealistic: ${prompt}. ` +
-    `Sharp facial details, neutral solid white background, professional studio lighting.`;
+    `Sharp facial details, neutral solid white background, professional studio lighting, high quality.`;
 
-  // Fetch all variants in parallel — each takes ~20-40s, parallel = same total wait
+  const generateOne = async (): Promise<string> => {
+    try {
+      return await hfImage(fullPrompt);
+    } catch {
+      return await pollinationsImage(fullPrompt);
+    }
+  };
+
   const settled = await Promise.allSettled(
-    Array.from({ length: actualCount }, () => pollinationsImage(fullPrompt)),
+    Array.from({ length: actualCount }, () => generateOne()),
   );
 
   const images = settled
@@ -649,7 +694,7 @@ export async function generatePhotorobotVariants(
 
   if (images.length === 0) {
     throw new Error(
-      "Rasm yaratilmadi. Pollinations.ai xizmatiga ulanib bo'lmadi. Internet aloqasini tekshiring.",
+      "Rasm yaratilmadi. HuggingFace va Pollinations.ai ishlamadi. Keyinroq urinib ko'ring.",
     );
   }
   return images;
@@ -687,10 +732,14 @@ export async function editPhotorobotImage(
   );
   const finalPrompt = desc.fullDescription || editInstruction;
 
-  // Re-generate with the updated description via Pollinations.ai and return as base64
-  return pollinationsImage(
-    `Forensic identification portrait: ${finalPrompt}. Realistic, neutral white background, photorealistic, sharp details.`,
-  );
+  const editFullPrompt =
+    `Forensic identification portrait: ${finalPrompt}. Realistic, neutral white background, photorealistic, sharp details.`;
+
+  try {
+    return await hfImage(editFullPrompt);
+  } catch {
+    return await pollinationsImage(editFullPrompt);
+  }
 }
 
 // --- VIRTUAL MENTOR ---
