@@ -603,17 +603,53 @@ export async function generateLegalProtocol(
 }
 
 // --- PHOTOROBOT IMAGE GENERATION (DALL-E via OpenRouter) ---
-/** OpenRouter image generation models in priority order (cheapest first). */
+/** OpenRouter image generation models in priority order. */
 const IMAGE_MODELS = [
-  "google/gemini-2.5-flash-image-preview",
   "google/gemini-2.5-flash-image",
   "google/gemini-3-pro-image-preview",
+  "black-forest-labs/flux.2-flex",
 ];
+
+/** Extracts an image URL from any known OpenRouter image response format. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function extractImageUrl(data: any): string | undefined {
+  // Format 1 (documented): choices[0].message.images[].imageUrl.url
+  const images = data?.choices?.[0]?.message?.images;
+  if (Array.isArray(images) && images.length > 0) {
+    const url = images[0]?.imageUrl?.url ?? images[0]?.image_url?.url;
+    if (url) return url as string;
+  }
+
+  // Format 2: choices[0].message.content as array of content blocks
+  const content = data?.choices?.[0]?.message?.content;
+  if (Array.isArray(content)) {
+    for (const block of content) {
+      if (block?.type === "image_url" && block?.image_url?.url) return block.image_url.url as string;
+      if (block?.type === "image" && block?.source?.data) {
+        const mime = block.source.media_type ?? "image/png";
+        return `data:${mime};base64,${block.source.data}` as string;
+      }
+    }
+  }
+
+  // Format 3: content is a plain base64 string starting with data:
+  if (typeof content === "string" && content.startsWith("data:image")) return content;
+
+  // Format 4: DALL-E style — data[].url or data[].b64_json
+  const dataArr = data?.data;
+  if (Array.isArray(dataArr) && dataArr.length > 0) {
+    const item = dataArr[0];
+    if (item?.url) return item.url as string;
+    if (item?.b64_json) return `data:image/png;base64,${item.b64_json}` as string;
+  }
+
+  return undefined;
+}
 
 /**
  * Generates a single image via OpenRouter's chat completions endpoint
  * using image-capable multimodal models (modalities: ["image", "text"]).
- * Returns a base64 data URL as provided by OpenRouter.
+ * Tries multiple response format paths for robustness.
  */
 async function openRouterImage(prompt: string): Promise<string> {
   for (const model of IMAGE_MODELS) {
@@ -635,24 +671,20 @@ async function openRouterImage(prompt: string): Promise<string> {
 
       if (!res.ok) {
         const errText = await res.text().catch(() => "");
-        console.warn(`OpenRouter image model ${model} failed ${res.status}: ${errText.slice(0, 200)}`);
+        console.warn(`OpenRouter image [${model}] ${res.status}: ${errText.slice(0, 300)}`);
         continue;
       }
 
-      const data = await res.json() as {
-        choices?: Array<{
-          message?: {
-            images?: Array<{ imageUrl?: { url?: string } }>;
-          };
-        }>;
-      };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data: any = await res.json();
+      const url = extractImageUrl(data);
 
-      const url = data?.choices?.[0]?.message?.images?.[0]?.imageUrl?.url;
-      if (url) return url;
+      if (url) return url as string;
 
-      console.warn(`OpenRouter image model ${model}: no image in response`);
+      // Log full response structure for debugging
+      console.warn(`OpenRouter image [${model}] no image found. Keys:`, JSON.stringify(data).slice(0, 600));
     } catch (err) {
-      console.warn(`OpenRouter image model ${model} error:`, err);
+      console.warn(`OpenRouter image [${model}] exception:`, err);
     }
   }
   throw new Error("OpenRouter: rasm yaratib bo'lmadi. OpenRouter balansini va API kalitini tekshiring.");
