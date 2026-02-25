@@ -16,6 +16,7 @@ export default defineConfig(({ mode }) => {
       },
       plugins: [tailwindcss(), react()],
       define: {
+        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY || ''),
         'process.env.LOGIN_USER': JSON.stringify(env.LOGIN_USER ?? ''),
         'process.env.LOGIN_PASSWORD': JSON.stringify(env.LOGIN_PASSWORD ?? ''),
       },

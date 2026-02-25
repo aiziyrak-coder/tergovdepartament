@@ -19,10 +19,10 @@ import { buildRealProtocolHtml } from "./realProtocolHtml";
 
 const GEMINI_KEY_ENV = typeof process !== "undefined" ? process.env?.GEMINI_API_KEY : undefined;
 
-/** Resolves API key: customKey > GEMINI_API_KEY env ONLY (no fallback). */
+/** Resolves API key: customKey > GEMINI_API_KEY from .env (embedded at build time). */
 function resolveApiKey(customKey?: string): string {
   const key = customKey?.trim() || GEMINI_KEY_ENV;
-  if (!key) throw new Error("❌ ХАТОЛИК: API kalit topilmadi!\n\n📌 Serverda /var/www/tergov/.env 'da GEMINI_API_KEY ni qo'shing:\nGEMINI_API_KEY=AIzaSy_YOUR_KEY_HERE\n\n🔗 Yangi key olish: https://console.cloud.google.com/");
+  if (!key) throw new Error("❌ ХАТОЛИК: API kalit topilmadi!\n\n📌 .env 'da GEMINI_API_KEY ni belgilang va qayta build qiling:\nnpm run build\n\n🔗 Yangi key: https://console.cloud.google.com/");
   return key;
 }
 
