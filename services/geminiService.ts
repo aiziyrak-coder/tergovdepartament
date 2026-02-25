@@ -693,7 +693,7 @@ function parseGroqTranscription(raw: unknown): TranscriptSegment[] {
 export async function transcribeAudioFile(
   file: File,
   lang: AppLanguage,
-  _userApiKey?: string,
+  userApiKey?: string,
 ): Promise<TranscriptSegment[]> {
   // Convert to 16kHz mono WAV before uploading — guarantees Groq accepts any input codec
   const wavFile = await convertToWav(file);
@@ -703,6 +703,13 @@ export async function transcribeAudioFile(
   formData.append("model", AUDIO_MODEL);
   formData.append("language", getLangCode(lang));
   formData.append("response_format", "verbose_json");
+  // Domain-specific prompt helps Whisper recognize legal Uzbek vocabulary
+  formData.append(
+    "prompt",
+    "Tergov organi tomonidan o\u02bctkazilgan rasmiy so\u02bcroq yoki guvohlik yozuvi. " +
+    "Huquqiy atamalar: tergov, dalolatnoma, guvoh, jabrlanuvchi, ayblanuvchi, " +
+    "prokuratura, sudya, Jinoyat kodeksi, modda, hibsga olish, tintuv, ayblov.",
+  );
 
   const groqResponse = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
     method: "POST",
@@ -715,7 +722,29 @@ export async function transcribeAudioFile(
     throw new Error(`Groq transkriptsiya xatosi ${groqResponse.status}: ${errBody}`);
   }
 
-  return parseGroqTranscription(await groqResponse.json() as unknown);
+  const segments = parseGroqTranscription(await groqResponse.json() as unknown);
+  if (segments.length === 0) return segments;
+
+  // LLM post-correction: fixes Whisper's Uzbek recognition errors using OpenRouter
+  const rawText = segments.map((s) => s.text).join("\n");
+  const corrected = await correctTranscriptUzbek(rawText, userApiKey).catch(() => "");
+
+  if (!corrected.trim()) return segments;
+
+  const correctedLines = corrected.trim().split("\n").filter((l) => l.trim());
+
+  // If line count matches segments, map corrections back per-segment (preserves timestamps)
+  if (correctedLines.length === segments.length) {
+    return segments.map((s, i) => ({ ...s, text: correctedLines[i].trim() }));
+  }
+
+  // Otherwise return as a single corrected block (timestamps from first segment)
+  return [{
+    id: "seg_1",
+    speaker: segments[0].speaker ?? "Speaker 1",
+    text: corrected.trim(),
+    timestamp: segments[0].timestamp ?? "00:00",
+  }];
 }
 
 export async function transcribeAudio(
