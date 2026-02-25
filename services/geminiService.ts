@@ -611,69 +611,74 @@ export async function generatePhotorobotVariants(
 ): Promise<string[]> {
   const client = getTextClient(userApiKey);
   const actualCount = Math.max(1, Math.min(count, 4));
+  const fullPrompt =
+    `Forensic composite portrait sketch: ${prompt}. ` +
+    `Realistic detailed face, neutral white background, high quality identification photo.`;
 
-  const imagePromises = Array.from({ length: actualCount }, async () => {
-    try {
-      const response = await client.images.generate({
-        model: "dall-e-3",
-        prompt: `Forensic composite portrait sketch: ${prompt}. Realistic detailed face, neutral background, high quality mugshot style.`,
-        n: 1,
-        size: "1024x1024",
-        response_format: "b64_json",
-      });
-      const b64 = response.data?.[0]?.b64_json;
-      return b64 ? `data:image/png;base64,${b64}` : "";
-    } catch (error) {
-      console.error("Image generation batch failed:", error);
-      return "";
-    }
-  });
+  // Generate sequentially — parallel DALL-E calls can hit rate limits
+  const results: string[] = [];
+  for (let i = 0; i < actualCount; i++) {
+    const response = await client.images.generate({
+      model: "openai/dall-e-3",
+      prompt: fullPrompt,
+      n: 1,
+      size: "1024x1024",
+      response_format: "url",
+    });
+    const url = response.data?.[0]?.url;
+    if (url) results.push(url);
+  }
 
-  const results = await Promise.all(imagePromises);
-  return results.filter(Boolean);
+  if (results.length === 0) {
+    throw new Error("Rasm yaratilmadi. OpenRouter krediti yetarli emasmi yoki DALL-E 3 mavjud emas.");
+  }
+  return results;
 }
 
 export async function editPhotorobotImage(
-  imageBase64: string,
+  imageUrl: string,
   prompt: string,
   userApiKey?: string,
 ): Promise<string> {
   const client = getTextClient(userApiKey);
-  const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
 
-  // Describe the desired edit using vision, then generate a new image
+  // Step 1: Use vision to describe current image and merge with edit instructions
+  const imageContent = imageUrl.startsWith("data:")
+    ? { type: "image_url" as const, image_url: { url: imageUrl } }
+    : { type: "image_url" as const, image_url: { url: imageUrl } };
+
   const descResponse = await client.chat.completions.create({
     model: TEXT_MODEL,
-    messages: [
-      {
-        role: "user",
-        content: [
-          { type: "image_url", image_url: { url: `data:image/jpeg;base64,${base64Data}` } },
-          {
-            type: "text",
-            text: `This is a forensic photorobot portrait. Describe what this person looks like in detail, then apply these changes: "${prompt}". Return ONLY JSON: {"fullDescription":"detailed description of the final edited portrait"}`,
-          },
-        ],
-      },
-    ],
+    messages: [{
+      role: "user",
+      content: [
+        imageContent,
+        {
+          type: "text",
+          text: `This is a forensic photorobot portrait. Describe this person in detail, then apply: "${prompt}". Return ONLY JSON: {"fullDescription":"detailed final portrait description"}`,
+        },
+      ],
+    }],
     response_format: { type: "json_object" },
   });
 
-  const descContent = descResponse.choices[0]?.message?.content ?? "{}";
-  const desc = safeParseJson<{ fullDescription?: string }>(descContent, {});
+  const desc = safeParseJson<{ fullDescription?: string }>(
+    descResponse.choices[0]?.message?.content ?? "{}", {},
+  );
   const finalPrompt = desc.fullDescription || prompt;
 
+  // Step 2: Generate updated portrait
   const genResponse = await client.images.generate({
-    model: "dall-e-3",
-    prompt: `Forensic composite portrait: ${finalPrompt}. Realistic, detailed, neutral background, mugshot style.`,
+    model: "openai/dall-e-3",
+    prompt: `Forensic composite portrait: ${finalPrompt}. Realistic, detailed, neutral white background, identification photo style.`,
     n: 1,
     size: "1024x1024",
-    response_format: "b64_json",
+    response_format: "url",
   });
 
-  const b64 = genResponse.data?.[0]?.b64_json;
-  if (!b64) throw new Error("Tahrir natijasida rasm topilmadi.");
-  return `data:image/png;base64,${b64}`;
+  const url = genResponse.data?.[0]?.url;
+  if (!url) throw new Error("Tahrir natijasida rasm topilmadi.");
+  return url;
 }
 
 // --- VIRTUAL MENTOR ---
