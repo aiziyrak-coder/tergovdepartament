@@ -17,17 +17,12 @@ import {
 } from "../types";
 import { buildRealProtocolHtml } from "./realProtocolHtml";
 
-declare const __GEMINI_API_KEY__: string | undefined;
-
-const API_KEY_ENV = typeof process !== "undefined" ? process.env?.API_KEY : undefined;
 const GEMINI_KEY_ENV = typeof process !== "undefined" ? process.env?.GEMINI_API_KEY : undefined;
-const BUILD_TIME_GEMINI_KEY = typeof __GEMINI_API_KEY__ === "string" ? __GEMINI_API_KEY__ : undefined;
 
-/** Resolves API key: customKey > BUILD > API_KEY > GEMINI_API_KEY. */
+/** Resolves API key: customKey > GEMINI_API_KEY env ONLY (no fallback). */
 function resolveApiKey(customKey?: string): string {
-  const key =
-    customKey?.trim() || BUILD_TIME_GEMINI_KEY || API_KEY_ENV || GEMINI_KEY_ENV;
-  if (!key) throw new Error("❌ API kalit topilmadi. Yangi API key olish: https://console.cloud.google.com/\nSorzlamalar > Environment 'da GEMINI_API_KEY ni belgilang.");
+  const key = customKey?.trim() || GEMINI_KEY_ENV;
+  if (!key) throw new Error("❌ ХАТОЛИК: API kalit topilmadi!\n\n📌 Serverda /var/www/tergov/.env 'da GEMINI_API_KEY ni qo'shing:\nGEMINI_API_KEY=AIzaSy_YOUR_KEY_HERE\n\n🔗 Yangi key olish: https://console.cloud.google.com/");
   return key;
 }
 
