@@ -209,9 +209,10 @@ export interface DocumentAnalysisResult {
   timeOfDay: string;
 }
 
-/** Result of AI-generated forensic video (Veo). */
+/** Result of AI-generated forensic scene reconstruction (multi-frame animation). */
 export interface VideoGenerationResult {
-  videoUri: string;
+  videoUri: string | null;
+  frames: string[];
   explanation: string;
   technicalDetails: { model: string; prompt: string };
 }

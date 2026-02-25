@@ -316,18 +316,70 @@ const AI_AUDIO_DIARIZATION_TIMEOUT_MS = 45000;
 const LEGAL_SEARCH_TIMEOUT_MS = 35000;
 const MENTOR_QUERY_TIMEOUT_MS = 40000;
 
-// --- VIDEO GENERATION (Disabled — Veo model not available outside Google) ---
+// --- VIDEO GENERATION (Multi-frame scene reconstruction via OpenRouter image models) ---
 export type ForensicCameraView = "CCTV_STREET" | "DASHCAM_CAR" | "DRONE_TOP" | "WITNESS_PHONE";
 
+/** Camera-specific style descriptors for forensic scene rendering. */
+const CAMERA_STYLE: Record<string, string> = {
+  CCTV_STREET: "CCTV security camera footage, wide angle, slightly elevated angle, grainy monochrome or low-saturation color, timestamp overlay effect, fisheye slight distortion",
+  DASHCAM_CAR: "dashcam footage, wide angle lens, from inside a vehicle looking forward through windshield, slightly overexposed, date/time stamp corner",
+  DRONE_TOP: "aerial drone photography, top-down bird's eye view, high altitude, photorealistic, sharp, bright daylight",
+  WITNESS_PHONE: "shaky handheld smartphone video screenshot, slightly blurry motion blur, vertical format cropped, casual witness perspective",
+};
+
+/** Four narrative stages for the accident scene reconstruction. */
+const SCENE_STAGES = [
+  "Moments BEFORE: normal traffic, vehicles approaching the intersection, no signs of collision yet",
+  "DURING impact: the exact collision moment, vehicles making contact, debris, skid marks just appearing",
+  "Immediately AFTER: vehicles stopped at rest after collision, damage visible, airbags deployed, first responders arriving",
+  "Scene OVERVIEW: final scene with police tape, investigators, full damage assessment view",
+];
+
+/**
+ * Generates a forensic accident scene reconstruction as a sequence of 4 frames
+ * using OpenRouter's multimodal image generation models.
+ * Each frame represents a different stage of the accident sequence.
+ */
 export async function generateForensicVideo(
-  _analysis: DocumentAnalysisResult,
-  _view: ForensicCameraView | string,
+  analysis: DocumentAnalysisResult,
+  view: ForensicCameraView | string,
   _language: AppLanguage,
-  _userApiKey?: string,
 ): Promise<VideoGenerationResult> {
-  throw new Error(
-    "Video generatsiya funksiyasi hozircha mavjud emas. Ushbu funksiya Google Veo modeliga bog'liq bo'lib, keyingi versiyada qo'shiladi.",
+  const cameraStyle = CAMERA_STYLE[view] ?? CAMERA_STYLE.CCTV_STREET;
+  const context = [
+    analysis.summary ?? "",
+    analysis.vehicle1Type ? `Vehicle 1: ${analysis.vehicle1Type}` : "",
+    analysis.vehicle2Type ? `Vehicle 2: ${analysis.vehicle2Type}` : "",
+    analysis.weather ? `Weather: ${analysis.weather}` : "",
+    analysis.timeOfDay ? `Time: ${analysis.timeOfDay}` : "",
+  ].filter(Boolean).join(". ");
+
+  const basePrompt = `Forensic traffic accident reconstruction scene. ${context}. Style: ${cameraStyle}. Photorealistic, no text overlays, no people faces visible (privacy), no blood. Professional forensic documentation quality.`;
+
+  const stagePrompts = SCENE_STAGES.map(
+    (stage) => `${basePrompt} STAGE: ${stage}.`,
   );
+
+  const settled = await Promise.allSettled(stagePrompts.map((p) => openRouterImage(p)));
+  const frames = settled
+    .filter((r): r is PromiseFulfilledResult<string> => r.status === "fulfilled")
+    .map((r) => r.value);
+
+  if (frames.length === 0) {
+    throw new Error(
+      "Kadrlar yaratilmadi. OpenRouter balansini yoki internet aloqasini tekshiring.",
+    );
+  }
+
+  return {
+    videoUri: null,
+    frames,
+    explanation: `Avtohalokat sahnasi ${frames.length} ta kadrda AI tomonidan rekonstruksiya qilindi. Kamera: ${view.replace(/_/g, " ")}. ${context}`,
+    technicalDetails: {
+      model: IMAGE_MODELS[0],
+      prompt: basePrompt,
+    },
+  };
 }
 
 // --- TTS (Disabled — Gemini-specific feature) ---
