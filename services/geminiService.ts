@@ -101,32 +101,35 @@ function base64ToFile(base64: string, mimeType: string, filename: string): File 
 
 /**
  * Normalizes audio MIME type for Groq Whisper compatibility.
- * Strips codec parameters (e.g. "audio/webm;codecs=opus" → "audio/webm")
- * and maps to a Groq-supported extension.
+ * Strips codec parameters and maps ALL variants (including non-standard) to
+ * the exact standard MIME types that Groq accepts.
  */
 function normalizeAudioMimeType(rawMime: string): { mime: string; ext: string } {
   const base = rawMime.split(";")[0].trim().toLowerCase();
-  const map: Record<string, string> = {
-    "audio/webm": "webm",
-    "audio/ogg": "ogg",
-    "audio/opus": "opus",
-    "audio/mp4": "mp4",
-    "audio/mpeg": "mp3",
-    "audio/mp3": "mp3",
-    "audio/wav": "wav",
-    "audio/x-wav": "wav",
-    "audio/wave": "wav",
-    "audio/flac": "flac",
-    "audio/m4a": "m4a",
-    "audio/x-m4a": "m4a",
-    "video/mp4": "mp4",
-    "video/webm": "webm",
-    "video/ogg": "ogg",
+
+  // Maps any input MIME → { Groq-accepted standard MIME, file extension }
+  const map: Record<string, { mime: string; ext: string }> = {
+    "audio/webm":      { mime: "audio/webm",  ext: "webm" },
+    "audio/ogg":       { mime: "audio/ogg",   ext: "ogg"  },
+    "audio/opus":      { mime: "audio/opus",  ext: "opus" },
+    "audio/mp4":       { mime: "audio/mp4",   ext: "mp4"  },
+    "audio/mpeg":      { mime: "audio/mpeg",  ext: "mp3"  },
+    "audio/mp3":       { mime: "audio/mpeg",  ext: "mp3"  }, // non-standard alias
+    "audio/wav":       { mime: "audio/wav",   ext: "wav"  },
+    "audio/x-wav":     { mime: "audio/wav",   ext: "wav"  }, // non-standard alias
+    "audio/wave":      { mime: "audio/wav",   ext: "wav"  }, // non-standard alias
+    "audio/flac":      { mime: "audio/flac",  ext: "flac" },
+    "audio/x-flac":    { mime: "audio/flac",  ext: "flac" }, // non-standard alias
+    "audio/m4a":       { mime: "audio/mp4",   ext: "m4a"  }, // normalized to audio/mp4
+    "audio/x-m4a":     { mime: "audio/mp4",   ext: "m4a"  }, // non-standard alias
+    "audio/aac":       { mime: "audio/mp4",   ext: "m4a"  }, // AAC wrapped as m4a
+    "video/mp4":       { mime: "audio/mp4",   ext: "mp4"  },
+    "video/webm":      { mime: "audio/webm",  ext: "webm" },
+    "video/ogg":       { mime: "audio/ogg",   ext: "ogg"  },
+    "video/quicktime": { mime: "audio/mp4",   ext: "mp4"  }, // .mov → mp4
   };
-  const ext = map[base] ?? base.split("/")[1]?.split("+")[0] ?? "webm";
-  // If the base type is not in our map, fall back to webm (most common browser recording format)
-  const mime = map[base] !== undefined ? base : "audio/webm";
-  return { mime, ext };
+
+  return map[base] ?? { mime: "audio/webm", ext: "webm" };
 }
 
 function formatTimestamp(seconds: number): string {
@@ -614,33 +617,30 @@ export async function transcribeAudio(
   lang: AppLanguage,
   _userApiKey?: string,
 ): Promise<TranscriptSegment[]> {
-  const groqClient = getGroqClient();
   const { mime, ext } = normalizeAudioMimeType(mimeType);
   const audioFile = base64ToFile(base64, mime, `audio.${ext}`);
 
-  // #region agent log
-  fetch('http://127.0.0.1:7243/ingest/9ad0c230-685e-454d-89c2-4864437e5aa8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'geminiService.ts:transcribeAudio',message:'Groq call params',data:{rawMimeType:mimeType,normalizedMime:mime,ext,fileName:audioFile.name,fileType:audioFile.type,fileSize:audioFile.size,lang},hypothesisId:'A-B-C',runId:'run1',timestamp:Date.now()})}).catch(()=>{});
-  // #endregion
+  // Use direct fetch for full control over multipart upload (bypasses SDK MIME handling)
+  const formData = new FormData();
+  formData.append("file", audioFile, audioFile.name);
+  formData.append("model", AUDIO_MODEL);
+  formData.append("language", getLangCode(lang));
+  formData.append("response_format", "verbose_json");
 
-  // verbose_json gives us per-segment timestamps
-  let transcriptionRaw;
-  try {
-    transcriptionRaw = await groqClient.audio.transcriptions.create({
-      file: audioFile,
-      model: AUDIO_MODEL,
-      language: getLangCode(lang),
-      response_format: "verbose_json",
-    });
-    // #region agent log
-    fetch('http://127.0.0.1:7243/ingest/9ad0c230-685e-454d-89c2-4864437e5aa8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'geminiService.ts:transcribeAudio:success',message:'Groq call succeeded',data:{textLength:(transcriptionRaw as {text?:string}).text?.length??0},hypothesisId:'D',runId:'run1',timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
-  } catch (groqErr) {
-    // #region agent log
-    const errMsg = groqErr instanceof Error ? groqErr.message : String(groqErr);
-    fetch('http://127.0.0.1:7243/ingest/9ad0c230-685e-454d-89c2-4864437e5aa8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'geminiService.ts:transcribeAudio:error',message:'Groq call FAILED',data:{error:errMsg,rawMimeType:mimeType,normalizedMime:mime,ext,fileName:audioFile.name},hypothesisId:'C-D',runId:'run1',timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
-    throw groqErr;
+  const groqResponse = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${GROQ_API_KEY}` },
+    body: formData,
+  });
+
+  if (!groqResponse.ok) {
+    const errBody = await groqResponse.text().catch(() => groqResponse.statusText);
+    throw new Error(
+      `Groq ${groqResponse.status}: ${errBody} | file: ${audioFile.name} (${audioFile.type}, ${(audioFile.size / 1024).toFixed(0)}KB) | rawMime: ${mimeType}`
+    );
   }
+
+  const transcriptionRaw = await groqResponse.json() as unknown;
 
   type VerboseSegment = { id?: number; start?: number; end?: number; text?: string };
   const verboseResult = transcriptionRaw as unknown as {
