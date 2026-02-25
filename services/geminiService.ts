@@ -316,19 +316,26 @@ const AI_AUDIO_DIARIZATION_TIMEOUT_MS = 45000;
 const LEGAL_SEARCH_TIMEOUT_MS = 35000;
 const MENTOR_QUERY_TIMEOUT_MS = 40000;
 
-// --- FORENSIC SCENE VISUALIZATION (Single image via OpenRouter) ---
+// --- FORENSIC SCENE VIDEO RECONSTRUCTION (Multi-frame via OpenRouter → client-side WebM) ---
 export type ForensicCameraView = "CCTV_STREET" | "DASHCAM_CAR" | "DRONE_TOP" | "WITNESS_PHONE";
 
 const CAMERA_STYLE: Record<string, string> = {
-  CCTV_STREET: "CCTV security camera, wide angle, elevated, low-saturation color",
-  DASHCAM_CAR: "dashcam footage, from inside vehicle looking forward through windshield",
-  DRONE_TOP: "aerial drone, top-down bird's eye view, photorealistic",
-  WITNESS_PHONE: "handheld smartphone photo, witness perspective",
+  CCTV_STREET: "CCTV security camera view, wide angle, slightly elevated, low-saturation desaturated color, surveillance style",
+  DASHCAM_CAR: "dashcam footage style, from inside vehicle looking forward through windshield, wide angle",
+  DRONE_TOP: "aerial drone photography, top-down bird's eye view, high altitude, photorealistic",
+  WITNESS_PHONE: "handheld smartphone photo, witness eye-level perspective, slightly unsteady",
 };
 
+const ACCIDENT_STAGES = [
+  "moments before collision: vehicles approaching, normal traffic, no damage visible yet",
+  "the moment of collision: vehicles making contact, impact point clearly visible, debris flying",
+  "immediately after collision: vehicles at rest, visible damage, skid marks on asphalt, smoke",
+  "forensic overview scene: police on scene, vehicles marked, full accident scene documented",
+];
+
 /**
- * Generates a single forensic accident scene image based on expert analysis summary.
- * Uses OpenRouter image generation to visualize the collision scenario.
+ * Generates 4 forensic accident scene frames using OpenRouter image models.
+ * The client should then convert these frames into a real video using Canvas + MediaRecorder.
  */
 export async function generateForensicVideo(
   analysis: DocumentAnalysisResult,
@@ -341,21 +348,30 @@ export async function generateForensicVideo(
     analysis.vehicle1Type ? `Vehicle 1: ${analysis.vehicle1Type}` : "",
     analysis.vehicle2Type ? `Vehicle 2: ${analysis.vehicle2Type}` : "",
     analysis.weather ? `Weather: ${analysis.weather}` : "",
-    analysis.timeOfDay ? `Time: ${analysis.timeOfDay}` : "",
+    analysis.timeOfDay ? `Time of day: ${analysis.timeOfDay}` : "",
   ].filter(Boolean).join(". ");
 
-  const prompt = `Forensic traffic accident scene reconstruction. ${context}. Camera: ${cameraStyle}. Show the post-collision scene: vehicle positions, damage, skid marks on road. Photorealistic, no faces, no blood, professional forensic documentation style.`;
+  const baseStyle = `${cameraStyle}. Photorealistic, no visible human faces (privacy), no blood, professional forensic quality.`;
 
-  const imageUrl = await openRouterImage(prompt);
+  const framePrompts = ACCIDENT_STAGES.map(
+    (stage) =>
+      `Forensic traffic accident reconstruction. ${context}. Scene: ${stage}. Style: ${baseStyle}`,
+  );
+
+  const settled = await Promise.allSettled(framePrompts.map((p) => openRouterImage(p)));
+  const frames = settled
+    .filter((r): r is PromiseFulfilledResult<string> => r.status === "fulfilled")
+    .map((r) => r.value);
+
+  if (frames.length === 0) {
+    throw new Error("Kadrlar yaratilmadi. OpenRouter balansini yoki internet aloqasini tekshiring.");
+  }
 
   return {
     videoUri: null,
-    frames: [imageUrl],
-    explanation: `AI tomonidan expertiza xulosasi asosida avtohalokat sahnasi vizuallashtirildi. Kamera: ${view.replace(/_/g, " ")}. ${context}`,
-    technicalDetails: {
-      model: IMAGE_MODELS[0],
-      prompt,
-    },
+    frames,
+    explanation: `Expertiza xulosasi asosida avtohalokat sahnasi AI tomonidan ${frames.length} ta kadrda rekonstruksiya qilindi. Kamera: ${view.replace(/_/g, " ")}. ${context}`,
+    technicalDetails: { model: IMAGE_MODELS[0], prompt: framePrompts[0] },
   };
 }
 

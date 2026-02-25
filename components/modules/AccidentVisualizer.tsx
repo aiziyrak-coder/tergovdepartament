@@ -21,6 +21,91 @@ interface FileItem {
     mimeType: string;
 }
 
+const FRAME_DURATION_MS = 2500;
+const TRANSITION_FRAMES = 15;
+const VIDEO_FPS = 30;
+
+/**
+ * Converts an array of image URLs into a real WebM video blob using
+ * HTML5 Canvas and the MediaRecorder API. Each frame is displayed for
+ * FRAME_DURATION_MS with a smooth crossfade transition.
+ */
+async function framesToVideo(frameUrls: string[]): Promise<string> {
+  const W = 1280;
+  const H = 720;
+
+  const images = await Promise.all(
+    frameUrls.map(
+      (url) =>
+        new Promise<HTMLImageElement>((resolve, reject) => {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = () => resolve(img);
+          img.onerror = reject;
+          img.src = url;
+        }),
+    ),
+  );
+
+  const canvas = document.createElement("canvas");
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext("2d")!;
+
+  const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
+    ? "video/webm;codecs=vp9"
+    : "video/webm";
+
+  const stream = canvas.captureStream(VIDEO_FPS);
+  const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 4_000_000 });
+  const chunks: BlobPart[] = [];
+  recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+
+  const holdFrames = Math.round((FRAME_DURATION_MS / 1000) * VIDEO_FPS);
+
+  const drawImg = (img: HTMLImageElement, alpha = 1) => {
+    const scale = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+    const sw = img.naturalWidth * scale;
+    const sh = img.naturalHeight * scale;
+    ctx.globalAlpha = alpha;
+    ctx.drawImage(img, (W - sw) / 2, (H - sh) / 2, sw, sh);
+    ctx.globalAlpha = 1;
+  };
+
+  const waitFrame = () => new Promise<void>((r) => setTimeout(r, 1000 / VIDEO_FPS));
+
+  const videoBlob = await new Promise<Blob>((resolve) => {
+    recorder.onstop = () => resolve(new Blob(chunks, { type: "video/webm" }));
+    recorder.start();
+
+    (async () => {
+      for (let i = 0; i < images.length; i++) {
+        const cur = images[i];
+        const next = images[i + 1] ?? null;
+
+        // Hold current frame
+        for (let f = 0; f < holdFrames - TRANSITION_FRAMES; f++) {
+          ctx.clearRect(0, 0, W, H);
+          drawImg(cur);
+          await waitFrame();
+        }
+
+        // Crossfade to next frame (or fade to black on last)
+        for (let t = 0; t < TRANSITION_FRAMES; t++) {
+          const alpha = t / TRANSITION_FRAMES;
+          ctx.clearRect(0, 0, W, H);
+          drawImg(cur, 1 - alpha);
+          if (next) drawImg(next, alpha);
+          await waitFrame();
+        }
+      }
+      recorder.stop();
+    })();
+  });
+
+  return URL.createObjectURL(videoBlob);
+}
+
 const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
   const { language } = useLanguage();
   const { toast } = useToast();
@@ -31,9 +116,15 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
   const [editableSummary, setEditableSummary] = useState<string>("");
   const [isEditingSummary, setIsEditingSummary] = useState(false);
   const [selectedView, setSelectedView] = useState<CameraView>('CCTV_STREET');
-  const [sceneImage, setSceneImage] = useState<string | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [generatingPhase, setGeneratingPhase] = useState<"frames" | "encoding" | null>(null);
   const [expertExplanation, setExpertExplanation] = useState<string | null>(null);
   const [technicalDetails, setTechnicalDetails] = useState<Record<string, unknown> | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    return () => { if (videoUrl?.startsWith("blob:")) URL.revokeObjectURL(videoUrl); };
+  }, [videoUrl]);
 
   const getMimeTypeFromExtension = (filename: string, defaultType: string): string => {
       const ext = filename.split('.').pop()?.toLowerCase();
@@ -118,36 +209,42 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
 
   const startGeneration = async () => {
       setGenerating(true);
-      setSceneImage(null);
+      setVideoUrl(null);
+      setGeneratingPhase("frames");
       const refinedAnalysis = { ...analysisResult, summary: editableSummary };
 
-      toast("Sahnani vizuallashtirilmoqda...", "info");
+      toast("Kadrlar generatsiya qilinmoqda (1/2)...", "info");
 
       try {
           const result = await generateForensicVideo(refinedAnalysis, selectedView, language);
-          const img = result.frames[0] ?? null;
-          if (!img) throw new Error("Tasvir qaytmadi.");
-          setSceneImage(img);
+          if (result.frames.length === 0) throw new Error("Kadrlar qaytmadi.");
+
+          setGeneratingPhase("encoding");
+          toast(`${result.frames.length} ta kadr tayyor. Video kodlanmoqda (2/2)...`, "info");
+
+          const url = await framesToVideo(result.frames);
+
+          setVideoUrl(url);
           setExpertExplanation(result.explanation);
           setTechnicalDetails(result.technicalDetails as Record<string, unknown>);
-          toast("Sahna muvaffaqiyatli vizuallashtirildi!", "success");
+          toast("Video muvaffaqiyatli yaratildi!", "success");
       } catch (e) {
-          console.error("Scene Gen Error:", e);
-          const errorMsg = e instanceof Error ? e.message : String(e);
-          toast(errorMsg || "Sahnani vizuallashtirishda xatolik.", "error");
+          console.error("Video Gen Error:", e);
+          toast(e instanceof Error ? e.message : "Video yaratishda xatolik.", "error");
       } finally {
           setGenerating(false);
+          setGeneratingPhase(null);
       }
   };
 
   const saveToArchive = () => {
       if (!analysisResult) return;
       storageService.saveDocument({
-          title: `Avtohalokat: ${analysisResult.timeOfDay || 'Noma\'lum vaqt'}`,
+          title: `Avtohalokat rekonstruksiya: ${analysisResult.timeOfDay || "Noma'lum vaqt"}`,
           category: 'VIDEO',
           description: editableSummary,
           content: expertExplanation || '',
-          tags: ['Vizualizatsiya', selectedView],
+          tags: ['Video rekonstruksiya', selectedView],
           metadata: technicalDetails,
       });
       toast("Arxivga saqlandi.", "success");
@@ -300,20 +397,33 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
                     <div className="flex flex-col items-center gap-6 z-20">
                         <div className="w-20 h-20 border-4 border-slate-200 border-t-uzblue rounded-full animate-spin"></div>
                         <p className="text-sm font-bold text-slate-500 uppercase tracking-widest animate-pulse">
-                            {generating ? "Sahna vizuallashtirilmoqda..." : "Hujjatlar o'qilmoqda..."}
+                            {analyzing
+                                ? "Hujjatlar o'qilmoqda..."
+                                : generatingPhase === "frames"
+                                  ? "AI kadrlar yaratmoqda..."
+                                  : "Video kodlanmoqda..."}
                         </p>
+                        {generatingPhase === "frames" && (
+                            <p className="text-xs text-slate-400">4 ta sahna generatsiya qilinmoqda, ~30-60 soniya</p>
+                        )}
+                        {generatingPhase === "encoding" && (
+                            <p className="text-xs text-slate-400">Kadrlar WebM videoga aylantirilmoqda...</p>
+                        )}
                     </div>
-                ) : sceneImage ? (
-                    <img
-                        src={sceneImage}
-                        alt="Avtohalokat sahnasi"
+                ) : videoUrl ? (
+                    <video
+                        ref={videoRef}
+                        src={videoUrl}
+                        controls
+                        autoPlay
+                        loop
                         className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl"
                     />
                 ) : (
                     <div className="text-center opacity-30">
                         <Video size={80} className="mx-auto mb-4 text-slate-400"/>
-                        <h3 className="text-xl font-black text-slate-400 uppercase tracking-widest">Vizualizatsiya</h3>
-                        <p className="text-xs text-slate-400 mt-2">Hujjatlarni yuklang, tahlil qiling, keyin vizuallashtirishni boshlang</p>
+                        <h3 className="text-xl font-black text-slate-400 uppercase tracking-widest">Video Rekonstruksiya</h3>
+                        <p className="text-xs text-slate-400 mt-2">Hujjatlarni yuklang, tahlil qiling, keyin "Rekonstruksiya" tugmasini bosing</p>
                     </div>
                 )}
             </div>
@@ -328,13 +438,22 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
                 </div>
 
                 <div className="flex gap-3">
+                    {videoUrl && (
+                        <a
+                            href={videoUrl}
+                            download="avtohalokat-rekonstruksiya.webm"
+                            className="px-6 py-3 rounded-xl bg-white border border-slate-200 text-slate-600 hover:border-uzblue hover:text-uzblue transition-all font-bold text-xs flex items-center gap-2"
+                        >
+                            <Save size={16}/> YUKLAB OLISH
+                        </a>
+                    )}
                     <button
                         type="button"
                         onClick={saveToArchive}
-                        disabled={!sceneImage}
+                        disabled={!videoUrl}
                         className="px-6 py-3 rounded-xl bg-white border border-slate-200 text-slate-600 hover:border-uzblue hover:text-uzblue transition-all font-bold text-xs flex items-center gap-2 disabled:opacity-50"
                     >
-                        <Save size={16}/> SAQLASH
+                        <Save size={16}/> ARXIVGA SAQLASH
                     </button>
                     <button
                         type="button"
