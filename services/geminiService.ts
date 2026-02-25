@@ -603,59 +603,53 @@ export async function generateLegalProtocol(
 }
 
 // --- PHOTOROBOT IMAGE GENERATION (DALL-E via OpenRouter) ---
+/**
+ * Generates photorobot image variants using Pollinations.ai — free, no API key required.
+ * Each variant uses a different random seed to produce unique results.
+ */
 export async function generatePhotorobotVariants(
   prompt: string,
   count: number,
   _type: "HUMAN" | "OBJECT",
-  userApiKey?: string,
+  _userApiKey?: string,
 ): Promise<string[]> {
-  const client = getTextClient(userApiKey);
   const actualCount = Math.max(1, Math.min(count, 4));
   const fullPrompt =
-    `Forensic composite portrait sketch: ${prompt}. ` +
-    `Realistic detailed face, neutral white background, high quality identification photo.`;
+    `Forensic identification photo, realistic portrait: ${prompt}. ` +
+    `Sharp facial details, neutral solid white background, professional lighting, photorealistic.`;
 
-  // Generate sequentially — parallel DALL-E calls can hit rate limits
-  const results: string[] = [];
+  const urls: string[] = [];
   for (let i = 0; i < actualCount; i++) {
-    const response = await client.images.generate({
-      model: "openai/dall-e-3",
-      prompt: fullPrompt,
-      n: 1,
-      size: "1024x1024",
-      response_format: "url",
-    });
-    const url = response.data?.[0]?.url;
-    if (url) results.push(url);
+    const seed = Math.floor(Math.random() * 9_000_000) + 1_000_000;
+    const url =
+      `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}` +
+      `?width=1024&height=1024&seed=${seed}&nologo=true&enhance=true&model=flux`;
+    urls.push(url);
   }
-
-  if (results.length === 0) {
-    throw new Error("Rasm yaratilmadi. OpenRouter krediti yetarli emasmi yoki DALL-E 3 mavjud emas.");
-  }
-  return results;
+  return urls;
 }
 
+/**
+ * Edits a photorobot image: uses vision LLM to describe the current image,
+ * merges edit instructions, then re-generates via Pollinations.ai.
+ */
 export async function editPhotorobotImage(
   imageUrl: string,
-  prompt: string,
+  editInstruction: string,
   userApiKey?: string,
 ): Promise<string> {
   const client = getTextClient(userApiKey);
 
-  // Step 1: Use vision to describe current image and merge with edit instructions
-  const imageContent = imageUrl.startsWith("data:")
-    ? { type: "image_url" as const, image_url: { url: imageUrl } }
-    : { type: "image_url" as const, image_url: { url: imageUrl } };
-
+  // Use vision to get a detailed description of the current portrait
   const descResponse = await client.chat.completions.create({
     model: TEXT_MODEL,
     messages: [{
       role: "user",
       content: [
-        imageContent,
+        { type: "image_url", image_url: { url: imageUrl } },
         {
           type: "text",
-          text: `This is a forensic photorobot portrait. Describe this person in detail, then apply: "${prompt}". Return ONLY JSON: {"fullDescription":"detailed final portrait description"}`,
+          text: `This is a forensic photorobot portrait. Describe this person's appearance in full detail (face shape, skin tone, eyes, nose, hair, beard, clothing, etc.). Then incorporate this change: "${editInstruction}". Return ONLY JSON: {"fullDescription":"complete updated portrait description in English"}`,
         },
       ],
     }],
@@ -665,20 +659,15 @@ export async function editPhotorobotImage(
   const desc = safeParseJson<{ fullDescription?: string }>(
     descResponse.choices[0]?.message?.content ?? "{}", {},
   );
-  const finalPrompt = desc.fullDescription || prompt;
+  const finalPrompt = desc.fullDescription || editInstruction;
 
-  // Step 2: Generate updated portrait
-  const genResponse = await client.images.generate({
-    model: "openai/dall-e-3",
-    prompt: `Forensic composite portrait: ${finalPrompt}. Realistic, detailed, neutral white background, identification photo style.`,
-    n: 1,
-    size: "1024x1024",
-    response_format: "url",
-  });
-
-  const url = genResponse.data?.[0]?.url;
-  if (!url) throw new Error("Tahrir natijasida rasm topilmadi.");
-  return url;
+  // Re-generate with the updated description via Pollinations.ai
+  const seed = Math.floor(Math.random() * 9_000_000) + 1_000_000;
+  return (
+    `https://image.pollinations.ai/prompt/${encodeURIComponent(
+      `Forensic identification portrait: ${finalPrompt}. Realistic, neutral white background, photorealistic, sharp details.`,
+    )}?width=1024&height=1024&seed=${seed}&nologo=true&enhance=true&model=flux`
+  );
 }
 
 // --- VIRTUAL MENTOR ---
