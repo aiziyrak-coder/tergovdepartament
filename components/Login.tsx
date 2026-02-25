@@ -292,6 +292,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                &copy; 2026 Ўзбекистон Республикаси Ички Ишлар Вазирлиги
            </p>
       </div>
+      </div>
     </div>
   );
 };
