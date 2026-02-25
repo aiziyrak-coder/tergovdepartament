@@ -42,7 +42,7 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
       startTime: '15:30',
       endTime: '16:35',
       investigatorRank: 'подполковник',
-      investigatorName: 'Ш.Р.Дадажонов',
+      investigatorName: 'Турдиев Сарвар Илхомович',
       deviceInfo: '"DVD-R" диск',
       legalArticles: '90-92',
       caseDetails: 'Фуқаро Х.Ш.Каримовнинг аризаси юзасидан ўтказилаётган терговга қадар текширув материали бўйича',

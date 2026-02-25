@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 import { ModuleType, SavedDocument, NotificationItem } from '../types';
 import { storageService } from '../services/storageService';
 import { 
@@ -40,6 +41,7 @@ interface WeatherState {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
+  const { t } = useLanguage();
   const [time, setTime] = useState(new Date());
   const [recentDocs, setRecentDocs] = useState<SavedDocument[]>([]);
   const [weather, setWeather] = useState<WeatherState>({ temp: null, code: null, loading: true, error: false });
@@ -111,13 +113,13 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
       <header className="h-20 bg-white/60 backdrop-blur-xl border-b border-white/50 flex items-center justify-between px-8 shrink-0 z-30 shadow-sm transition-all sticky top-0">
           <div className="flex items-center gap-8">
               <div>
-                  <h1 className="text-2xl font-tech font-bold text-slate-900 uppercase tracking-tight">Xush Kelibsiz, <span className="text-uzblue">Mayor</span></h1>
+                  <h1 className="text-2xl font-tech font-bold text-slate-900 uppercase tracking-tight">{t('welcome')}, <span className="text-uzblue">Sarvar Ilkhomovich</span></h1>
               </div>
 
               <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50/80 border border-emerald-100 rounded-lg text-emerald-700">
                       <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                      <span className="text-[10px] font-black uppercase tracking-widest">Tizim Faol</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest">{t('system_active')}</span>
                   </div>
                   <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50/80 border border-blue-100 rounded-lg text-blue-700">
                       <Signal size={12}/>
@@ -200,7 +202,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
                         onClick={() => setModule(ModuleType.PROFILE)}
                         className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 border border-white shadow-md overflow-hidden relative cursor-pointer hover:ring-2 hover:ring-uzblue hover:ring-offset-2 transition-all"
                       >
-                          <img src="https://ui-avatars.com/api/?name=Mayor+Tergovchi&background=0099B5&color=fff&bold=true" className="w-full h-full object-cover"/>
+                          <img src="https://ui-avatars.com/api/?name=Sarvar+Ilkhomovich&background=0099B5&color=fff&bold=true" className="w-full h-full object-cover"/>
                           <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-uzgreen border-2 border-white rounded-full"></div>
                       </div>
                   </div>

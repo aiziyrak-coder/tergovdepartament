@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { HashRouter } from "react-router-dom";
+import { useLanguage } from "./contexts/LanguageContext";
 import Dashboard from "./components/Dashboard";
 import SmartProtocol from "./components/modules/SmartProtocol";
 import Stenogram from "./components/modules/Stenogram";
@@ -48,6 +49,7 @@ function moduleToHash(m: ModuleType): string {
 }
 
 const MainApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
+  const { t } = useLanguage();
   const [activeModule, setActiveModuleState] = useState<ModuleType>(() =>
     hashToModule(typeof window !== "undefined" ? window.location.hash : "")
   );
@@ -116,7 +118,7 @@ const MainApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                 {/* Left: Copyright */}
                 <div className="flex items-center gap-2 opacity-60 hover:opacity-100 transition-opacity cursor-default">
                     <ShieldCheck size={12} className="text-slate-400"/>
-                    <span className="text-[10px] font-bold text-slate-500 tracking-tight">© 2026 Ziyrak AI Platformasi. Barcha huquqlar himoyalangan.</span>
+                    <span className="text-[10px] font-bold text-slate-500 tracking-tight">© 2026 Ziyrak AI Platformasi. {t('footer_rights')}.</span>
                 </div>
 
                 {/* Right: Credits */}
@@ -124,7 +126,7 @@ const MainApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                     
                     {/* Developer: CDCGroup */}
                     <a href="https://cdcgroup.uz" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group decoration-0 cursor-pointer">
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-uzblue transition-colors">Ishlab chiqaruvchi</span>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-uzblue transition-colors">{t('dev_by')}</span>
                         <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-50 border border-slate-100 group-hover:border-uzblue/30 group-hover:bg-uzblue/5 transition-all">
                             <Code2 size={10} className="text-slate-400 group-hover:text-uzblue transition-colors"/>
                             <span className="text-[10px] font-black text-slate-700 group-hover:text-uzblue transition-colors">CDCGroup</span>
@@ -136,7 +138,7 @@ const MainApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
 
                     {/* Powered By: CraDev */}
                     <a href="https://cdcgroup.uz" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group decoration-0 cursor-pointer">
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-uzred transition-colors">Powered by</span>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-uzred transition-colors">{t('powered_by')}</span>
                         <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-50 border border-slate-100 group-hover:border-uzred/30 group-hover:bg-uzred/5 transition-all">
                             <Zap size={10} className="text-slate-400 group-hover:text-uzred transition-colors"/>
                             <span className="text-[10px] font-black text-slate-700 group-hover:text-uzred transition-colors">CraDev Company</span>

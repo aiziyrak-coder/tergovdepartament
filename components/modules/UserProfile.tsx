@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { ArrowLeft, User, Shield, Key, LogOut, Award, Briefcase, FileCheck, Star, Settings } from 'lucide-react';
 
 interface UserProfileProps { 
@@ -9,6 +10,7 @@ interface UserProfileProps {
 }
 
 const UserProfile: React.FC<UserProfileProps> = ({ onBack, onLogout, onSettings }) => {
+  const { t } = useLanguage();
   return (
     <div className="w-full h-full flex flex-col bg-[#F8FAFC] overflow-hidden text-slate-900 font-sans">
        {/* Header */}
@@ -20,9 +22,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ onBack, onLogout, onSettings 
                 <div>
                     <h2 className="text-xl font-black text-slate-900 flex items-center gap-3 tracking-tight uppercase">
                         <User className="text-slate-700" size={24}/>
-                        Shaxsiy <span className="text-slate-700">Kabinet</span>
+                        {t('settings')} <span className="text-slate-700">Kabinet</span>
                     </h2>
-                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Foydalanuvchi ma'lumotlari</p>
+                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{t('dev_by')} ma'lumotlari</p>
                 </div>
             </div>
             
@@ -44,12 +46,12 @@ const UserProfile: React.FC<UserProfileProps> = ({ onBack, onLogout, onSettings 
                    <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col items-center text-center relative overflow-hidden">
                        <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-r from-uzblue to-cyan-500"></div>
                        <div className="w-24 h-24 rounded-2xl bg-white p-1 shadow-lg relative z-10 -mt-2">
-                           <img src="https://ui-avatars.com/api/?name=Mayor+Tergovchi&background=0099B5&color=fff&bold=true&size=128" className="w-full h-full rounded-xl object-cover"/>
+                           <img src="https://ui-avatars.com/api/?name=Sarvar+Ilkhomovich&background=0099B5&color=fff&bold=true&size=128" className="w-full h-full rounded-xl object-cover"/>
                        </div>
                        
                        <div className="mt-4">
-                           <h3 className="text-xl font-black text-slate-900">Sh. R. Dadajonov</h3>
-                           <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mt-1">Mayor</p>
+                           <h3 className="text-xl font-black text-slate-900">Turdiev Sarvar Ilkhomovich</h3>
+                           <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mt-1">Sarvar Ilkhomovich</p>
                            <div className="mt-4 flex gap-2 justify-center">
                                <span className="px-3 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
                                    <Shield size={12}/> Faol
@@ -67,7 +69,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onBack, onLogout, onSettings 
                            </div>
                            <div className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
                                <span className="text-xs font-bold text-slate-500">Bo'lim</span>
-                               <span className="text-xs font-black text-slate-800">Farg'ona sh. IIB</span>
+                               <span className="text-xs font-black text-slate-800">Farg'ona viloyati IIB xuzuridagi TB UMIIB</span>
                            </div>
                            <div className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
                                <span className="text-xs font-bold text-slate-500">Telefon</span>

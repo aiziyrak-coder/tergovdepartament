@@ -57,8 +57,8 @@ const translations = {
     system_active: "Тизим Фаол",
     dept_name: "Ўзбекистон Республикаси Тергов Департаменти",
     welcome: "Хуш келибсиз",
-    rank: "Майор",
-    role: "Админ"
+    rank: "Подполковник",
+    role: "Терговчи"
   },
   [AppLanguage.UZ_LATN]: {
     // Sidebar
@@ -101,8 +101,8 @@ const translations = {
     system_active: "Tizim Faol",
     dept_name: "O'zbekiston Respublikasi Tergov Departamenti",
     welcome: "Xush kelibsiz",
-    rank: "Mayor",
-    role: "Admin"
+    rank: "Podpolkovnik",
+    role: "Tergovchi"
   },
   [AppLanguage.RU]: {
     // Sidebar
@@ -145,8 +145,8 @@ const translations = {
     system_active: "Система Активна",
     dept_name: "Следственный Департамент Республики Узбекистан",
     welcome: "Добро пожаловать",
-    rank: "Майор",
-    role: "Админ"
+    rank: "Подполковник",
+    role: "Следователь"
   },
   [AppLanguage.EN]: {
     // Sidebar
@@ -189,8 +189,8 @@ const translations = {
     system_active: "System Active",
     dept_name: "Investigation Department of the Republic of Uzbekistan",
     welcome: "Welcome",
-    rank: "Major",
-    role: "Admin"
+    rank: "Colonel",
+    role: "Investigator"
   }
 };
 

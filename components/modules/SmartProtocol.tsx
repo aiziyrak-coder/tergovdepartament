@@ -129,7 +129,7 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
   const getBaseMeta = () => ({
     caseNumber: "300001/2025-15ГУ",
     city: "Фарғона шаҳри",
-    investigatorName: "Ш.Р.Дадажонов",
+    investigatorName: "Турдиев Сарвар Илхомович",
     investigatorRank: "подполковник",
     officeNumber: "118",
     date: new Date().toISOString().split("T")[0],
