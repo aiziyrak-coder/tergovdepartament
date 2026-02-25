@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { ProtocolMetadata, ProtocolType, DialogSegment, AppLanguage, ProtocolLanguage } from "../../types";
 import { useToast } from "../../contexts/ToastContext";
+import { useLanguage } from "../../contexts/LanguageContext";
 import { generateLegalProtocol, transcribeAudio } from "../../services/geminiService";
 import { PROTOCOL_TEMPLATES, type ProtocolTemplateEntry } from "../../config/protocolTemplates";
 
@@ -122,6 +123,7 @@ interface ExtendedMetadata extends ProtocolMetadata {
 }
 
 const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
+  const { t } = useLanguage();
   const { toast } = useToast();
 
   // --- CONFIGURATION ---

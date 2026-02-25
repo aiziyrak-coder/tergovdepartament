@@ -1,5 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useLanguage } from "../../contexts/LanguageContext";
 import { askVirtualMentor, searchLegalDatabase, generateAcademyQuiz, generateSpeech, playGeneratedAudio } from '../../services/geminiService';
 import { 
     Send, User, Bot, ArrowLeft, Loader2, 
@@ -91,6 +92,7 @@ const SAMPLE_DOCS_DB = [
 ];
 
 const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }) => {
+  const { t } = useLanguage();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<'CHAT' | 'ACADEMY'>('CHAT');
   
@@ -101,7 +103,7 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
   
   // CHAT STATE
   const [messages, setMessages] = useState<Message[]>([
-      { id: '1', role: 'model', content: "Assalomu alaykum, Sarvar Ilkhomovich. Men O'zbekiston Respublikasi IIV Tergov Departamentining strategik maslahatchisiman. Kiberxavfsizlik, raqamli dalillar yoki klassik tergov bo'yicha yordam bera olaman.", timestamp: new Date() }
+      { id: '1', role: 'model', content: `${t('welcome')}, Sarvar Ilkhomovich. Men O'zbekiston Respublikasi IIV Tergov Departamentining strategik maslahatchisiman. Kiberxavfsizlik, raqamli dalillar yoki klassik tergov bo'yicha yordam bera olaman.`, timestamp: new Date() }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
