@@ -100,28 +100,55 @@ const Settings: React.FC<SettingsProps> = ({ onBack }) => {
                 </div>
              </div>
 
-             <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 mb-6">
-                <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                        <Lock size={18} className="text-emerald-500"/>
-                        <span className="text-sm font-bold text-slate-700 uppercase tracking-wide">Google Gemini API Калити</span>
+             <div className="space-y-4">
+                {/* OpenRouter Key */}
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                            <Lock size={18} className="text-emerald-500"/>
+                            <span className="text-sm font-bold text-slate-700 uppercase tracking-wide">OpenRouter API Калити</span>
+                        </div>
+                        <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1">
+                            <CheckCircle2 size={12}/> Химояланган
+                        </span>
                     </div>
-                    <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1">
-                        <CheckCircle2 size={12}/> Химояланган
-                    </span>
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="password"
+                            value="sk-or-v1-...EnvVariableProtected"
+                            disabled
+                            className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-mono text-slate-400 cursor-not-allowed select-none"
+                        />
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-2 font-medium flex items-center gap-1">
+                        <Shield size={10}/>
+                        Матн, кўриш, расм генерацияси учун. openrouter.ai дан олинади.
+                    </p>
                 </div>
-                <div className="flex items-center gap-2">
-                    <input 
-                        type="password" 
-                        value="AIzaSy...EnvVariableProtected" 
-                        disabled 
-                        className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-mono text-slate-400 cursor-not-allowed select-none"
-                    />
+                {/* Groq Key */}
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                            <Lock size={18} className="text-blue-500"/>
+                            <span className="text-sm font-bold text-slate-700 uppercase tracking-wide">Groq API Калити (Аудио)</span>
+                        </div>
+                        <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1">
+                            <CheckCircle2 size={12}/> Химояланган
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="password"
+                            value="gsk_...EnvVariableProtected"
+                            disabled
+                            className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-mono text-slate-400 cursor-not-allowed select-none"
+                        />
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-2 font-medium flex items-center gap-1">
+                        <Shield size={10}/>
+                        Аудио транскрипция (Whisper) учун. console.groq.com дан бепул олинади.
+                    </p>
                 </div>
-                <p className="text-[10px] text-slate-400 mt-2 font-medium flex items-center gap-1">
-                    <Shield size={10}/>
-                    Хавфсизлик талабларига кўра API калити сервер мухитида (.env) сақланади ва интерфейс орқали ўзгартирилмайди.
-                </p>
              </div>
           </div>
 
