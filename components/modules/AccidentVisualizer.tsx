@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { generateForensicVideo, analyzeForensicDocuments } from '../../services/geminiService';
 import { DocumentAnalysisResult } from '../../types';
 import { storageService } from '../../services/storageService';
-import { Upload, Play, Loader2, Video, ArrowLeft, Trash2, FileText, FileImage, Cctv, Disc, Map, Eye, Save, Edit3, CheckCircle2, Activity, AlertCircle, Key, Lock, Check } from 'lucide-react';
+import { Upload, Play, Loader2, Video, ArrowLeft, Trash2, FileText, FileImage, Cctv, Disc, Map, Eye, Save, Edit3, CheckCircle2, Activity, AlertCircle } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import heic2any from 'heic2any';
 import { useToast } from '../../contexts/ToastContext';
@@ -35,10 +35,6 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
   const [expertExplanation, setExpertExplanation] = useState<string | null>(null);
   const [technicalDetails, setTechnicalDetails] = useState<Record<string, unknown> | null>(null);
   
-  // API Key Management
-  const [showKeyModal, setShowKeyModal] = useState(false);
-  const [userApiKey, setUserApiKey] = useState('');
-  const [tempKeyInput, setTempKeyInput] = useState('');
 
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -109,7 +105,7 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
       setAnalysisResult(null);
       try {
           const result = await Promise.race([
-              analyzeForensicDocuments(files, language, userApiKey || undefined),
+              analyzeForensicDocuments(files, language),
               new Promise<DocumentAnalysisResult | null>((_, reject) =>
                   setTimeout(() => reject(new Error("Tahlil vaqti tugadi (60 s). Qayta urinib ko'ring.")), ANALYSIS_TIMEOUT_MS)
               ),
@@ -129,28 +125,7 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
       }
   };
 
-  const handleStartGenerationClick = () => {
-      if (!analysisResult) return;
-      
-      // If we don't have a key yet (and env is likely missing in prod), ask for it
-      if (!userApiKey) {
-          setShowKeyModal(true);
-      } else {
-          startGeneration(userApiKey);
-      }
-  };
-
-  const handleKeySubmit = () => {
-      if (!tempKeyInput.trim()) {
-          toast("Iltimos, API kalitni kiriting", "error");
-          return;
-      }
-      setUserApiKey(tempKeyInput);
-      setShowKeyModal(false);
-      startGeneration(tempKeyInput);
-  };
-
-  const startGeneration = async (key: string) => {
+  const startGeneration = async () => {
       setGenerating(true);
       setVideoUrl(null);
       const refinedAnalysis = { ...analysisResult, summary: editableSummary };
@@ -160,7 +135,7 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
 
       try {
           const result = await Promise.race([
-              generateForensicVideo(refinedAnalysis, selectedView, language, key),
+              generateForensicVideo(refinedAnalysis, selectedView, language),
               new Promise<Awaited<ReturnType<typeof generateForensicVideo>>>((_, reject) =>
                   setTimeout(() => reject(new Error("Video yaratish vaqti tugadi (2 min). Qayta urinib ko'ring.")), VIDEO_TIMEOUT_MS)
               ),
@@ -177,13 +152,7 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
       } catch (e) {
           console.error("Video Gen Error:", e);
           const errorMsg = e instanceof Error ? e.message : String(e);
-          if (errorMsg.includes("403") || errorMsg.includes("PERMISSION_DENIED") || errorMsg.includes("API") || errorMsg.includes("kalit")) {
-              toast("API kalit xatosi. Iltimos tekshirib qayta kiriting.", "error");
-              setUserApiKey("");
-              setShowKeyModal(true);
-          } else {
-              toast(errorMsg || "Video yaratishda xatolik (Veo API).", "error");
-          }
+          toast(errorMsg || "Video yaratishda xatolik (Veo API).", "error");
       } finally { 
           setGenerating(false); 
       }
@@ -214,51 +183,6 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
   return (
     <div className="w-full h-full flex flex-col bg-[#F8FAFC] overflow-hidden relative font-sans text-slate-900">
       
-      {/* API KEY MODAL */}
-      {showKeyModal && (
-          <div className="absolute inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in">
-              <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full border border-slate-200">
-                  <div className="flex items-center gap-3 mb-6 text-uzblue">
-                      <div className="p-3 bg-blue-50 rounded-xl">
-                        <Key size={24}/>
-                      </div>
-                      <h3 className="text-xl font-black uppercase">Gemini API Kalit</h3>
-                  </div>
-                  
-                  <p className="text-sm text-slate-600 mb-6 font-medium leading-relaxed">
-                      Video generatsiya (Veo) modeli uchun shaxsiy Google Gemini API kalitingizni kiriting. Bu kalit faqat ushbu sessiya davomida ishlatiladi.
-                  </p>
-
-                  <div className="relative mb-6">
-                      <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"/>
-                      <input 
-                          type="password"
-                          value={tempKeyInput}
-                          onChange={(e) => setTempKeyInput(e.target.value)}
-                          placeholder="AIzaSy..."
-                          className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-uzblue focus:ring-4 focus:ring-blue-50 transition-all"
-                          autoFocus
-                      />
-                  </div>
-
-                  <div className="flex gap-3">
-                      <button 
-                          onClick={() => setShowKeyModal(false)}
-                          className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-500 font-bold text-xs hover:bg-slate-50 transition-all"
-                      >
-                          BEKOR QILISH
-                      </button>
-                      <button 
-                          onClick={handleKeySubmit}
-                          className="flex-1 py-3 rounded-xl bg-uzblue text-white font-bold text-xs hover:bg-blue-600 shadow-lg shadow-blue-200 transition-all flex items-center justify-center gap-2"
-                      >
-                          <Check size={16}/> BOSHLASH
-                      </button>
-                  </div>
-              </div>
-          </div>
-      )}
-
       {/* HEADER */}
       <div className="h-20 border-b border-slate-200 bg-white flex items-center justify-between px-8 shrink-0 z-20 shadow-sm">
         <div className="flex items-center gap-6">
@@ -276,14 +200,9 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
              </div>
         </div>
         
-        {/* Manual Key Button (Optional quick access) */}
-        <button 
-            onClick={() => setShowKeyModal(true)} 
-            className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-bold transition-all border border-slate-200"
-            title="API Kalitni o'zgartirish"
-        >
-            <Key size={14}/> {userApiKey ? "Kalit Kiritilgan" : "API Kalit"}
-        </button>
+        <span className="px-4 py-2 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl text-xs font-bold flex items-center gap-2">
+            <AlertCircle size={14}/> Veo — Tez kunda
+        </span>
       </div>
 
       <div className="flex-1 min-h-0 relative z-10 p-6 gap-6 flex">
@@ -436,7 +355,7 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
                         <Save size={16}/> SAQLASH
                     </button>
                     <button 
-                        onClick={handleStartGenerationClick}
+                        onClick={startGeneration}
                         disabled={!analysisResult || generating}
                         className="px-8 py-3 rounded-xl bg-uzred text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-uzred/20 hover:bg-red-700 transition-all active:scale-95 disabled:opacity-50"
                     >
