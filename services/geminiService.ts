@@ -99,6 +99,36 @@ function base64ToFile(base64: string, mimeType: string, filename: string): File 
   return new File([bytes], filename, { type: mimeType });
 }
 
+/**
+ * Normalizes audio MIME type for Groq Whisper compatibility.
+ * Strips codec parameters (e.g. "audio/webm;codecs=opus" → "audio/webm")
+ * and maps to a Groq-supported extension.
+ */
+function normalizeAudioMimeType(rawMime: string): { mime: string; ext: string } {
+  const base = rawMime.split(";")[0].trim().toLowerCase();
+  const map: Record<string, string> = {
+    "audio/webm": "webm",
+    "audio/ogg": "ogg",
+    "audio/opus": "opus",
+    "audio/mp4": "mp4",
+    "audio/mpeg": "mp3",
+    "audio/mp3": "mp3",
+    "audio/wav": "wav",
+    "audio/x-wav": "wav",
+    "audio/wave": "wav",
+    "audio/flac": "flac",
+    "audio/m4a": "m4a",
+    "audio/x-m4a": "m4a",
+    "video/mp4": "mp4",
+    "video/webm": "webm",
+    "video/ogg": "ogg",
+  };
+  const ext = map[base] ?? base.split("/")[1]?.split("+")[0] ?? "webm";
+  // If the base type is not in our map, fall back to webm (most common browser recording format)
+  const mime = map[base] !== undefined ? base : "audio/webm";
+  return { mime, ext };
+}
+
 function formatTimestamp(seconds: number): string {
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
@@ -341,8 +371,8 @@ export async function transcribeAndDiarizeByVoice(
   if (!audioBase64?.trim()) return [];
   try {
     const groqClient = getGroqClient();
-    const ext = mimeType.split("/")[1]?.split(";")[0] || "webm";
-    const audioFile = base64ToFile(audioBase64, mimeType, `audio.${ext}`);
+    const { mime, ext } = normalizeAudioMimeType(mimeType);
+    const audioFile = base64ToFile(audioBase64, mime, `audio.${ext}`);
 
     const transcriptionRaw = await withTimeout(
       groqClient.audio.transcriptions.create({
@@ -585,8 +615,8 @@ export async function transcribeAudio(
   _userApiKey?: string,
 ): Promise<TranscriptSegment[]> {
   const groqClient = getGroqClient();
-  const ext = mimeType.split("/")[1]?.split(";")[0] || "webm";
-  const audioFile = base64ToFile(base64, mimeType, `audio.${ext}`);
+  const { mime, ext } = normalizeAudioMimeType(mimeType);
+  const audioFile = base64ToFile(base64, mime, `audio.${ext}`);
 
   // verbose_json gives us per-segment timestamps
   const transcriptionRaw = await groqClient.audio.transcriptions.create({
