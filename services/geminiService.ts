@@ -140,9 +140,9 @@ function normalizeAudioMimeType(rawMime: string): { mime: string; ext: string } 
     "audio/wave":      "wav",
     "audio/flac":      "flac",
     "audio/x-flac":    "flac",
-    "audio/m4a":       "m4a",
-    "audio/x-m4a":     "m4a",
-    "audio/aac":       "m4a",
+    "audio/m4a":       "mp4",   // m4a IS an mp4 container — send as audio.mp4 with audio/mp4
+    "audio/x-m4a":     "mp4",
+    "audio/aac":       "mp4",
     "video/mp4":       "mp4",
     "video/webm":      "webm",
     "video/ogg":       "ogg",
@@ -663,7 +663,7 @@ export async function transcribeAudio(
   if (!groqResponse.ok) {
     const errBody = await groqResponse.text().catch(() => groqResponse.statusText);
     throw new Error(
-      `Groq ${groqResponse.status}: ${errBody} | file: ${audioFile.name} | rawMime: ${mimeType} → ext: ${ext}`
+      `Groq ${groqResponse.status}: ${errBody} | file: ${audioFile.name} (type:${audioFile.type}) | rawMime: ${mimeType} → ext: ${ext}`
     );
   }
 
