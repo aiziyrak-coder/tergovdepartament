@@ -100,6 +100,21 @@ function base64ToFile(base64: string, mimeType: string, filename: string): File 
 }
 
 /**
+ * Creates a File for Groq audio upload WITHOUT a MIME type.
+ * Groq detects format from filename extension, not Content-Type header.
+ * Setting a MIME type (e.g. audio/mp4) causes Groq to reject the file
+ * even when the extension (m4a, mp4) is in the supported list.
+ */
+function base64ToGroqFile(base64: string, ext: string): File {
+  const binaryStr = atob(base64);
+  const bytes = new Uint8Array(binaryStr.length);
+  for (let i = 0; i < binaryStr.length; i++) {
+    bytes[i] = binaryStr.charCodeAt(i);
+  }
+  return new File([bytes], `audio.${ext}`);
+}
+
+/**
  * Normalizes audio MIME type for Groq Whisper compatibility.
  * Strips codec parameters and maps ALL variants (including non-standard) to
  * the exact standard MIME types that Groq accepts.
@@ -373,17 +388,24 @@ export async function transcribeAndDiarizeByVoice(
 ): Promise<DialogSegment[]> {
   if (!audioBase64?.trim()) return [];
   try {
-    const groqClient = getGroqClient();
-    const { mime, ext } = normalizeAudioMimeType(mimeType);
-    const audioFile = base64ToFile(audioBase64, mime, `audio.${ext}`);
+    const { ext } = normalizeAudioMimeType(mimeType);
+    const audioFile = base64ToGroqFile(audioBase64, ext);
 
     const transcriptionRaw = await withTimeout(
-      groqClient.audio.transcriptions.create({
-        file: audioFile,
-        model: AUDIO_MODEL,
-        language: getLangCode(AppLanguage.UZ_LATN),
-        response_format: "json",
-      }),
+      (async () => {
+        const fd = new FormData();
+        fd.append("file", audioFile, audioFile.name);
+        fd.append("model", AUDIO_MODEL);
+        fd.append("language", getLangCode(AppLanguage.UZ_LATN));
+        fd.append("response_format", "json");
+        const res = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${GROQ_API_KEY}` },
+          body: fd,
+        });
+        if (!res.ok) throw new Error(`Groq ${res.status}`);
+        return res.json() as Promise<{ text?: string }>;
+      })(),
       AI_AUDIO_DIARIZATION_TIMEOUT_MS,
       null,
     );
@@ -617,10 +639,10 @@ export async function transcribeAudio(
   lang: AppLanguage,
   _userApiKey?: string,
 ): Promise<TranscriptSegment[]> {
-  const { mime, ext } = normalizeAudioMimeType(mimeType);
-  const audioFile = base64ToFile(base64, mime, `audio.${ext}`);
+  const { ext } = normalizeAudioMimeType(mimeType);
+  // No MIME type on the File — Groq detects format from filename extension only
+  const audioFile = base64ToGroqFile(base64, ext);
 
-  // Use direct fetch for full control over multipart upload (bypasses SDK MIME handling)
   const formData = new FormData();
   formData.append("file", audioFile, audioFile.name);
   formData.append("model", AUDIO_MODEL);
@@ -636,7 +658,7 @@ export async function transcribeAudio(
   if (!groqResponse.ok) {
     const errBody = await groqResponse.text().catch(() => groqResponse.statusText);
     throw new Error(
-      `Groq ${groqResponse.status}: ${errBody} | file: ${audioFile.name} (${audioFile.type}, ${(audioFile.size / 1024).toFixed(0)}KB) | rawMime: ${mimeType}`
+      `Groq ${groqResponse.status}: ${errBody} | file: ${audioFile.name} | rawMime: ${mimeType} → ext: ${ext}`
     );
   }
 
