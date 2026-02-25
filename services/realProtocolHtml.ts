@@ -140,15 +140,23 @@ export function buildRealProtocolHtml(
   options?: { useCyrillicTitle?: boolean }
 ): string {
   const useCyrillic = options?.useCyrillicTitle !== false;
-  const title = useCyrillic ? toCyrillicTitle(template.title) : template.title;
+  const rawTitle = useCyrillic ? toCyrillicTitle(template.title) : template.title;
+
+  /**
+   * Always ensure the heading ends with "БАЁННОМАСИ".
+   * Split into two lines: main action phrase (uppercase) + БАЁННОМАСИ on its own line.
+   */
   const headingTitleHtml = (() => {
-    const normalized = (title || "").trim();
-    const suffix = " БАЁННОМАСИ";
+    let normalized = (rawTitle || "").trim().toUpperCase();
+
+    // Strip any existing БАЁННОМАСИ variant to avoid duplication before re-adding
+    const suffix = "БАЁННОМАСИ";
     if (normalized.endsWith(suffix)) {
-      const base = normalized.slice(0, -suffix.length);
-      return `${escapeHtml(base)}<br/>БАЁННОМАСИ`;
+      normalized = normalized.slice(0, -suffix.length).trim();
     }
-    return escapeHtml(normalized);
+
+    // Always render as two lines: action phrase + БАЁННОМАСИ
+    return `${escapeHtml(normalized)}<br/>${suffix}`;
   })();
   const caseNumber = getMeta(meta, "caseNumber");
   const city = getMeta(meta, "city");
@@ -206,13 +214,13 @@ export function buildRealProtocolHtml(
 <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" lang="uz">
 <head>
 <meta charset="UTF-8"/>
-<title>${escapeHtml(title)}</title>
+<title>${escapeHtml(rawTitle)}</title>
 <style>
   body { font-family: 'Times New Roman', serif; font-size: 14pt; line-height: 1.35; margin: 2cm auto; max-width: 21cm; padding: 0 2cm; color: #000; }
   h1 { font-size: 14pt; text-align: center; margin: 0 0 14pt 0; font-weight: bold; text-transform: uppercase; letter-spacing: 0.2px; }
   .doc-wrap { max-width: 21cm; margin: 0 auto; }
-  .date-city { width: 100%; border-collapse: collapse; margin-bottom: 12pt; }
-  .date-city td { width: 50%; vertical-align: top; font-size: 14pt; }
+  .date-city { width: 100%; border-collapse: collapse; margin-bottom: 12pt; border: none; }
+  .date-city td { width: 50%; vertical-align: top; font-size: 14pt; border: none; padding: 0; }
   .date-city td:last-child { text-align: right; }
   .intro { text-align: justify; text-indent: 30pt; margin: 0 0 10pt 0; font-size: 14pt; }
   .time-row { width: 100%; border-collapse: collapse; margin: 10pt 0 6pt 0; }
@@ -235,10 +243,10 @@ export function buildRealProtocolHtml(
 </head>
 <body>
 <h1>${headingTitleHtml}</h1>
-<table class="date-city">
+<table class="date-city" border="0" cellpadding="0" cellspacing="0">
   <tr>
-    <td>${escapeHtml(date)}</td>
-    <td>${escapeHtml(city)}</td>
+    <td style="width:50%;text-align:left;">${escapeHtml(date)}</td>
+    <td style="width:50%;text-align:right;">${escapeHtml(city)}</td>
   </tr>
 </table>
 <p class="intro">
