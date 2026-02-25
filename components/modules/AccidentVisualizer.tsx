@@ -31,26 +31,9 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
   const [editableSummary, setEditableSummary] = useState<string>("");
   const [isEditingSummary, setIsEditingSummary] = useState(false);
   const [selectedView, setSelectedView] = useState<CameraView>('CCTV_STREET');
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [frames, setFrames] = useState<string[]>([]);
-  const [currentFrame, setCurrentFrame] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [sceneImage, setSceneImage] = useState<string | null>(null);
   const [expertExplanation, setExpertExplanation] = useState<string | null>(null);
   const [technicalDetails, setTechnicalDetails] = useState<Record<string, unknown> | null>(null);
-
-  const frameTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  // Auto-play frame animation
-  useEffect(() => {
-    if (isPlaying && frames.length > 1) {
-      frameTimerRef.current = setInterval(() => {
-        setCurrentFrame((prev) => (prev + 1) % frames.length);
-      }, 1800);
-    } else {
-      if (frameTimerRef.current) clearInterval(frameTimerRef.current);
-    }
-    return () => { if (frameTimerRef.current) clearInterval(frameTimerRef.current); };
-  }, [isPlaying, frames.length]);
 
   const getMimeTypeFromExtension = (filename: string, defaultType: string): string => {
       const ext = filename.split('.').pop()?.toLowerCase();
@@ -135,31 +118,23 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
 
   const startGeneration = async () => {
       setGenerating(true);
-      setVideoUrl(null);
-      setFrames([]);
-      setCurrentFrame(0);
-      setIsPlaying(false);
+      setSceneImage(null);
       const refinedAnalysis = { ...analysisResult, summary: editableSummary };
 
-      toast("Sahnani rekonstruksiya qilish boshlandi. 4 ta kadr yaratilmoqda...", "info");
+      toast("Sahnani vizuallashtirilmoqda...", "info");
 
       try {
           const result = await generateForensicVideo(refinedAnalysis, selectedView, language);
-
-          if (result.frames.length > 0) {
-              setFrames(result.frames);
-              setCurrentFrame(0);
-              setIsPlaying(true);
-              setExpertExplanation(result.explanation);
-              setTechnicalDetails(result.technicalDetails as Record<string, unknown>);
-              toast(`${result.frames.length} ta kadr muvaffaqiyatli yaratildi!`, "success");
-          } else {
-              throw new Error("Kadrlar qaytmadi.");
-          }
+          const img = result.frames[0] ?? null;
+          if (!img) throw new Error("Tasvir qaytmadi.");
+          setSceneImage(img);
+          setExpertExplanation(result.explanation);
+          setTechnicalDetails(result.technicalDetails as Record<string, unknown>);
+          toast("Sahna muvaffaqiyatli vizuallashtirildi!", "success");
       } catch (e) {
-          console.error("Video Gen Error:", e);
+          console.error("Scene Gen Error:", e);
           const errorMsg = e instanceof Error ? e.message : String(e);
-          toast(errorMsg || "Sahnani yaratishda xatolik.", "error");
+          toast(errorMsg || "Sahnani vizuallashtirishda xatolik.", "error");
       } finally {
           setGenerating(false);
       }
@@ -172,7 +147,7 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
           category: 'VIDEO',
           description: editableSummary,
           content: expertExplanation || '',
-          tags: ['Rekonstruksiya', selectedView, `${frames.length} kadr`],
+          tags: ['Vizualizatsiya', selectedView],
           metadata: technicalDetails,
       });
       toast("Arxivga saqlandi.", "success");
@@ -325,54 +300,20 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
                     <div className="flex flex-col items-center gap-6 z-20">
                         <div className="w-20 h-20 border-4 border-slate-200 border-t-uzblue rounded-full animate-spin"></div>
                         <p className="text-sm font-bold text-slate-500 uppercase tracking-widest animate-pulse">
-                            {generating ? "Kadrlar generatsiya qilinmoqda..." : "Tasvirlar o'qilmoqda..."}
+                            {generating ? "Sahna vizuallashtirilmoqda..." : "Hujjatlar o'qilmoqda..."}
                         </p>
-                        {generating && <p className="text-xs text-slate-400">AI 4 ta kadr yaratmoqda, iltimos kuting...</p>}
                     </div>
-                ) : frames.length > 0 ? (
-                    <div className="relative w-full h-full flex flex-col">
-                        {/* Frame display */}
-                        <div className="flex-1 relative overflow-hidden rounded-2xl">
-                            <img
-                                src={frames[currentFrame]}
-                                alt={`Kadr ${currentFrame + 1}`}
-                                className="w-full h-full object-contain transition-opacity duration-500"
-                            />
-                            {/* Frame counter badge */}
-                            <div className="absolute top-3 right-3 bg-black/60 text-white text-xs font-bold px-3 py-1 rounded-lg backdrop-blur-sm">
-                                {currentFrame + 1} / {frames.length}
-                            </div>
-                            {/* Stage label */}
-                            <div className="absolute bottom-3 left-3 bg-black/60 text-white text-xs font-bold px-3 py-1 rounded-lg backdrop-blur-sm">
-                                {["Avvalgi holat", "To'qnashuv lahzasi", "Darhol oqibat", "Umumiy panorama"][currentFrame] ?? `Kadr ${currentFrame + 1}`}
-                            </div>
-                        </div>
-                        {/* Frame scrubber */}
-                        <div className="flex items-center gap-3 p-3 bg-white/90 rounded-b-2xl border-t border-slate-200">
-                            <button
-                                type="button"
-                                onClick={() => setIsPlaying((p) => !p)}
-                                className="p-2 rounded-lg bg-uzblue text-white hover:bg-blue-600 transition-all"
-                            >
-                                {isPlaying ? <Activity size={16}/> : <Play size={16} fill="currentColor"/>}
-                            </button>
-                            <div className="flex gap-1 flex-1">
-                                {frames.map((_, i) => (
-                                    <button
-                                        key={i}
-                                        type="button"
-                                        onClick={() => { setCurrentFrame(i); setIsPlaying(false); }}
-                                        className={`flex-1 h-2 rounded-full transition-all ${i === currentFrame ? "bg-uzblue" : "bg-slate-200 hover:bg-slate-400"}`}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-                    </div>
+                ) : sceneImage ? (
+                    <img
+                        src={sceneImage}
+                        alt="Avtohalokat sahnasi"
+                        className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl"
+                    />
                 ) : (
                     <div className="text-center opacity-30">
                         <Video size={80} className="mx-auto mb-4 text-slate-400"/>
-                        <h3 className="text-xl font-black text-slate-400 uppercase tracking-widest">Sahnani Rekonstruksiya</h3>
-                        <p className="text-xs text-slate-400 mt-2">Tahlildan so'ng "Rekonstruksiya" tugmasini bosing</p>
+                        <h3 className="text-xl font-black text-slate-400 uppercase tracking-widest">Vizualizatsiya</h3>
+                        <p className="text-xs text-slate-400 mt-2">Hujjatlarni yuklang, tahlil qiling, keyin vizuallashtirishni boshlang</p>
                     </div>
                 )}
             </div>
@@ -390,7 +331,7 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
                     <button
                         type="button"
                         onClick={saveToArchive}
-                        disabled={frames.length === 0}
+                        disabled={!sceneImage}
                         className="px-6 py-3 rounded-xl bg-white border border-slate-200 text-slate-600 hover:border-uzblue hover:text-uzblue transition-all font-bold text-xs flex items-center gap-2 disabled:opacity-50"
                     >
                         <Save size={16}/> SAQLASH
