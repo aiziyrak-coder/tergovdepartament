@@ -165,23 +165,34 @@ async function transcribeWithOpenRouter(
   const format = getAudioFormat(file);
   const isUzbek = lang !== AppLanguage.RU;
 
-  // Ask Gemini to transcribe AND diarize speakers directly from the audio.
-  // JSON output lets us map each turn to a separate TranscriptSegment with speaker label.
+  // Ask Gemini to transcribe, diarize, AND include timestamps from the audio.
   const prompt = isUzbek
     ? `Bu o'zbek tilidagi rasmiy tergov yoki so'roq audioyozuvidir.
-Vazifang:
-1. Har bir so'zni so'zma-so'z, aniq transkriptsiya qil.
-2. Gapiruvchilarni ovozlari bo'yicha aniqla va har bir navbatni alohida yoz.
-3. Natijani FAQAT quyidagi JSON massiv formatida qaytар (boshqa hech narsa yozma):
-[{"speaker":"Gapiruvchi 1","text":"..."},{"speaker":"Gapiruvchi 2","text":"..."}]
-Eslatma: "Gapiruvchi 1" odatda tergovchi (savol beradi), "Gapiruvchi 2" esa so'roq qilinuvchi.`
+
+MUHIM QOIDALAR:
+- Har bir so'zni SO'ZMA-SO'Z, ANIQ ko'chir. Hech qanday so'zni o'zgartirma, qo'shma yoki o'tkazib yubormа.
+- Gapiruvchilarni OVOZI bo'yicha aniqla (tovush tembri, balandligi).
+- Har bir navbat boshlanish vaqtini (MM:SS formatda) belgilа.
+- "Gapiruvchi 1" = tergovchi (savol beradi), "Gapiruvchi 2" = so'roq qilinuvchi.
+
+FAQAT quyidagi JSON formatda qaytар (boshqa hech narsa yozma, izoh ham yozma):
+[
+  {"speaker":"Gapiruvchi 1","text":"...","time":"00:00"},
+  {"speaker":"Gapiruvchi 2","text":"...","time":"00:15"}
+]`
     : `Это официальная аудиозапись допроса на русском языке.
-Задача:
-1. Транскрибируй каждое слово дословно и точно.
-2. Определи говорящих по голосу и каждую реплику запиши отдельно.
-3. Верни ТОЛЬКО JSON-массив (без пояснений):
-[{"speaker":"Говорящий 1","text":"..."},{"speaker":"Говорящий 2","text":"..."}]
-Примечание: "Говорящий 1" — следователь (задаёт вопросы), "Говорящий 2" — допрашиваемый.`;
+
+ВАЖНЫЕ ПРАВИЛА:
+- Транскрибируй ДОСЛОВНО и ТОЧНО каждое слово. Ничего не изменяй, не добавляй и не пропускай.
+- Определяй говорящих по ГОЛОСУ (тембр, высота тона).
+- Отмечай время начала каждой реплики (формат MM:SS).
+- "Говорящий 1" = следователь (задаёт вопросы), "Говорящий 2" = допрашиваемый.
+
+Верни ТОЛЬКО JSON-массив (без пояснений и комментариев):
+[
+  {"speaker":"Говорящий 1","text":"...","time":"00:00"},
+  {"speaker":"Говорящий 2","text":"...","time":"00:15"}
+]`;
 
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
@@ -214,9 +225,9 @@ Eslatma: "Gapiruvchi 1" odatda tergovchi (savol beradi), "Gapiruvchi 2" esa so'r
   const raw = (json.choices?.[0]?.message?.content ?? "").trim();
   if (!raw) return [];
 
-  // Parse JSON speaker segments from Gemini's response
-  type RawSeg = { speaker?: string; text?: string };
-  const cleaned = raw.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "").trim();
+  // Strip markdown code fences if present, then parse JSON
+  type RawSeg = { speaker?: string; text?: string; time?: string };
+  const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
   const parsed = safeParseJson<RawSeg[]>(cleaned, []);
 
   if (Array.isArray(parsed) && parsed.length > 0) {
@@ -224,9 +235,9 @@ Eslatma: "Gapiruvchi 1" odatda tergovchi (savol beradi), "Gapiruvchi 2" esa so'r
       .filter((s) => s.text?.trim())
       .map((s, i) => ({
         id: `seg_${i + 1}`,
-        speaker: s.speaker?.trim() || `Gapiruvchi ${(i % 2) + 1}`,
+        speaker: s.speaker?.trim() || (isUzbek ? `Gapiruvchi ${(i % 2) + 1}` : `Говорящий ${(i % 2) + 1}`),
         text: s.text!.trim(),
-        timestamp: "",
+        timestamp: s.time?.trim() || "",
       }));
   }
 

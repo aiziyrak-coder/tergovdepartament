@@ -163,11 +163,12 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
 
   // --- WORD GENERATION (official stenogram format) ---
   const downloadWordDocument = () => {
-      const dialoguesHtml = segments.map(s =>
-          `<p style="margin-bottom: 5px;">
-              <strong>${escapeHtml(s.speaker)}:</strong> ${escapeHtml(s.text)}
-           </p>`
-      ).join('');
+      const dialoguesHtml = segments.map(s => {
+          const timeTag = s.timestamp
+              ? `<span style="color:#6b7280;font-size:10pt;font-family:'Courier New',monospace;">[${escapeHtml(s.timestamp)}]</span> `
+              : '';
+          return `<p style="margin-bottom: 6px;">${timeTag}<strong>${escapeHtml(s.speaker)}:</strong> ${escapeHtml(s.text)}</p>`;
+      }).join('');
 
       const templateHtml = `
         <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
