@@ -172,18 +172,12 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
   const handleSpeak = async (text: string) => {
       try {
           setIsSpeaking(true);
-          const audioBuffer = await generateSpeech(text);
-          if (audioBuffer) {
-              playGeneratedAudio(audioBuffer);
-              // Simple duration estimate for UI feedback
-              setTimeout(() => setIsSpeaking(false), audioBuffer.duration * 1000);
-          } else {
-              setIsSpeaking(false);
-          }
+          await generateSpeech(text);
+          // generateSpeech is a no-op placeholder; speech not yet implemented
+          setIsSpeaking(false);
       } catch (e) {
           console.error("Speech generation failed", e);
           setIsSpeaking(false);
-          toast("Ovoz yaratishda xatolik", "error");
       }
   };
 

@@ -273,22 +273,23 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
       // Ҳақиқий вақтда аваздан-матнга (фақат кўрсатиш; язува ёки баённомага таъсир қилмайди)
       setLiveTranscript("");
       setInterimTranscript("");
-      const SpeechRecognitionCtor =
-        typeof window !== "undefined"
-          ? (window.SpeechRecognition || (window as Window & { webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition)
-          : null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const w = typeof window !== "undefined" ? (window as any) : null;
+      const SpeechRecognitionCtor = w?.SpeechRecognition || w?.webkitSpeechRecognition || null;
       if (SpeechRecognitionCtor) {
         try {
-          const recognition = new SpeechRecognitionCtor();
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const recognition: any = new SpeechRecognitionCtor();
           recognition.continuous = true;
           recognition.interimResults = true;
-          recognition.lang = "uz-UZ"; // fallback handled below
-          recognition.onresult = (e: SpeechRecognitionEvent) => {
+          recognition.lang = "uz-UZ";
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          recognition.onresult = (e: any) => {
             let interim = "";
             let finalText = "";
             for (let i = e.resultIndex; i < e.results.length; i++) {
               const result = e.results[i];
-              const text = (result[0]?.transcript ?? "").trim();
+              const text = ((result[0]?.transcript as string | undefined) ?? "").trim();
               if (result.isFinal) {
                 finalText += (finalText ? " " : "") + text;
               } else {

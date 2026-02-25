@@ -20,13 +20,10 @@ import { buildRealProtocolHtml } from "./realProtocolHtml";
 // API Keys — embedded at build time via Vite
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || "";
 const GROQ_API_KEY = process.env.GROQ_API_KEY || "";
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 
 // Default models
 const TEXT_MODEL = "google/gemini-2.0-flash-001";
 const AUDIO_MODEL = "whisper-large-v3";
-// gemini-1.5-flash: free tier, natively supports audio (mp3, m4a, wav, ogg, flac, webm)
-const GEMINI_AUDIO_MODEL = "gemini-1.5-flash";
 
 /** Creates OpenRouter client for all text/vision/image tasks. */
 function getTextClient(customKey?: string): OpenAI {

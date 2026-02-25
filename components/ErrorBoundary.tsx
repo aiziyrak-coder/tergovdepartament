@@ -1,8 +1,8 @@
-import React, { Component, ErrorInfo, ReactNode } from "react";
+import React, { ErrorInfo } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 
 interface Props {
-  children: ReactNode;
+  children: React.ReactNode;
   fallbackTitle?: string;
   onReset?: () => void;
 }
@@ -14,8 +14,10 @@ interface State {
 
 /**
  * Catches JavaScript errors in child tree and shows a fallback UI instead of crashing.
+ * Uses React.Component (not destructured) for React 19 compatibility.
  */
-export class ErrorBoundary extends Component<Props, State> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export class ErrorBoundary extends (React.Component as any)<Props, State> {
   state: State = { hasError: false, error: null };
 
   static getDerivedStateFromError(error: Error): State {
@@ -26,12 +28,12 @@ export class ErrorBoundary extends Component<Props, State> {
     console.error("ErrorBoundary caught:", error, errorInfo.componentStack);
   }
 
-  handleReset = (): void => {
+  handleReset(): void {
     this.setState({ hasError: false, error: null });
     this.props.onReset?.();
-  };
+  }
 
-  render(): ReactNode {
+  render(): React.ReactNode {
     if (this.state.hasError && this.state.error) {
       return (
         <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 p-8 text-slate-800 font-sans">
@@ -51,7 +53,7 @@ export class ErrorBoundary extends Component<Props, State> {
             </details>
             <button
               type="button"
-              onClick={this.handleReset}
+              onClick={() => this.handleReset()}
               className="inline-flex items-center gap-2 px-6 py-3 bg-uzblue text-white rounded-xl font-bold text-sm hover:bg-blue-600 transition-colors"
             >
               <RefreshCw size={18} />

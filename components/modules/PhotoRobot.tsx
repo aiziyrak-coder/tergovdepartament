@@ -102,7 +102,7 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
   
   // Voice Command State
   const [isListening, setIsListening] = useState(false);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<{ stop: () => void } | null>(null);
 
   useEffect(() => {
     return () => {
@@ -115,21 +115,24 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
       if (recognitionRef.current) recognitionRef.current.stop();
       setIsListening(false);
     } else {
-      // @ts-ignore
-      const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
-      if (!SpeechRecognition) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const w = window as any;
+      const SpeechRecognitionCtor = w.SpeechRecognition || w.webkitSpeechRecognition;
+      if (!SpeechRecognitionCtor) {
         toast("Браузерда овозли юзиш имконияти ёқ", "error");
         return;
       }
       
-      const recognition = new SpeechRecognition();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const recognition: any = new SpeechRecognitionCtor();
       recognition.continuous = false;
       recognition.interimResults = false;
       recognition.lang = 'uz-UZ';
       
       recognition.onstart = () => setIsListening(true);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       recognition.onresult = (event: any) => {
-        const text = event.results[0][0].transcript;
+        const text = event.results[0][0].transcript as string;
         setEditPrompt(prev => prev ? `${prev} ${text}` : text);
       };
       recognition.onend = () => setIsListening(false);
@@ -208,7 +211,7 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
       const imgs = await generatePhotorobotVariants(prompt, 5, targetType);
       setVariants(imgs);
       setStep('SELECT');
-      toast("Цингъ на реалистик вариант шакллантирилди", "success");
+      toast("Реалистик вариантлар шакллантирилди", "success");
     } catch (e) {
         console.error(e);
         const errorMsg = e instanceof Error ? e.message : String(e);

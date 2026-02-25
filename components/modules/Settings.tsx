@@ -160,14 +160,14 @@ const Settings: React.FC<SettingsProps> = ({ onBack }) => {
                 </div>
                 <div>
                     <h3 className="text-lg font-black text-slate-800 uppercase">Маълумотлар Базаси</h3>
-                    <p className="text-sm text-slate-500 font-medium">Маъломотлар ва двох онлайн босимавчи файлларни дисюнтинг.</p>
+                    <p className="text-sm text-slate-500 font-medium">Маҳаллий сақланган маълумотлар ва кешни тозалаш.</p>
                 </div>
              </div>
 
              <div className="flex items-center justify-between p-6 bg-red-50 rounded-2xl border border-red-100">
                 <div>
                     <h4 className="font-bold text-red-900 text-sm uppercase mb-1">Тизимни Тозалаш</h4>
-                    <p className="text-xs text-red-700/80 font-medium">Барча сайланган хужжатлар, сожламалар ва кешни ўчириб юборди.</p>
+                    <p className="text-xs text-red-700/80 font-medium">Барча маҳаллий маълумотлар, созламалар ва кешни тозалайди.</p>
                 </div>
                 <button
                     type="button"
@@ -186,7 +186,7 @@ const Settings: React.FC<SettingsProps> = ({ onBack }) => {
       <ConfirmModal
         open={showClearConfirm}
         title="Тизимни тозалаш"
-        message="Барча маялли маълумотлар (архив, сожламалар, кеш) бутунлай ўчирилади. Бу амални қайтариб бўлмайди. Давом этасизми?"
+        message="Барча маҳаллий маълумотлар (архив, созламалар, кеш) бутунлай ўчирилади. Бу амални қайтариб бўлмайди. Давом этасизми?"
         confirmLabel="Тозалаш"
         cancelLabel="Бекор қилиш"
         variant="danger"
