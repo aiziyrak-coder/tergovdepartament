@@ -82,7 +82,7 @@ const Statistics: React.FC<StatisticsProps> = ({ onBack }) => {
                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
                        <div className="flex justify-between items-start mb-4">
                            <div className="p-3 bg-purple-50 text-purple-600 rounded-xl"><Users size={20}/></div>
-                           <span className="text-xs font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded">Online</span></span>
+                           <span className="text-xs font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded">Online</span>
                        </div>
                        <h3 className="text-3xl font-black text-slate-800 mb-1">1</h3>
                        <p className="text-xs font-bold text-slate-400 uppercase">Фаол Терговчилар</p>

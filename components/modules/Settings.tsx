@@ -133,14 +133,14 @@ const Settings: React.FC<SettingsProps> = ({ onBack }) => {
                 </div>
                 <div>
                     <h3 className="text-lg font-black text-slate-800 uppercase">Маълумотлар Базаси</h3>
-                    <p className="text-sm text-slate-500 font-medium">Маъломотлар ва двох онлайн босимавчи файлларни дисюнтинг.
+                    <p className="text-sm text-slate-500 font-medium">Маъломотлар ва двох онлайн босимавчи файлларни дисюнтинг.</p>
                 </div>
              </div>
 
              <div className="flex items-center justify-between p-6 bg-red-50 rounded-2xl border border-red-100">
                 <div>
                     <h4 className="font-bold text-red-900 text-sm uppercase mb-1">Тизимни Тозалаш</h4>
-                    <p className="text-xs text-red-700/80 font-medium">Барча сайланган хужжатлар, сожламалар ва кешни ўчириб юборди.
+                    <p className="text-xs text-red-700/80 font-medium">Барча сайланган хужжатлар, сожламалар ва кешни ўчириб юборди.</p>
                 </div>
                 <button
                     type="button"
