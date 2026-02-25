@@ -603,67 +603,64 @@ export async function generateLegalProtocol(
 }
 
 // --- PHOTOROBOT IMAGE GENERATION (DALL-E via OpenRouter) ---
-/** Converts a response Blob to a base64 data URL. */
-async function blobToDataUrl(blob: Blob): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
+/** OpenRouter image generation models in priority order (cheapest first). */
+const IMAGE_MODELS = [
+  "google/gemini-2.5-flash-image-preview",
+  "google/gemini-2.5-flash-image",
+  "google/gemini-3-pro-image-preview",
+];
 
 /**
- * Generates an image via HuggingFace Inference API — free, no API key required.
- * Falls back through multiple models in case one is loading or unavailable.
+ * Generates a single image via OpenRouter's chat completions endpoint
+ * using image-capable multimodal models (modalities: ["image", "text"]).
+ * Returns a base64 data URL as provided by OpenRouter.
  */
-async function hfImage(prompt: string): Promise<string> {
-  const models = [
-    "stabilityai/stable-diffusion-xl-base-1.0",
-    "stabilityai/stable-diffusion-2-1",
-    "runwayml/stable-diffusion-v1-5",
-  ];
-
-  for (const model of models) {
+async function openRouterImage(prompt: string): Promise<string> {
+  for (const model of IMAGE_MODELS) {
     try {
-      const res = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ inputs: prompt }),
+        headers: {
+          "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://tergov.cdcgroup.uz",
+          "X-Title": "Tergov Fergana",
+        },
+        body: JSON.stringify({
+          model,
+          messages: [{ role: "user", content: prompt }],
+          modalities: ["image", "text"],
+        }),
       });
 
-      if (res.status === 503) continue; // Model warming up — try next
-      if (!res.ok) continue;
+      if (!res.ok) {
+        const errText = await res.text().catch(() => "");
+        console.warn(`OpenRouter image model ${model} failed ${res.status}: ${errText.slice(0, 200)}`);
+        continue;
+      }
 
-      const blob = await res.blob();
-      if (blob.size < 2000) continue; // Error JSON disguised as blob
+      const data = await res.json() as {
+        choices?: Array<{
+          message?: {
+            images?: Array<{ imageUrl?: { url?: string } }>;
+          };
+        }>;
+      };
 
-      return await blobToDataUrl(blob);
-    } catch {
-      continue;
+      const url = data?.choices?.[0]?.message?.images?.[0]?.imageUrl?.url;
+      if (url) return url;
+
+      console.warn(`OpenRouter image model ${model}: no image in response`);
+    } catch (err) {
+      console.warn(`OpenRouter image model ${model} error:`, err);
     }
   }
-  throw new Error("HuggingFace: barcha modellar band.");
-}
-
-/** Generates an image via Pollinations.ai (fallback). */
-async function pollinationsImage(prompt: string): Promise<string> {
-  const seed = Math.floor(Math.random() * 9_000_000) + 1_000_000;
-  const url =
-    `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}` +
-    `?width=512&height=512&seed=${seed}&nologo=true`;
-
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Pollinations ${res.status}`);
-
-  const blob = await res.blob();
-  return await blobToDataUrl(blob);
+  throw new Error("OpenRouter: rasm yaratib bo'lmadi. OpenRouter balansini va API kalitini tekshiring.");
 }
 
 /**
- * Generates photorobot image variants.
- * Primary: HuggingFace Inference API (free, no key).
- * Fallback: Pollinations.ai.
+ * Generates photorobot image variants via OpenRouter multimodal image models.
+ * Uses google/gemini-2.5-flash-image or similar — works with existing OPENROUTER_API_KEY.
  */
 export async function generatePhotorobotVariants(
   prompt: string,
@@ -674,18 +671,10 @@ export async function generatePhotorobotVariants(
   const actualCount = Math.max(1, Math.min(count, 4));
   const fullPrompt =
     `Forensic identification portrait, photorealistic: ${prompt}. ` +
-    `Sharp facial details, neutral solid white background, professional studio lighting, high quality.`;
-
-  const generateOne = async (): Promise<string> => {
-    try {
-      return await hfImage(fullPrompt);
-    } catch {
-      return await pollinationsImage(fullPrompt);
-    }
-  };
+    `Sharp facial details, neutral solid white background, professional studio lighting, high quality, realistic face.`;
 
   const settled = await Promise.allSettled(
-    Array.from({ length: actualCount }, () => generateOne()),
+    Array.from({ length: actualCount }, () => openRouterImage(fullPrompt)),
   );
 
   const images = settled
@@ -693,9 +682,8 @@ export async function generatePhotorobotVariants(
     .map((r) => r.value);
 
   if (images.length === 0) {
-    throw new Error(
-      "Rasm yaratilmadi. HuggingFace va Pollinations.ai ishlamadi. Keyinroq urinib ko'ring.",
-    );
+    const firstError = settled.find((r) => r.status === "rejected") as PromiseRejectedResult | undefined;
+    throw new Error(firstError?.reason?.message ?? "Rasm yaratilmadi. OpenRouter balansini tekshiring.");
   }
   return images;
 }
@@ -735,11 +723,7 @@ export async function editPhotorobotImage(
   const editFullPrompt =
     `Forensic identification portrait: ${finalPrompt}. Realistic, neutral white background, photorealistic, sharp details.`;
 
-  try {
-    return await hfImage(editFullPrompt);
-  } catch {
-    return await pollinationsImage(editFullPrompt);
-  }
+  return openRouterImage(editFullPrompt);
 }
 
 // --- VIRTUAL MENTOR ---
