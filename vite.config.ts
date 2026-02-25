@@ -8,11 +8,13 @@ export default defineConfig(({ mode }) => {
 
     const openrouterKey = env.OPENROUTER_API_KEY || process.env.OPENROUTER_API_KEY || '';
     const groqKey = env.GROQ_API_KEY || process.env.GROQ_API_KEY || '';
+    const geminiKey = env.GEMINI_API_KEY || process.env.GEMINI_API_KEY || '';
 
     console.log('🔐 Vite Build - API Key Status:');
     console.log('   Mode:', mode);
     console.log('   OPENROUTER_API_KEY:', openrouterKey ? '✅ Found' : '❌ NOT FOUND');
     console.log('   GROQ_API_KEY:', groqKey ? '✅ Found' : '❌ NOT FOUND');
+    console.log('   GEMINI_API_KEY:', geminiKey ? '✅ Found' : '❌ NOT FOUND (audio will use Groq fallback)');
 
     return {
         server: {
@@ -27,6 +29,7 @@ export default defineConfig(({ mode }) => {
         define: {
             'process.env.OPENROUTER_API_KEY': JSON.stringify(openrouterKey),
             'process.env.GROQ_API_KEY': JSON.stringify(groqKey),
+            'process.env.GEMINI_API_KEY': JSON.stringify(geminiKey),
         },
         resolve: {
             alias: {

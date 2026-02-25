@@ -20,10 +20,13 @@ import { buildRealProtocolHtml } from "./realProtocolHtml";
 // API Keys — embedded at build time via Vite
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || "";
 const GROQ_API_KEY = process.env.GROQ_API_KEY || "";
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 
 // Default models
 const TEXT_MODEL = "google/gemini-2.0-flash-001";
 const AUDIO_MODEL = "whisper-large-v3";
+// gemini-1.5-flash: free tier, natively supports audio (mp3, m4a, wav, ogg, flac, webm)
+const GEMINI_AUDIO_MODEL = "gemini-1.5-flash";
 
 /** Creates OpenRouter client for all text/vision/image tasks. */
 function getTextClient(customKey?: string): OpenAI {
@@ -117,7 +120,88 @@ function normalizeAudioMimeType(rawMime: string): { mime: string; ext: string } 
   return { mime: `audio/${ext}`, ext };
 }
 
-// --- WAV ENCODING (for guaranteed Groq compatibility) ---
+// --- GEMINI DIRECT AUDIO TRANSCRIPTION ---
+
+/**
+ * Converts an ArrayBuffer to base64 string in chunks to avoid stack overflow
+ * on large files (spread operator limit ~65535 elements).
+ */
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  const chunkSize = 8192;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, Math.min(i + chunkSize, bytes.length)));
+  }
+  return btoa(binary);
+}
+
+/** Maps file extension/type to a MIME type that Gemini's inline data API accepts. */
+function getGeminiAudioMime(file: File): string {
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+  const byExt: Record<string, string> = {
+    mp3: "audio/mpeg", mpga: "audio/mpeg", mpeg: "audio/mpeg",
+    wav: "audio/wav", wave: "audio/wav",
+    ogg: "audio/ogg", opus: "audio/ogg",
+    flac: "audio/flac",
+    m4a: "audio/mp4", aac: "audio/mp4", mp4: "audio/mp4",
+    webm: "audio/webm",
+  };
+  return byExt[ext] ?? (file.type.split(";")[0].trim() || "audio/mp4");
+}
+
+/**
+ * Transcribes audio using Gemini 1.5 Flash via Google's REST API.
+ * Provides native, accurate Uzbek (and Russian) speech recognition without
+ * any format conversion — sends the original file bytes directly.
+ */
+async function transcribeWithGemini(
+  file: File,
+  lang: AppLanguage,
+  apiKey: string,
+): Promise<TranscriptSegment[]> {
+  const buffer = await file.arrayBuffer();
+  const base64Data = arrayBufferToBase64(buffer);
+  const mimeType = getGeminiAudioMime(file);
+  const langName = lang === AppLanguage.RU ? "Russian" : "Uzbek";
+
+  const body = {
+    contents: [{
+      parts: [
+        { inlineData: { mimeType, data: base64Data } },
+        {
+          text:
+            `Bu ${langName === "Uzbek" ? "o'zbek" : "rus"} tilidagi rasmiy tergov so'rovi ` +
+            `yoki guvohlik audioyozuvidir. Aytilgan har bir so'zni aniq, ` +
+            `so'zma-so'z transkriptsiya qil. Faqat transkriptsiya matnini qaytар, ` +
+            `hech qanday izoh, sarlavha yoki belgi yozma.`,
+        },
+      ],
+    }],
+    generationConfig: { temperature: 0 },
+  };
+
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_AUDIO_MODEL}:generateContent?key=${apiKey}`,
+    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) },
+  );
+
+  if (!res.ok) {
+    const err = await res.text().catch(() => res.statusText);
+    throw new Error(`Gemini audio xatosi ${res.status}: ${err}`);
+  }
+
+  type GeminiResponse = {
+    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+  };
+  const json = await res.json() as GeminiResponse;
+  const text = json.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+  if (!text.trim()) return [];
+
+  return [{ id: "seg_1", speaker: "Speaker 1", text: text.trim(), timestamp: "00:00" }];
+}
+
+// --- WAV ENCODING (for Groq fallback compatibility) ---
 
 function writeWavTag(view: DataView, offset: number, tag: string): void {
   for (let i = 0; i < tag.length; i++) view.setUint8(offset + i, tag.charCodeAt(i));
@@ -695,7 +779,15 @@ export async function transcribeAudioFile(
   lang: AppLanguage,
   userApiKey?: string,
 ): Promise<TranscriptSegment[]> {
-  // Convert to 16kHz mono WAV before uploading — guarantees Groq accepts any input codec
+  // Prefer Gemini: native Uzbek/Russian accuracy, no format conversion needed
+  const geminiKey = (userApiKey?.trim() && userApiKey !== OPENROUTER_API_KEY)
+    ? userApiKey.trim()
+    : GEMINI_API_KEY;
+  if (geminiKey) {
+    return transcribeWithGemini(file, lang, geminiKey);
+  }
+
+  // Groq Whisper fallback: convert to WAV for guaranteed format acceptance
   const wavFile = await convertToWav(file);
 
   const formData = new FormData();
