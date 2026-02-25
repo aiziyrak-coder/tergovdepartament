@@ -100,20 +100,11 @@ function base64ToFile(base64: string, mimeType: string, filename: string): File 
 }
 
 /**
- * Creates a File for Groq audio upload.
- * Content-Type MUST be "audio/<ext>" so that the MIME subtype exactly matches
- * the filename extension — Groq validates consistency between the two.
- * e.g. audio.m4a + Content-Type: audio/m4a  → accepted
- *      audio.m4a + Content-Type: audio/mp4  → rejected (mp4 ≠ m4a)
- *      audio.m4a + no Content-Type          → rejected (browser sends application/octet-stream)
+ * Wraps a raw File in a new File with a Groq-compatible name/type.
+ * Uses the original ArrayBuffer — no base64 roundtrip — to preserve bytes exactly.
  */
-function base64ToGroqFile(base64: string, ext: string): File {
-  const binaryStr = atob(base64);
-  const bytes = new Uint8Array(binaryStr.length);
-  for (let i = 0; i < binaryStr.length; i++) {
-    bytes[i] = binaryStr.charCodeAt(i);
-  }
-  return new File([bytes], `audio.${ext}`, { type: `audio/${ext}` });
+function wrapFileForGroq(file: File, ext: string): File {
+  return new File([file], `audio.${ext}`, { type: `audio/${ext}` });
 }
 
 /**
@@ -140,9 +131,9 @@ function normalizeAudioMimeType(rawMime: string): { mime: string; ext: string } 
     "audio/wave":      "wav",
     "audio/flac":      "flac",
     "audio/x-flac":    "flac",
-    "audio/m4a":       "mp4",   // m4a IS an mp4 container — send as audio.mp4 with audio/mp4
-    "audio/x-m4a":     "mp4",
-    "audio/aac":       "mp4",
+    "audio/m4a":       "m4a",
+    "audio/x-m4a":     "m4a",
+    "audio/aac":       "m4a",
     "video/mp4":       "mp4",
     "video/webm":      "webm",
     "video/ogg":       "ogg",
@@ -394,7 +385,7 @@ export async function transcribeAndDiarizeByVoice(
   if (!audioBase64?.trim()) return [];
   try {
     const { ext } = normalizeAudioMimeType(mimeType);
-    const audioFile = base64ToGroqFile(audioBase64, ext);
+    const audioFile = base64ToFile(audioBase64, `audio/${ext}`, `audio.${ext}`);
 
     const transcriptionRaw = await withTimeout(
       (async () => {
@@ -636,6 +627,63 @@ Return ONLY JSON: {"questions":[{"id":"1","question":"...","options":["A","B","C
 }
 
 // --- AUDIO TRANSCRIPTION (Groq Whisper) ---
+
+type VerboseSegment = { id?: number; start?: number; end?: number; text?: string };
+
+/** Parses the verbose_json response from Groq Whisper into TranscriptSegment[]. */
+function parseGroqTranscription(raw: unknown): TranscriptSegment[] {
+  const result = raw as { text: string; segments?: VerboseSegment[] };
+  const fullText = result.text ?? "";
+  if (!fullText.trim()) return [];
+
+  const segs = result.segments ?? [];
+  if (segs.length > 1) {
+    return segs.map((s, i) => ({
+      id: `seg_${i + 1}`,
+      speaker: `Speaker ${(i % 2) + 1}`,
+      text: (s.text ?? "").trim(),
+      timestamp: s.start !== undefined ? formatTimestamp(s.start) : "",
+      stressLevel: undefined,
+      sentiment: undefined,
+    }));
+  }
+
+  return [{ id: "seg_1", speaker: "Speaker 1", text: fullText.trim(), timestamp: "00:00" }];
+}
+
+/**
+ * Sends a raw File object directly to Groq Whisper — no base64 roundtrip.
+ * This preserves the exact original bytes and avoids any encoding corruption.
+ */
+export async function transcribeAudioFile(
+  file: File,
+  lang: AppLanguage,
+  _userApiKey?: string,
+): Promise<TranscriptSegment[]> {
+  const rawMime = file.type || "audio/webm";
+  const { ext } = normalizeAudioMimeType(rawMime);
+  const groqFile = wrapFileForGroq(file, ext);
+
+  const formData = new FormData();
+  formData.append("file", groqFile, groqFile.name);
+  formData.append("model", AUDIO_MODEL);
+  formData.append("language", getLangCode(lang));
+  formData.append("response_format", "verbose_json");
+
+  const groqResponse = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${GROQ_API_KEY}` },
+    body: formData,
+  });
+
+  if (!groqResponse.ok) {
+    const errBody = await groqResponse.text().catch(() => groqResponse.statusText);
+    throw new Error(`Groq transkriptsiya xatosi ${groqResponse.status}: ${errBody}`);
+  }
+
+  return parseGroqTranscription(await groqResponse.json() as unknown);
+}
+
 export async function transcribeAudio(
   base64: string,
   mimeType: string,
@@ -645,8 +693,7 @@ export async function transcribeAudio(
   _userApiKey?: string,
 ): Promise<TranscriptSegment[]> {
   const { ext } = normalizeAudioMimeType(mimeType);
-  // No MIME type on the File — Groq detects format from filename extension only
-  const audioFile = base64ToGroqFile(base64, ext);
+  const audioFile = base64ToFile(base64, `audio/${ext}`, `audio.${ext}`);
 
   const formData = new FormData();
   formData.append("file", audioFile, audioFile.name);
@@ -665,40 +712,7 @@ export async function transcribeAudio(
     throw new Error(`Groq transkriptsiya xatosi ${groqResponse.status}: ${errBody}`);
   }
 
-  const transcriptionRaw = await groqResponse.json() as unknown;
-
-  type VerboseSegment = { id?: number; start?: number; end?: number; text?: string };
-  const verboseResult = transcriptionRaw as unknown as {
-    text: string;
-    segments?: VerboseSegment[];
-    language?: string;
-  };
-
-  const fullText = verboseResult.text ?? "";
-  if (!fullText.trim()) return [];
-
-  const verboseSegments = verboseResult.segments ?? [];
-
-  if (verboseSegments.length > 1) {
-    return verboseSegments.map((s, i) => ({
-      id: `seg_${i + 1}`,
-      speaker: `Speaker ${(i % 2) + 1}`,
-      text: (s.text ?? "").trim(),
-      timestamp: s.start !== undefined ? formatTimestamp(s.start) : "",
-      stressLevel: undefined,
-      sentiment: undefined,
-    }));
-  }
-
-  // Single segment fallback
-  return [
-    {
-      id: "seg_1",
-      speaker: "Speaker 1",
-      text: fullText.trim(),
-      timestamp: "00:00",
-    },
-  ];
+  return parseGroqTranscription(await groqResponse.json() as unknown);
 }
 
 // --- TIMELINE EXTRACTION ---

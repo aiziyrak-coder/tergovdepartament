@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Upload, ArrowLeft, Save, FileAudio, Trash2, Loader2, Clock, Edit2, Check, User, Users, FileText, Download, UserPlus, ChevronDown, AlertCircle, Activity, CheckCircle2, Mic } from "lucide-react";
-import { transcribeAudio } from "../../services/geminiService";
+import { transcribeAudioFile } from "../../services/geminiService";
 import { TranscriptSegment } from "../../types";
 import { storageService } from "../../services/storageService";
 import { useLanguage } from "../../contexts/LanguageContext";
@@ -17,25 +17,7 @@ const MAX_FILE_SIZE = 25 * 1024 * 1024;
 // Groq Whisper qo'llab-quvvatlaydigan audio formatlar
 const GROQ_SUPPORTED_EXTS = new Set(['mp3', 'wav', 'wave', 'ogg', 'flac', 'm4a', 'mp4', 'webm', 'opus', 'mpeg', 'mpga']);
 
-const EXT_TO_MIME: Record<string, string> = {
-  mp3: 'audio/mpeg', mpga: 'audio/mpeg', mpeg: 'audio/mpeg',
-  wav: 'audio/wav', wave: 'audio/wav',
-  ogg: 'audio/ogg',
-  flac: 'audio/flac',
-  m4a: 'audio/m4a',
-  mp4: 'audio/mp4',
-  webm: 'audio/webm',
-  opus: 'audio/opus',
-};
 
-/** Returns a Groq-compatible MIME type using the filename extension as ground truth. */
-function getGroqMimeType(file: File): string {
-  const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
-  if (EXT_TO_MIME[ext]) return EXT_TO_MIME[ext];
-  // Fallback: strip codec params from browser-provided type
-  const base = file.type.split(';')[0].trim().toLowerCase();
-  return EXT_TO_MIME[base.split('/')[1]] ?? (base || 'audio/webm');
-}
 
 function escapeHtml(value: string): string {
   return value
@@ -118,22 +100,8 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
       setSegments([]);
       
       try {
-          // Convert to Base64 (Whole file)
-          const base64 = await new Promise<string>((resolve, reject) => {
-              const reader = new FileReader();
-              reader.onloadend = () => {
-                  const res = reader.result as string;
-                  const data = res.split(',')[1];
-                  if (data) resolve(data);
-                  else reject("Base64 conversion failed");
-              };
-              reader.onerror = reject;
-              reader.readAsDataURL(mediaFile);
-          });
-
-          // Send to API — use filename-based MIME type for reliable Groq compatibility
-          const groqMime = getGroqMimeType(mediaFile);
-          const results = await transcribeAudio(base64, groqMime, "STENOGRAM", true, language);
+          // Send original File directly — no base64 roundtrip, no byte corruption risk
+          const results = await transcribeAudioFile(mediaFile, language);
           
           if (results && results.length > 0) {
               setSegments(results);
