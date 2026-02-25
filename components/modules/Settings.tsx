@@ -125,30 +125,6 @@ const Settings: React.FC<SettingsProps> = ({ onBack }) => {
                         Матн, кўриш, расм генерацияси учун. openrouter.ai дан олинади.
                     </p>
                 </div>
-                {/* Gemini Key (audio) */}
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                            <Lock size={18} className="text-purple-500"/>
-                            <span className="text-sm font-bold text-slate-700 uppercase tracking-wide">Gemini API Калити (Аудио)</span>
-                        </div>
-                        <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1">
-                            <CheckCircle2 size={12}/> Химояланган
-                        </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <input
-                            type="password"
-                            value="AIza...EnvVariableProtected"
-                            disabled
-                            className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-mono text-slate-400 cursor-not-allowed select-none"
-                        />
-                    </div>
-                    <p className="text-[10px] text-slate-400 mt-2 font-medium flex items-center gap-1">
-                        <Shield size={10}/>
-                        Аудио транскрипция учун (ўзбек тилини аниқ тушунади). aistudio.google.com дан бепул олинади.
-                    </p>
-                </div>
                 {/* Groq Key (fallback) */}
                 <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
                     <div className="flex items-center justify-between mb-4">
@@ -170,7 +146,7 @@ const Settings: React.FC<SettingsProps> = ({ onBack }) => {
                     </div>
                     <p className="text-[10px] text-slate-400 mt-2 font-medium flex items-center gap-1">
                         <Shield size={10}/>
-                        Gemini калити йўқ бўлса ишлайди (захира). console.groq.com дан бепул олинади.
+                        OpenRouter орқали аудио ишламаганда захира сифатида фойдаланилади.
                     </p>
                 </div>
              </div>

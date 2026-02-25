@@ -120,7 +120,7 @@ function normalizeAudioMimeType(rawMime: string): { mime: string; ext: string } 
   return { mime: `audio/${ext}`, ext };
 }
 
-// --- GEMINI DIRECT AUDIO TRANSCRIPTION ---
+// --- OPENROUTER AUDIO TRANSCRIPTION (Gemini via input_audio) ---
 
 /**
  * Converts an ArrayBuffer to base64 string in chunks to avoid stack overflow
@@ -136,66 +136,73 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
   return btoa(binary);
 }
 
-/** Maps file extension/type to a MIME type that Gemini's inline data API accepts. */
-function getGeminiAudioMime(file: File): string {
+/** Returns the audio format string (extension) that OpenRouter's input_audio expects. */
+function getAudioFormat(file: File): string {
   const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
-  const byExt: Record<string, string> = {
-    mp3: "audio/mpeg", mpga: "audio/mpeg", mpeg: "audio/mpeg",
-    wav: "audio/wav", wave: "audio/wav",
-    ogg: "audio/ogg", opus: "audio/ogg",
-    flac: "audio/flac",
-    m4a: "audio/mp4", aac: "audio/mp4", mp4: "audio/mp4",
-    webm: "audio/webm",
+  const formatMap: Record<string, string> = {
+    mp3: "mp3", mpga: "mp3", mpeg: "mp3",
+    wav: "wav", wave: "wav",
+    ogg: "ogg", opus: "ogg",
+    flac: "flac",
+    m4a: "mp4", aac: "mp4", mp4: "mp4",
+    webm: "webm",
   };
-  return byExt[ext] ?? (file.type.split(";")[0].trim() || "audio/mp4");
+  return formatMap[ext] ?? "mp4";
 }
 
 /**
- * Transcribes audio using Gemini 1.5 Flash via Google's REST API.
- * Provides native, accurate Uzbek (and Russian) speech recognition without
- * any format conversion — sends the original file bytes directly.
+ * Transcribes audio via OpenRouter using Gemini's native audio understanding.
+ * OpenRouter supports the `input_audio` content type for Gemini models,
+ * providing accurate Uzbek/Russian speech recognition without a separate API key.
  */
-async function transcribeWithGemini(
+async function transcribeWithOpenRouter(
   file: File,
   lang: AppLanguage,
   apiKey: string,
 ): Promise<TranscriptSegment[]> {
   const buffer = await file.arrayBuffer();
   const base64Data = arrayBufferToBase64(buffer);
-  const mimeType = getGeminiAudioMime(file);
-  const langName = lang === AppLanguage.RU ? "Russian" : "Uzbek";
+  const format = getAudioFormat(file);
+  const isUzbek = lang !== AppLanguage.RU;
 
-  const body = {
-    contents: [{
-      parts: [
-        { inlineData: { mimeType, data: base64Data } },
-        {
-          text:
-            `Bu ${langName === "Uzbek" ? "o'zbek" : "rus"} tilidagi rasmiy tergov so'rovi ` +
-            `yoki guvohlik audioyozuvidir. Aytilgan har bir so'zni aniq, ` +
-            `so'zma-so'z transkriptsiya qil. Faqat transkriptsiya matnini qaytар, ` +
-            `hech qanday izoh, sarlavha yoki belgi yozma.`,
-        },
-      ],
-    }],
-    generationConfig: { temperature: 0 },
-  };
+  const prompt = isUzbek
+    ? "Bu o'zbek tilidagi rasmiy tergov yoki guvohlik audioyozuvidir. " +
+      "Har bir so'zni so'zma-so'z, aniq transkriptsiya qil. " +
+      "Faqat transkriptsiya matnini qaytар, hech qanday izoh yoki sarlavha yozma."
+    : "Это официальная запись допроса или показаний на русском языке. " +
+      "Транскрибируй каждое слово дословно и точно. " +
+      "Верни только текст транскрипции, без пояснений и заголовков.";
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_AUDIO_MODEL}:generateContent?key=${apiKey}`,
-    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) },
-  );
+  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://tergov.cdcgroup.uz",
+      "X-Title": "Tergov AI Platform",
+    },
+    body: JSON.stringify({
+      model: "google/gemini-2.0-flash-001",
+      temperature: 0,
+      messages: [{
+        role: "user",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        content: [
+          { type: "text", text: prompt },
+          { type: "input_audio", input_audio: { data: base64Data, format } },
+        ] as unknown as string,
+      }],
+    }),
+  });
 
   if (!res.ok) {
     const err = await res.text().catch(() => res.statusText);
-    throw new Error(`Gemini audio xatosi ${res.status}: ${err}`);
+    throw new Error(`OpenRouter audio xatosi ${res.status}: ${err}`);
   }
 
-  type GeminiResponse = {
-    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-  };
-  const json = await res.json() as GeminiResponse;
-  const text = json.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+  type ORResponse = { choices?: Array<{ message?: { content?: string } }> };
+  const json = await res.json() as ORResponse;
+  const text = json.choices?.[0]?.message?.content ?? "";
   if (!text.trim()) return [];
 
   return [{ id: "seg_1", speaker: "Speaker 1", text: text.trim(), timestamp: "00:00" }];
@@ -779,15 +786,13 @@ export async function transcribeAudioFile(
   lang: AppLanguage,
   userApiKey?: string,
 ): Promise<TranscriptSegment[]> {
-  // Prefer Gemini: native Uzbek/Russian accuracy, no format conversion needed
-  const geminiKey = (userApiKey?.trim() && userApiKey !== OPENROUTER_API_KEY)
-    ? userApiKey.trim()
-    : GEMINI_API_KEY;
-  if (geminiKey) {
-    return transcribeWithGemini(file, lang, geminiKey);
+  // Primary: OpenRouter + Gemini via input_audio — native Uzbek/Russian accuracy
+  const orKey = userApiKey?.trim() || OPENROUTER_API_KEY;
+  if (orKey) {
+    return transcribeWithOpenRouter(file, lang, orKey);
   }
 
-  // Groq Whisper fallback: convert to WAV for guaranteed format acceptance
+  // Groq Whisper fallback (if no OpenRouter key configured)
   const wavFile = await convertToWav(file);
 
   const formData = new FormData();
@@ -795,7 +800,6 @@ export async function transcribeAudioFile(
   formData.append("model", AUDIO_MODEL);
   formData.append("language", getLangCode(lang));
   formData.append("response_format", "verbose_json");
-  // Domain-specific prompt helps Whisper recognize legal Uzbek vocabulary
   formData.append(
     "prompt",
     "Tergov organi tomonidan o\u02bctkazilgan rasmiy so\u02bcroq yoki guvohlik yozuvi. " +
@@ -817,20 +821,14 @@ export async function transcribeAudioFile(
   const segments = parseGroqTranscription(await groqResponse.json() as unknown);
   if (segments.length === 0) return segments;
 
-  // LLM post-correction: fixes Whisper's Uzbek recognition errors using OpenRouter
   const rawText = segments.map((s) => s.text).join("\n");
-  const corrected = await correctTranscriptUzbek(rawText, userApiKey).catch(() => "");
-
+  const corrected = await correctTranscriptUzbek(rawText).catch(() => "");
   if (!corrected.trim()) return segments;
 
   const correctedLines = corrected.trim().split("\n").filter((l) => l.trim());
-
-  // If line count matches segments, map corrections back per-segment (preserves timestamps)
   if (correctedLines.length === segments.length) {
     return segments.map((s, i) => ({ ...s, text: correctedLines[i].trim() }));
   }
-
-  // Otherwise return as a single corrected block (timestamps from first segment)
   return [{
     id: "seg_1",
     speaker: segments[0].speaker ?? "Speaker 1",
