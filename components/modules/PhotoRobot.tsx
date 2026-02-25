@@ -5,7 +5,7 @@ import { storageService } from '../../services/storageService';
 import { 
     UserSquare2, ArrowLeft, Upload, Mic, Download, Save, 
     ScanFace, Sliders, Zap, Box, Undo2, Redo2, Loader2, StopCircle, Building2, Car, Layers, RefreshCw,
-    Eye, User, Scissors, Shirt, Glasses, Key, Lock, Check, AlertCircle
+    Eye, User, Scissors, Shirt, Glasses, AlertCircle
 } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
 
@@ -36,10 +36,6 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
   const [targetType, setTargetType] = useState<'HUMAN' | 'OBJECT'>('HUMAN'); 
   const [inputMethod, setInputMethod] = useState<'PARAMETRIC' | 'NARRATIVE'>('PARAMETRIC');
   
-  // --- API KEY STATE ---
-  const [userApiKey, setUserApiKey] = useState('');
-  const [showKeyModal, setShowKeyModal] = useState(false);
-  const [tempKeyInput, setTempKeyInput] = useState('');
 
   // --- EXPANDED HUMAN STATE ---
   const [features, setFeatures] = useState({
@@ -144,33 +140,7 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
     }
   };
 
-  const handleStartGenerate = () => {
-      if (userApiKey) {
-          generate(userApiKey);
-      } else {
-          setShowKeyModal(true);
-      }
-  };
-
-  const handleKeySubmit = () => {
-      if (!tempKeyInput.trim()) {
-          toast("Илтимос, API калитни киритинг", "error");
-          return;
-      }
-      const trimmedKey = tempKeyInput.trim();
-      setUserApiKey(trimmedKey);
-      setTempKeyInput("");
-      setShowKeyModal(false);
-      generate(trimmedKey);
-  };
-
-  const generate = async (key?: string) => {
-    const activeKey = key || userApiKey;
-    if (!activeKey) {
-        setShowKeyModal(true);
-        return;
-    }
-
+  const generate = async () => {
     setLoading(true);
     let prompt = "";
     
@@ -235,20 +205,14 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
 
     try {
       // Generating 5 variants as requested
-      const imgs = await generatePhotorobotVariants(prompt, 5, targetType, activeKey);
+      const imgs = await generatePhotorobotVariants(prompt, 5, targetType);
       setVariants(imgs);
       setStep('SELECT');
       toast("Цингъ на реалистик вариант шакллантирилди", "success");
     } catch (e) {
         console.error(e);
         const errorMsg = e instanceof Error ? e.message : String(e);
-        if (errorMsg.includes("403") || errorMsg.includes("API key") || errorMsg.includes("permission") || errorMsg.includes("kalit")) {
-          toast("API kalit xatosi. Sozlamalarda tekshiring.", "error");
-          setUserApiKey("");
-          setShowKeyModal(true);
-        } else {
-          toast(errorMsg.slice(0, 120) || "Расм генератсиясида хатолик.", "error");
-        }
+        toast(errorMsg.slice(0, 120) || "Расм генератсиясида хатолик.", "error");
     } finally {
       setLoading(false);
     }
@@ -264,12 +228,6 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
 
   const applyEdit = async () => {
     if (!selectedImage || !editPrompt) return;
-    const activeKey = userApiKey;
-    if (!activeKey) {
-      setShowKeyModal(true);
-      toast("Таҳрирлаш учун API калит киритинг", "error");
-      return;
-    }
     setIsEditing(true);
     try {
       const currentImg = history[historyIndex];
@@ -284,7 +242,7 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
       4. NO TEXT.
       `;
       
-      const newImg = await editPhotorobotImage(currentImg, realisticEditPrompt, activeKey);
+      const newImg = await editPhotorobotImage(currentImg, realisticEditPrompt);
       
       const newHistory = history.slice(0, historyIndex + 1);
       newHistory.push(newImg);
@@ -297,12 +255,7 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
     } catch (e) {
       console.error(e);
       const errorMsg = e instanceof Error ? e.message : String(e);
-      if (errorMsg.includes("403") || errorMsg.includes("API key") || errorMsg.includes("kalit")) {
-        toast("API kalit xatosi. Sozlamalarda tekshiring.", "error");
-        setShowKeyModal(true);
-      } else {
-        toast("Tahrirlashda xatolik yuz berdi.", "error");
-      }
+      toast(errorMsg.slice(0, 120) || "Tahrirlashda xatolik yuz berdi.", "error");
     } finally {
       setIsEditing(false);
     }
@@ -340,50 +293,6 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
   return (
     <div className="w-full h-full bg-[#F8FAFC] flex flex-col overflow-hidden text-slate-700 relative">
       
-      {/* API KEY MODAL */}
-      {showKeyModal && (
-          <div className="absolute inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in">
-              <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full border border-slate-200">
-                  <div className="flex items-center gap-3 mb-6 text-uzblue">
-                      <div className="p-3 bg-blue-50 rounded-xl">
-                        <Key size={24}/>
-                      </div>
-                      <h3 className="text-xl font-black uppercase">Gemini API Kalit</h3>
-                  </div>
-                  
-                  <p className="text-sm text-slate-600 mb-6 font-medium leading-relaxed">
-                      Tasvirlarni yaratish (Imagen 3) modeli uchun shaxsiy Google Gemini API kalitingizni kiriting.
-                  </p>
-
-                  <div className="relative mb-6">
-                      <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"/>
-                      <input 
-                          type="password"
-                          value={tempKeyInput}
-                          onChange={(e) => setTempKeyInput(e.target.value)}
-                          placeholder="AIzaSy..."
-                          className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-uzblue focus:ring-4 focus:ring-blue-50 transition-all"
-                          autoFocus
-                      />
-                  </div>
-
-                  <div className="flex gap-3">
-                      <button 
-                          onClick={() => setShowKeyModal(false)}
-                          className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-500 font-bold text-xs hover:bg-slate-50 transition-all"
-                      >
-                          BEKOR QILISH
-                      </button>
-                      <button 
-                          onClick={handleKeySubmit}
-                          className="flex-1 py-3 rounded-xl bg-uzblue text-white font-bold text-xs hover:bg-blue-600 shadow-lg shadow-blue-200 transition-all flex items-center justify-center gap-2"
-                      >
-                          <Check size={16}/> TASDIQLASH
-                      </button>
-                  </div>
-              </div>
-          </div>
-      )}
 
       {/* HEADER */}
       <div className="h-16 flex items-center justify-between px-6 bg-white border-b border-slate-200 z-20 shrink-0">
@@ -398,14 +307,6 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
           </div>
 
           <div className="flex items-center gap-4">
-              <button 
-                onClick={() => setShowKeyModal(true)} 
-                className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-bold transition-all border border-slate-200"
-                title="API Kalitni o'zgartirish"
-              >
-                <Key size={14}/> {userApiKey ? "Kalit Kiritilgan" : "API Kalit"}
-              </button>
-
               <div className="flex gap-2">
                   {['INPUT', 'SELECT', 'STUDIO'].map((s, i) => (
                       <div key={s} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${step === s ? 'bg-uzblue text-white border-uzblue shadow-lg' : 'bg-slate-50 text-slate-400 border-slate-200 opacity-50'}`}>
@@ -636,7 +537,7 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
 
               {step === 'INPUT' && (
                 <div className="p-6 border-t border-slate-100">
-                    <button onClick={handleStartGenerate} disabled={loading} className={`w-full py-4 ${targetType === 'HUMAN' ? 'bg-uzblue shadow-uzblue/20' : 'bg-uzgreen shadow-uzgreen/20'} text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl flex items-center justify-center gap-3 active:scale-95 transition-all`}>
+                    <button onClick={() => generate()} disabled={loading} className={`w-full py-4 ${targetType === 'HUMAN' ? 'bg-uzblue shadow-uzblue/20' : 'bg-uzgreen shadow-uzgreen/20'} text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl flex items-center justify-center gap-3 active:scale-95 transition-all`}>
                         {loading ? <Loader2 className="animate-spin" size={20}/> : <Zap fill="currentColor" size={20}/>}
                         {loading ? 'VARIANTLAR YARATILMOQDA...' : '5 TA REAL FOTO YARATISH'}
                     </button>
