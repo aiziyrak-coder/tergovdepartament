@@ -78,11 +78,15 @@ cd /var/www/tergov && git pull origin main && npm ci && npm run build && sudo sy
 
 ## .env (API kalit) eslatma
 
-Agar serverda `.env` yoki `.env.production` ishlatilsa, `git pull` ularni o‘zgartirmaydi. API kalitni alohida saqlang va kerak bo‘lsa qo‘lda tahrirlang:
+Agar serverda `.env` yoki `.env.local` ishlatilsa, `git pull` ularni o‘zgartirmaydi. API kalitni alohida saqlang va kerak bo‘lsa qo‘lda tahrirlang:
 
 ```bash
-nano .env.production
-# GEMINI_API_KEY=... yoki API_KEY=...
+# .env.local faylini yaratish yoki tahrirlash
+nano .env.local
+# Keyingi qator qo'shing (aslini kiritmasdan):
+# GEMINI_API_KEY=vazifaning_asl_api_kalitingiz_buni_kiriting
 ```
 
-Build dan keyin env o‘qiladi; Vite loyihalarda `.env.production` build vaqtida ishlatiladi.
+Build dan keyin env o‘qiladi; Vite loyihalarda `.env.local` build vaqtida ishlatiladi.
+
+Eslatma: API kalitingizni hech qachon GitHub kabi ommaviy repozitoriyalarga commit qilmang.

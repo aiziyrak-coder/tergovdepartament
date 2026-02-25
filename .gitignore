@@ -28,3 +28,7 @@ docx_temp/
 docx_text_extract.txt
 jabrlanuvchi_sorogi.docx
 jabrlanuvchi_sorogi.zip
+# Environment variables (API keys)
+.env
+.env.local
+.env.*.local

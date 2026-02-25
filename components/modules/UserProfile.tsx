@@ -46,12 +46,12 @@ const UserProfile: React.FC<UserProfileProps> = ({ onBack, onLogout, onSettings 
                    <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col items-center text-center relative overflow-hidden">
                        <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-r from-uzblue to-cyan-500"></div>
                        <div className="w-24 h-24 rounded-2xl bg-white p-1 shadow-lg relative z-10 -mt-2">
-                           <img src="https://ui-avatars.com/api/?name=Sarvar+Ilkhomovich&background=0099B5&color=fff&bold=true&size=128" className="w-full h-full rounded-xl object-cover"/>
+                           <img src="https://ui-avatars.com/api/?name=Turdiev+Sarvar+Ilkhomovich&background=0099B5&color=fff&bold=true&size=128" className="w-full h-full rounded-xl object-cover"/>
                        </div>
                        
                        <div className="mt-4">
-                           <h3 className="text-xl font-black text-slate-900">Turdiev Sarvar Ilkhomovich</h3>
-                           <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mt-1">Sarvar Ilkhomovich</p>
+                           <h3 className="text-xl font-black text-slate-900">Турдиев Сарвар Илхомович</h3>
+                           <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mt-1">Сарвар Илхомович</p>
                            <div className="mt-4 flex gap-2 justify-center">
                                <span className="px-3 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
                                    <Shield size={12}/> Фаол
@@ -69,7 +69,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ onBack, onLogout, onSettings 
                            </div>
                            <div className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
                                <span className="text-xs font-bold text-slate-500">Бўлим</span>
-                               <span className="text-xs font-black text-slate-800">Farg'ona viloyati IIB xuzuridagi TB UMIIB</span>
+                               <span className="text-xs font-black text-slate-800">Фарғона вилояти ИИБ хузуридаги ТБ ЎМИБ</span>
                            </div>
                            <div className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
                                <span className="text-xs font-bold text-slate-500">Телефон</span>
@@ -128,9 +128,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ onBack, onLogout, onSettings 
                            <div className="absolute left-2.5 top-2 bottom-2 w-0.5 bg-slate-100"></div>
 
                            {[
-                               { title: "Тергов харакати якунланди", time: "Bugun, 14:30", desc: "Жиноюат иши #300002/2025 бўйича баюннома тузилди.", icon: FileCheck, color: "bg-emerald-500" },
-                               { title: "Тизимга кирилди", time: "Bugun, 09:00", desc: "Farg'ona shahar IIB tarmog'idan.", icon: Key, color: "bg-blue-500" },
-                               { title: "Янги топшириқ олинди", time: "Kecha, 18:45", desc: "Boshqarma boshlig'idan maxsus topshiriq.", icon: Shield, color: "bg-amber-500" },
+                               { title: "Тергов харакати якунланди", time: "Бугун, 14:30", desc: "Жиноюат иши #300002/2025 бўйича баюннома тузилди.", icon: FileCheck, color: "bg-emerald-500" },
+                               { title: "Тизимга кирилди", time: "Бугун, 09:00", desc: "Фарғона шаҳар ИИБ тармоғидан.", icon: Key, color: "bg-blue-500" },
+                               { title: "Янги топшириқ олинди", time: "Кеча, 18:45", desc: "Бошқарма бошлиғидан максус топшириқ.", icon: Shield, color: "bg-amber-500" },
                            ].map((item, i) => (
                                <div key={i} className="flex gap-4 relative">
                                    <div className={`w-5 h-5 rounded-full ${item.color} border-4 border-white shadow-sm shrink-0 z-10`}></div>
