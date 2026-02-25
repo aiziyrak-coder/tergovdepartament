@@ -100,10 +100,12 @@ function base64ToFile(base64: string, mimeType: string, filename: string): File 
 }
 
 /**
- * Creates a File for Groq audio upload WITHOUT a MIME type.
- * Groq detects format from filename extension, not Content-Type header.
- * Setting a MIME type (e.g. audio/mp4) causes Groq to reject the file
- * even when the extension (m4a, mp4) is in the supported list.
+ * Creates a File for Groq audio upload.
+ * Content-Type MUST be "audio/<ext>" so that the MIME subtype exactly matches
+ * the filename extension — Groq validates consistency between the two.
+ * e.g. audio.m4a + Content-Type: audio/m4a  → accepted
+ *      audio.m4a + Content-Type: audio/mp4  → rejected (mp4 ≠ m4a)
+ *      audio.m4a + no Content-Type          → rejected (browser sends application/octet-stream)
  */
 function base64ToGroqFile(base64: string, ext: string): File {
   const binaryStr = atob(base64);
@@ -111,7 +113,7 @@ function base64ToGroqFile(base64: string, ext: string): File {
   for (let i = 0; i < binaryStr.length; i++) {
     bytes[i] = binaryStr.charCodeAt(i);
   }
-  return new File([bytes], `audio.${ext}`);
+  return new File([bytes], `audio.${ext}`, { type: `audio/${ext}` });
 }
 
 /**
@@ -123,28 +125,31 @@ function normalizeAudioMimeType(rawMime: string): { mime: string; ext: string } 
   const base = rawMime.split(";")[0].trim().toLowerCase();
 
   // Maps any input MIME → { Groq-accepted standard MIME, file extension }
-  const map: Record<string, { mime: string; ext: string }> = {
-    "audio/webm":      { mime: "audio/webm",  ext: "webm" },
-    "audio/ogg":       { mime: "audio/ogg",   ext: "ogg"  },
-    "audio/opus":      { mime: "audio/opus",  ext: "opus" },
-    "audio/mp4":       { mime: "audio/mp4",   ext: "mp4"  },
-    "audio/mpeg":      { mime: "audio/mpeg",  ext: "mp3"  },
-    "audio/mp3":       { mime: "audio/mpeg",  ext: "mp3"  }, // non-standard alias
-    "audio/wav":       { mime: "audio/wav",   ext: "wav"  },
-    "audio/x-wav":     { mime: "audio/wav",   ext: "wav"  }, // non-standard alias
-    "audio/wave":      { mime: "audio/wav",   ext: "wav"  }, // non-standard alias
-    "audio/flac":      { mime: "audio/flac",  ext: "flac" },
-    "audio/x-flac":    { mime: "audio/flac",  ext: "flac" }, // non-standard alias
-    "audio/m4a":       { mime: "audio/mp4",   ext: "m4a"  }, // normalized to audio/mp4
-    "audio/x-m4a":     { mime: "audio/mp4",   ext: "m4a"  }, // non-standard alias
-    "audio/aac":       { mime: "audio/mp4",   ext: "m4a"  }, // AAC wrapped as m4a
-    "video/mp4":       { mime: "audio/mp4",   ext: "mp4"  },
-    "video/webm":      { mime: "audio/webm",  ext: "webm" },
-    "video/ogg":       { mime: "audio/ogg",   ext: "ogg"  },
-    "video/quicktime": { mime: "audio/mp4",   ext: "mp4"  }, // .mov → mp4
+  // Maps any input MIME → { ext }.
+  // base64ToGroqFile uses "audio/<ext>" as Content-Type so subtype exactly matches
+  // the filename extension, satisfying Groq's consistency check.
+  const map: Record<string, string> = {
+    "audio/webm":      "webm",
+    "audio/ogg":       "ogg",
+    "audio/opus":      "opus",
+    "audio/mp4":       "mp4",
+    "audio/mpeg":      "mpeg",
+    "audio/mp3":       "mp3",
+    "audio/wav":       "wav",
+    "audio/x-wav":     "wav",
+    "audio/wave":      "wav",
+    "audio/flac":      "flac",
+    "audio/x-flac":    "flac",
+    "audio/m4a":       "m4a",
+    "audio/x-m4a":     "m4a",
+    "audio/aac":       "m4a",
+    "video/mp4":       "mp4",
+    "video/webm":      "webm",
+    "video/ogg":       "ogg",
+    "video/quicktime": "mp4",
   };
-
-  return map[base] ?? { mime: "audio/webm", ext: "webm" };
+  const ext = map[base] ?? base.split("/")[1]?.split("+")[0] ?? "webm";
+  return { mime: `audio/${ext}`, ext };
 }
 
 function formatTimestamp(seconds: number): string {
