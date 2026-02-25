@@ -34,7 +34,7 @@ function getGroqMimeType(file: File): string {
   if (EXT_TO_MIME[ext]) return EXT_TO_MIME[ext];
   // Fallback: strip codec params from browser-provided type
   const base = file.type.split(';')[0].trim().toLowerCase();
-  return EXT_TO_MIME[base.split('/')[1]] ?? base || 'audio/webm';
+  return EXT_TO_MIME[base.split('/')[1]] ?? (base || 'audio/webm');
 }
 
 function escapeHtml(value: string): string {
