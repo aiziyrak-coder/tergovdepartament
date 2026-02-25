@@ -100,47 +100,82 @@ function base64ToFile(base64: string, mimeType: string, filename: string): File 
 }
 
 /**
- * Wraps a raw File in a new File with a Groq-compatible name/type.
- * Uses the original ArrayBuffer — no base64 roundtrip — to preserve bytes exactly.
- */
-function wrapFileForGroq(file: File, ext: string): File {
-  return new File([file], `audio.${ext}`, { type: `audio/${ext}` });
-}
-
-/**
- * Normalizes audio MIME type for Groq Whisper compatibility.
- * Strips codec parameters and maps ALL variants (including non-standard) to
- * the exact standard MIME types that Groq accepts.
+ * Normalizes audio MIME type. Used only by the legacy base64 path (transcribeAndDiarizeByVoice).
  */
 function normalizeAudioMimeType(rawMime: string): { mime: string; ext: string } {
   const base = rawMime.split(";")[0].trim().toLowerCase();
-
-  // Maps any input MIME → { Groq-accepted standard MIME, file extension }
-  // Maps any input MIME → { ext }.
-  // base64ToGroqFile uses "audio/<ext>" as Content-Type so subtype exactly matches
-  // the filename extension, satisfying Groq's consistency check.
   const map: Record<string, string> = {
-    "audio/webm":      "webm",
-    "audio/ogg":       "ogg",
-    "audio/opus":      "opus",
-    "audio/mp4":       "mp4",
-    "audio/mpeg":      "mpeg",
-    "audio/mp3":       "mp3",
-    "audio/wav":       "wav",
-    "audio/x-wav":     "wav",
-    "audio/wave":      "wav",
-    "audio/flac":      "flac",
-    "audio/x-flac":    "flac",
-    "audio/m4a":       "m4a",
-    "audio/x-m4a":     "m4a",
-    "audio/aac":       "m4a",
-    "video/mp4":       "mp4",
-    "video/webm":      "webm",
-    "video/ogg":       "ogg",
+    "audio/webm": "webm", "audio/ogg": "ogg", "audio/opus": "opus",
+    "audio/mp4": "mp4", "audio/mpeg": "mpeg", "audio/mp3": "mp3",
+    "audio/wav": "wav", "audio/x-wav": "wav", "audio/wave": "wav",
+    "audio/flac": "flac", "audio/x-flac": "flac",
+    "audio/m4a": "mp4", "audio/x-m4a": "mp4", "audio/aac": "mp4",
+    "video/mp4": "mp4", "video/webm": "webm", "video/ogg": "ogg",
     "video/quicktime": "mp4",
   };
   const ext = map[base] ?? base.split("/")[1]?.split("+")[0] ?? "webm";
   return { mime: `audio/${ext}`, ext };
+}
+
+// --- WAV ENCODING (for guaranteed Groq compatibility) ---
+
+function writeWavTag(view: DataView, offset: number, tag: string): void {
+  for (let i = 0; i < tag.length; i++) view.setUint8(offset + i, tag.charCodeAt(i));
+}
+
+/**
+ * Encodes an AudioBuffer as a 16kHz mono 16-bit PCM WAV.
+ * WAV is universally accepted by Groq Whisper regardless of input codec.
+ * Mono + 16kHz keeps file size ~3.8 MB / minute — well under Groq's 25 MB limit.
+ */
+function audioBufferToWav(buf: AudioBuffer): ArrayBuffer {
+  const sr = buf.sampleRate;
+  const n = buf.length;
+  const nc = buf.numberOfChannels;
+
+  // Mix all channels to mono
+  const mono = new Float32Array(n);
+  for (let ch = 0; ch < nc; ch++) {
+    const data = buf.getChannelData(ch);
+    for (let i = 0; i < n; i++) mono[i] += data[i] / nc;
+  }
+
+  const dataSize = n * 2; // 16-bit samples
+  const out = new ArrayBuffer(44 + dataSize);
+  const dv = new DataView(out);
+
+  writeWavTag(dv, 0, "RIFF");  dv.setUint32(4, 36 + dataSize, true);
+  writeWavTag(dv, 8, "WAVE");  writeWavTag(dv, 12, "fmt ");
+  dv.setUint32(16, 16, true);   // fmt chunk size
+  dv.setUint16(20, 1, true);    // PCM
+  dv.setUint16(22, 1, true);    // mono
+  dv.setUint32(24, sr, true);   // sample rate
+  dv.setUint32(28, sr * 2, true); // byte rate
+  dv.setUint16(32, 2, true);    // block align
+  dv.setUint16(34, 16, true);   // bits per sample
+  writeWavTag(dv, 36, "data"); dv.setUint32(40, dataSize, true);
+
+  for (let i = 0; i < n; i++) {
+    const s = Math.max(-1, Math.min(1, mono[i]));
+    dv.setInt16(44 + i * 2, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+  }
+  return out;
+}
+
+/**
+ * Converts any browser-decodable audio file to a 16kHz mono WAV.
+ * This guarantees Groq Whisper accepts it regardless of the original codec.
+ */
+async function convertToWav(file: File): Promise<File> {
+  const raw = await file.arrayBuffer();
+  const ctx = new AudioContext({ sampleRate: 16000 });
+  try {
+    const decoded = await ctx.decodeAudioData(raw);
+    const wavData = audioBufferToWav(decoded);
+    return new File([wavData], "audio.wav", { type: "audio/wav" });
+  } finally {
+    await ctx.close();
+  }
 }
 
 function formatTimestamp(seconds: number): string {
@@ -660,14 +695,11 @@ export async function transcribeAudioFile(
   lang: AppLanguage,
   _userApiKey?: string,
 ): Promise<TranscriptSegment[]> {
-  // Use filename extension as primary source of truth — more reliable than file.type
-  const nameExt = file.name.split(".").pop()?.toLowerCase() ?? "";
-  const rawMime = nameExt ? `audio/${nameExt}` : (file.type || "audio/webm");
-  const { ext } = normalizeAudioMimeType(rawMime);
-  const groqFile = wrapFileForGroq(file, ext);
+  // Convert to 16kHz mono WAV before uploading — guarantees Groq accepts any input codec
+  const wavFile = await convertToWav(file);
 
   const formData = new FormData();
-  formData.append("file", groqFile, groqFile.name);
+  formData.append("file", wavFile, wavFile.name);
   formData.append("model", AUDIO_MODEL);
   formData.append("language", getLangCode(lang));
   formData.append("response_format", "verbose_json");
@@ -680,9 +712,7 @@ export async function transcribeAudioFile(
 
   if (!groqResponse.ok) {
     const errBody = await groqResponse.text().catch(() => groqResponse.statusText);
-    throw new Error(
-      `Groq 400 | originalName="${file.name}" type="${file.type}" nameExt="${nameExt}" → rawMime="${rawMime}" ext="${ext}" sent="${groqFile.name}"(${groqFile.type}) | ${errBody}`,
-    );
+    throw new Error(`Groq transkriptsiya xatosi ${groqResponse.status}: ${errBody}`);
   }
 
   return parseGroqTranscription(await groqResponse.json() as unknown);
