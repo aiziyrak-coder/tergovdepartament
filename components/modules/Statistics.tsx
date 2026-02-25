@@ -34,15 +34,15 @@ const Statistics: React.FC<StatisticsProps> = ({ onBack }) => {
        {/* Header */}
        <div className="h-20 border-b border-slate-200 bg-white flex items-center justify-between px-8 shrink-0 z-20 shadow-sm">
             <div className="flex items-center gap-4">
-                <button type="button" onClick={onBack} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-all text-slate-500" aria-label="Orqaga">
+                    <button type="button" onClick={onBack} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-all text-slate-500" aria-label="Ортага">
                     <ArrowLeft size={20}/>
                 </button>
                 <div>
                     <h2 className="text-xl font-black text-slate-900 flex items-center gap-3 tracking-tight uppercase">
                         <BarChart3 className="text-purple-600" size={24}/>
-                        Tergov <span className="text-purple-600">Statistikasi</span>
+                        Тергов <span className="text-purple-600">Статистикаси</span>
                     </h2>
-                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Tahlil va Ko'rsatkichlar</p>
+                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Таҳлил ва Кўрсаткичлар</p>
                 </div>
             </div>
        </div>
@@ -58,7 +58,7 @@ const Statistics: React.FC<StatisticsProps> = ({ onBack }) => {
                            {stats.total > 0 && <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded">Jami</span>}
                        </div>
                        <h3 className="text-3xl font-black text-slate-800 mb-1">{stats.total}</h3>
-                       <p className="text-xs font-bold text-slate-400 uppercase">Jami arxivlangan ishlar</p>
+                       <p className="text-xs font-bold text-slate-400 uppercase">Јами архивланган ишлар</p>
                    </div>
                    
                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
@@ -67,7 +67,7 @@ const Statistics: React.FC<StatisticsProps> = ({ onBack }) => {
                            {stats.protocols > 0 && <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">{stats.total ? Math.round((stats.protocols / stats.total) * 100) : 0}%</span>}
                        </div>
                        <h3 className="text-3xl font-black text-slate-800 mb-1">{stats.protocols}</h3>
-                       <p className="text-xs font-bold text-slate-400 uppercase">Bayonnomalar</p>
+                       <p className="text-xs font-bold text-slate-400 uppercase">Баюнномалар</p>
                    </div>
 
                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
@@ -76,16 +76,16 @@ const Statistics: React.FC<StatisticsProps> = ({ onBack }) => {
                            {stats.stenograms > 0 && stats.total > 0 && <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded">{Math.round((stats.stenograms / stats.total) * 100)}%</span>}
                        </div>
                        <h3 className="text-3xl font-black text-slate-800 mb-1">{stats.stenograms}</h3>
-                       <p className="text-xs font-bold text-slate-400 uppercase">Stenogrammalar</p>
+                       <p className="text-xs font-bold text-slate-400 uppercase">Стенограммалар</p>
                    </div>
 
                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
                        <div className="flex justify-between items-start mb-4">
                            <div className="p-3 bg-purple-50 text-purple-600 rounded-xl"><Users size={20}/></div>
-                           <span className="text-xs font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded">Online</span>
+                           <span className="text-xs font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded">Online</span></span>
                        </div>
                        <h3 className="text-3xl font-black text-slate-800 mb-1">1</h3>
-                       <p className="text-xs font-bold text-slate-400 uppercase">Faol Tergovchilar</p>
+                       <p className="text-xs font-bold text-slate-400 uppercase">Фаол Терговчилар</p>
                    </div>
                </div>
 
@@ -96,13 +96,13 @@ const Statistics: React.FC<StatisticsProps> = ({ onBack }) => {
                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                        <h3 className="text-sm font-black text-slate-800 uppercase mb-6 flex items-center gap-2">
                            <TrendingUp size={16} className="text-slate-400"/>
-                           Modullar Kesimida Tahlil
+                           Модуллар Кесимида Таҳлил
                        </h3>
                        <div className="space-y-4">
                            {[
-                               { label: "Bayonnomalar", val: stats.total > 0 ? Math.round((stats.protocols/stats.total)*100) : 0, color: "bg-blue-500" },
-                               { label: "Fotorobotlar", val: stats.total > 0 ? Math.round((stats.photorobots/stats.total)*100) : 0, color: "bg-red-500" },
-                               { label: "Audio Stenogramma", val: stats.total > 0 ? Math.round((stats.stenograms/stats.total)*100) : 0, color: "bg-amber-500" },
+                               { label: "Баюнномалар", val: stats.total > 0 ? Math.round((stats.protocols/stats.total)*100) : 0, color: "bg-blue-500" },
+                               { label: "Фотороботлар", val: stats.total > 0 ? Math.round((stats.photorobots/stats.total)*100) : 0, color: "bg-red-500" },
+                               { label: "Аудио Стенограмма", val: stats.total > 0 ? Math.round((stats.stenograms/stats.total)*100) : 0, color: "bg-amber-500" },
                            ].map((item, i) => (
                                <div key={i}>
                                    <div className="flex justify-between text-xs font-bold text-slate-600 mb-1">
@@ -121,12 +121,12 @@ const Statistics: React.FC<StatisticsProps> = ({ onBack }) => {
                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                        <h3 className="text-sm font-black text-slate-800 uppercase mb-6 flex items-center gap-2">
                            <AlertTriangle size={16} className="text-slate-400"/>
-                           Muddati O'tib Ketayotgan Ishlar
+                           Муддати Отџб Кётаютган Ишлар
                        </h3>
                        <div className="space-y-3">
                            {[
-                               { id: "300002/2025", name: "Fuqaro A.K. ishi", days: 2, status: "Critical" },
-                               { id: "300015/2025", name: "Magazin o'g'riligi", days: 5, status: "Warning" },
+                               { id: "300002/2025", name: "Фуқаро A.K. иши", days: 2, status: "Critical" },
+                               { id: "300015/2025", name: "Магазин ўгџрилиги", days: 5, status: "Warning" },
                                { id: "300022/2025", name: "YTH Farg'ona ko'chasi", days: 7, status: "Warning" },
                            ].map((task, i) => (
                                <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
@@ -135,13 +135,13 @@ const Statistics: React.FC<StatisticsProps> = ({ onBack }) => {
                                        <div className="text-[10px] text-slate-500 font-bold">{task.name}</div>
                                    </div>
                                    <div className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase ${task.status === 'Critical' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'}`}>
-                                       {task.days} kun qoldi
+                                       {task.days} кун қолди
                                    </div>
                                </div>
                            ))}
                            {/* Empty State filler */}
                            <div className="p-8 text-center text-slate-400 text-xs font-medium italic opacity-50">
-                               Tergov muddatlari nazorat ostida
+                               Тергов муддатлари назорат остида
                            </div>
                        </div>
                    </div>

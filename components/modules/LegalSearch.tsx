@@ -18,7 +18,7 @@ const LegalSearch: React.FC<LegalSearchProps> = ({ onBack }) => {
     e.preventDefault();
     const q = query.trim();
     if (!q) {
-      toast("Qidiruv so'rovini kiriting", "warning");
+        toast("Κыдирув сўрўвини киритинг", "warning");
       return;
     }
     setLoading(true);
@@ -27,7 +27,7 @@ const LegalSearch: React.FC<LegalSearchProps> = ({ onBack }) => {
       const data = await searchLegalDatabase(q);
       setResult(data);
       const hasContent = (data.analysis?.trim().length ?? 0) > 0 || (data.articles?.length ?? 0) > 0 || (data.precedents?.length ?? 0) > 0;
-      toast(hasContent ? "Qidiruv natijalari tayyor" : "Ma'lumot topilmadi. So'rovni o'zgartirib qayta urinib ko'ring.", hasContent ? "success" : "info");
+      toast(hasContent ? "Кыдирув натижалари тайор" : "Маълумот топилмади. Сўрўвни ўзгартиб қайта уриниб кўринг.", hasContent ? "success" : "info");
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Qidiruvda xatolik yuz berdi.";
       toast(msg, "error");
@@ -42,15 +42,15 @@ const LegalSearch: React.FC<LegalSearchProps> = ({ onBack }) => {
       {/* HEADER */}
       <div className="h-20 border-b border-slate-200 bg-white flex items-center justify-between px-8 shrink-0 z-20 shadow-sm">
             <div className="flex items-center gap-4">
-                <button type="button" onClick={onBack} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-all text-slate-500" aria-label="Orqaga">
+                <button type="button" onClick={onBack} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-all text-slate-500" aria-label="Ортага">
                     <ArrowLeft size={20}/>
                 </button>
                 <div>
                     <h2 className="text-xl font-black text-slate-900 flex items-center gap-3 tracking-tight uppercase">
                         <Scale className="text-uzblue" size={24}/>
-                        Yuridik <span className="text-uzblue">Qidiruv</span>
+                        Йуридик <span className="text-uzblue">Кыдирув</span>
                     </h2>
-                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Lex.uz Bazasidan Intellektual Qidiruv</p>
+                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Лекс.uz Базасидан Интеллектуал Кыдирув</p>
                 </div>
             </div>
       </div>
@@ -64,13 +64,13 @@ const LegalSearch: React.FC<LegalSearchProps> = ({ onBack }) => {
                           type="search"
                           value={query}
                           onChange={(e) => setQuery(e.target.value)}
-                          placeholder="Savol yoki kalit so'zni kiriting (Masalan: 'Firibgarlik uchun jazo')..."
+                          placeholder="Савол яки калит сўзни киритинг (Масалан: 'Фирибгарлик учун ёд ')..."
                           className="w-full bg-transparent p-4 text-lg text-slate-900 outline-none placeholder-slate-400 font-medium"
                           aria-label="Yuridik qidiruv so'rovi"
                       />
                       <button type="submit" disabled={loading} className="bg-uzblue hover:bg-blue-600 text-white px-8 py-3 rounded-xl font-bold transition-all disabled:opacity-50 flex items-center gap-2">
                           {loading ? <Loader2 className="animate-spin"/> : <Search size={18}/>} 
-                          {loading ? 'IZLANMOQDA' : 'QIDIRISH'}
+                          {loading ? 'ИЗЛАНМОЖДА' : 'КЫДИРУВ'}
                       </button>
                   </div>
               </form>
@@ -80,20 +80,20 @@ const LegalSearch: React.FC<LegalSearchProps> = ({ onBack }) => {
               <div className="max-w-5xl mx-auto space-y-8 animate-in slide-in-from-bottom duration-500">
                   {!result.analysis?.trim() && (!result.articles?.length) && (!result.precedents?.length) && (
                       <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-center">
-                          <p className="text-amber-800 font-medium">Ushbu so'rov bo'yicha ma'lumot topilmadi. Kalit so'zlarni o'zgartirib qayta qidiring.</p>
+                          <p className="text-amber-800 font-medium">Ушбу сўрўв бўйича маълумот топилмади. Калит сўзларни ўзгартиб қайта қидиринг.</p>
                       </div>
                   )}
                   <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-lg relative overflow-hidden">
                       <div className="flex items-center gap-3 mb-6 relative z-10">
                           <div className="p-3 rounded-2xl bg-blue-50 text-uzblue border border-blue-100"><Library size={24}/></div>
-                          <h3 className="text-xl font-bold text-slate-900 uppercase tracking-wide">AI Xulosasi</h3>
+                          <h3 className="text-xl font-bold text-slate-900 uppercase tracking-wide">AI Хулосаси</h3>
                       </div>
                       <p className="text-lg text-slate-700 leading-relaxed whitespace-pre-wrap font-medium">{result.analysis}</p>
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                       <div className="space-y-4">
-                          <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest px-2">Tegishli Moddalar</h3>
+                          <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest px-2">Тегишли Моддалар</h3>
                           {result.articles.map((art, idx) => (
                               <div key={idx} className="bg-white border border-slate-200 rounded-2xl p-6 hover:border-uzblue transition-all hover:shadow-md cursor-pointer group">
                                   <div className="flex justify-between mb-3">
@@ -105,12 +105,12 @@ const LegalSearch: React.FC<LegalSearchProps> = ({ onBack }) => {
                           ))}
                       </div>
                       <div className="space-y-4">
-                          <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest px-2">Pretsedentlar va Manbalar</h3>
+                          <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest px-2">Прецедентлар ва Манбалар</h3>
                           {result.precedents.map((prec, idx) => (
                               <div key={idx} className="bg-white border border-slate-200 rounded-2xl p-6 hover:border-uzgreen transition-all hover:shadow-md">
                                   <div className="flex items-center gap-2 mb-3 text-uzgreen text-xs font-bold uppercase"><ScrollText size={14}/> {prec.source}</div>
                                   <h4 className="text-slate-800 font-medium mb-2">{prec.title}</h4>
-                                  {prec.link && <a href={prec.link} target="_blank" className="text-xs text-blue-600 hover:underline flex items-center gap-1 font-bold"><ExternalLink size={12}/> Manbani ochish</a>}
+                                  {prec.link && <a href={prec.link} target="_blank" className="text-xs text-blue-600 hover:underline flex items-center gap-1 font-bold"><ExternalLink size={12}/> Манбани очиш</a>}
                               </div>
                           ))}
                       </div>

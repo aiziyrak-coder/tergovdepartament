@@ -75,7 +75,7 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                <h4 className="font-bold text-sm uppercase mb-1">{t.type}</h4>
                <p className="text-sm font-medium text-slate-600 leading-snug">{t.message}</p>
             </div>
-            <button type="button" aria-label="Yopish" onClick={() => removeToast(t.id)} className="text-slate-400 hover:text-slate-600 p-1 rounded">
+            <button type="button" aria-label="Ёпиш" onClick={() => removeToast(t.id)} className="text-slate-400 hover:text-slate-600 p-1 rounded">
               <X size={16} />
             </button>
           </div>

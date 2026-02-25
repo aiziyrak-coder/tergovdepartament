@@ -326,10 +326,10 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
       }, 1000);
 
       setIsRecording(true);
-      toast("Ovoz yozish boshlandi", "success");
+      toast("Овоз юзиш бошланди", "success");
     } catch (e) {
       console.error("Microphone error:", e);
-      toast("Mikrofonga ulanib bo'lmadi. Ruxsatni tekshiring.", "error");
+      toast("Микрофонга уланиб бўлмади. Руқсатни текширинг.", "error");
     }
   }, [toast]);
 
@@ -337,17 +337,17 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
     setIsRecording(false);
     stopEverything();
     setAudioLevel(0);
-    toast("Ovoz yozish to'xtatildi", "info");
+    toast("Овоз юзиш тўхтатилди", "info");
   }, [stopEverything, toast]);
 
   const processAndGenerate = useCallback(async () => {
     if (!audioBlob) {
-      toast("Avval ovoz yozing", "error");
+      toast("Аввал овоз юзинг", "error");
       return;
     }
 
     setIsProcessing(true);
-    setProcessingStatus("Ovoz tahlil qilinmoqda...");
+    setProcessingStatus("Овоз таҳлил қилинмоқда...");
 
     try {
       // Convert blob to base64
@@ -357,7 +357,7 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
       );
 
       // Transcribe audio
-      setProcessingStatus("Matn ajratilmoqda...");
+      setProcessingStatus("Матн ажратилмоқда...");
       const segments = await transcribeAudio(
         base64,
         audioBlob.type || "audio/webm",
@@ -367,7 +367,7 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
       );
 
       if (!segments || segments.length === 0) {
-        toast("Ovozni tanib bo'lmadi. Qayta yozing.", "error");
+        toast("Овозни таниб бўлмади. Қайта юзинг.", "error");
         setIsProcessing(false);
         return;
       }
@@ -375,7 +375,7 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
       // Convert to DialogSegment format (no timestamps for protocol - only stenogram needs them)
       const dialogSegments: DialogSegment[] = segments.map((seg, idx) => ({
         speakerId: seg.speaker?.toLowerCase().includes("tergov") ? "investigator" : "suspect",
-        speakerName: seg.speaker || (idx % 2 === 0 ? "Tergovchi" : getTemplateEntry(selectedTemplate).role),
+        speakerName: seg.speaker || (idx % 2 === 0 ? "Терговчи" : getTemplateEntry(selectedTemplate).role),
         text: seg.text || "",
         timestamp: "", // No timestamp for live questioning protocol
       }));
@@ -385,7 +385,7 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
       setTranscriptText(fullText);
 
       // Generate protocol
-      setProcessingStatus("Bayonnoma shakllantirilmoqda...");
+      setProcessingStatus("Баюннома шакллантирилмоқда...");
       const htmlContent = await generateLegalProtocol(
         "DICTATION",
         dialogSegments,
@@ -407,11 +407,11 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
       a.click();
       URL.revokeObjectURL(url);
 
-      toast("Bayonnoma tayyor va yuklab olindi!", "success");
+      toast("Баюннома тайор ва юклаб олинди!", "success");
     } catch (e) {
       console.error("Processing error:", e);
       const msg = (e as Error)?.message || "Xatolik yuz berdi";
-      toast(`Xatolik: ${msg.substring(0, 80)}`, "error");
+      toast(`Хатолик: ${msg.substring(0, 80)}`, "error");
     } finally {
       setIsProcessing(false);
       setProcessingStatus("");
@@ -424,7 +424,7 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
     setLiveTranscript("");
     setInterimTranscript("");
     setRecordingTime(0);
-    toast("Yozuv o'chirildi", "info");
+    toast("Юзув ўчирилди", "info");
   }, [toast]);
 
   return (
@@ -436,7 +436,7 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
             type="button"
             onClick={onBack}
             className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-all text-slate-500"
-            aria-label="Orqaga"
+            aria-label="Ортага"
           >
             <ArrowLeft size={20} />
           </button>
@@ -446,11 +446,11 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
             </div>
             <div>
               <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest leading-none mb-1">
-                Jonli So'roq
+                Жонли Сўрўқ
               </h2>
               <div className="flex items-center gap-3 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
                 <span className="flex items-center gap-1">
-                  <Brain size={10} /> Ovoz yozish va AI tahlil
+                  <Brain size={10} /> Овоз юзиш ва AI таҳлил
                 </span>
               </div>
             </div>
@@ -465,7 +465,7 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
               disabled={isProcessing}
               className="bg-slate-100 hover:bg-slate-200 disabled:opacity-50 text-slate-600 px-4 py-2.5 rounded-xl text-xs font-bold border border-slate-200"
             >
-              Tozalash
+              Тозалаш
             </button>
           )}
           <button
@@ -487,7 +487,7 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
             {/* Metadata fields */}
             <div className="space-y-4">
               <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                <FileText size={12} /> Ish Tafsilotlari
+                <FileText size={12} /> Ой Тафсилотлари
               </h3>
               <select
                 value={Object.prototype.hasOwnProperty.call(PROTOCOL_TEMPLATES, selectedTemplate) ? selectedTemplate : ProtocolType.GUVOH}

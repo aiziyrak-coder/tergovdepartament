@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { ModuleType } from '../types';
+import { useLanguage } from '../contexts/LanguageContext';
 import { 
   LayoutDashboard, FileSignature, Mic2, UserSquare2, 
   GraduationCap, Settings, FolderArchive, Video, 
@@ -14,15 +15,17 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ activeModule, setActiveModule }) => {
+  const { t } = useLanguage();
+  
   const menuItems = [
-    { id: ModuleType.DASHBOARD, label: "Tahlil Markazi", sub: "Dashboard", icon: LayoutDashboard },
-    { id: ModuleType.PROTOCOL, label: "Smart So'roq", sub: "Protokol", icon: FileSignature },
-    { id: ModuleType.STENOGRAM, label: "Stenogramma", sub: "Audio", icon: Mic2 },
-    { id: ModuleType.ACCIDENT_SIMULATION, label: "Ekspertiza", sub: "Video", icon: Video },
-    { id: ModuleType.PHOTOROBOT, label: "Fotorobot", sub: "Qiyofa", icon: UserSquare2 },
-    { id: ModuleType.TEMPLATES, label: "Namunalar", sub: "Shablon", icon: LayoutTemplate },
-    { id: ModuleType.MENTOR, label: "Murabbiy", sub: "AI Yordam", icon: GraduationCap },
-    { id: ModuleType.DOCUMENTS, label: "Yagona Arxiv", sub: "Ma'lumotlar", icon: FolderArchive },
+    { id: ModuleType.DASHBOARD, label: t('tab_dashboard'), sub: t('sub_dashboard'), icon: LayoutDashboard },
+    { id: ModuleType.PROTOCOL, label: t('tab_protocol'), sub: t('sub_protocol'), icon: FileSignature },
+    { id: ModuleType.STENOGRAM, label: t('tab_stenogram'), sub: t('sub_audio'), icon: Mic2 },
+    { id: ModuleType.ACCIDENT_SIMULATION, label: t('tab_accident'), sub: t('sub_accident'), icon: Video },
+    { id: ModuleType.PHOTOROBOT, label: t('tab_photorobot'), sub: t('sub_face'), icon: UserSquare2 },
+    { id: ModuleType.TEMPLATES, label: t('tab_templates'), sub: t('sub_template'), icon: LayoutTemplate },
+    { id: ModuleType.MENTOR, label: t('tab_mentor'), sub: t('sub_help'), icon: GraduationCap },
+    { id: ModuleType.DOCUMENTS, label: t('tab_documents'), sub: t('sub_data'), icon: FolderArchive },
   ];
 
   return (
@@ -38,8 +41,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeModule, setActiveModule }) => {
                 <IIVLogo className="w-7 h-7 object-contain drop-shadow" />
             </div>
             <div className="flex flex-col justify-center">
-                <h1 className="text-white font-tech font-bold text-sm leading-none tracking-wide">IIV TERGOV <span className="text-uzblue">DEPARTAMENTI</span></h1>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Farg'ona viloyati</p>
+                <h1 className="text-white font-tech font-bold text-sm leading-none tracking-wide">IIV ТЕРГОВ <span className="text-uzblue">ДЕПАРТАМЕНТИ</span></h1>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Фарғона вилояти</p>
             </div>
         </div>
       </div>
@@ -49,7 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeModule, setActiveModule }) => {
         <div className="px-2 mb-4 mt-2">
             <div className="text-[10px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
                 <Activity size={10} className="text-uzgreen"/>
-                <span>Asosiy Tizimlar</span>
+                <span>{t('nav_main_systems')}</span>
             </div>
         </div>
         
@@ -91,7 +94,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeModule, setActiveModule }) => {
           className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-xs font-bold ${activeModule === ModuleType.SETTINGS ? 'bg-slate-800 text-white border border-slate-700' : 'text-slate-500 hover:bg-slate-800 hover:text-white'}`}
         >
            <Settings size={18}/> 
-           <span>Sozlamalar</span>
+           <span>{t('nav_settings')}</span>
         </button>
         
         <div className="mt-2 pt-4 border-t border-slate-800 flex items-center justify-between px-2 opacity-60">

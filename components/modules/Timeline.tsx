@@ -19,7 +19,7 @@ const Timeline: React.FC<TimelineProps> = ({ onBack }) => {
   const handleGenerate = async () => {
     const text = inputText.trim();
     if (!text) {
-      toast("Voqea matnini kiriting", "warning");
+      toast("Воқеа матнини киритинг", "warning");
       return;
     }
     setLoading(true);
@@ -33,9 +33,9 @@ const Timeline: React.FC<TimelineProps> = ({ onBack }) => {
         ),
       ]);
       setEvents(result);
-      toast(result.length > 0 ? `Xronologiya: ${result.length} ta voqea` : "Voqealar topilmadi", result.length > 0 ? "success" : "info");
+      toast(result.length > 0 ? `Хронология: ${result.length} та воқеа` : "Воқеалар топилмади", result.length > 0 ? "success" : "info");
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Xronologiya yaratishda xatolik.";
+      const msg = e instanceof Error ? e.message : "Хронология яратишда хатолик.";
       toast(msg, "error");
     } finally {
       setLoading(false);
@@ -45,15 +45,15 @@ const Timeline: React.FC<TimelineProps> = ({ onBack }) => {
   return (
     <div className="w-full h-full flex flex-col bg-[#F8FAFC] font-sans p-6 text-slate-900">
        <div className="flex items-center gap-4 mb-6">
-            <button type="button" onClick={onBack} className="p-3 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-500 transition-all" aria-label="Orqaga"><ArrowLeft size={20}/></button>
-            <h2 className="text-2xl font-bold flex items-center gap-3 text-slate-800"><Clock className="text-uzblue" size={28}/> Xronologiya <span className="text-uzblue">AI</span></h2>
+            <button type="button" onClick={onBack} className="p-3 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-500 transition-all" aria-label="Ортага"><ArrowLeft size={20}/></button>
+            <h2 className="text-2xl font-bold flex items-center gap-3 text-slate-800"><Clock className="text-uzblue" size={28}/> Хронология <span className="text-uzblue">AI</span></h2>
        </div>
 
        <div className="flex flex-col lg:flex-row gap-6 flex-1 min-h-0">
           <div className="w-full lg:w-1/3 flex flex-col bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-              <textarea className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm outline-none resize-none mb-4 focus:border-uzblue" placeholder="Voqea tafsilotlarini kiriting (sana, vaqt, joy, hodisa)..." value={inputText} onChange={(e) => setInputText(e.target.value)} aria-label="Voqea matni" />
+              <textarea className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm outline-none resize-none mb-4 focus:border-uzblue" placeholder="Воқеа тафсилотларини киритинг (sana, vaqt, joy, hodisa)..." value={inputText} onChange={(e) => setInputText(e.target.value)} aria-label="Воқеа матни" />
               <button type="button" onClick={handleGenerate} disabled={loading} className="w-full py-4 bg-uzblue text-white rounded-xl font-bold shadow-lg shadow-blue-200 flex items-center justify-center gap-2 disabled:opacity-60">
-                  {loading ? <Loader2 className="animate-spin" size={20}/> : <RefreshCw size={20}/>} Xronologiya yaratish
+                  {loading ? <Loader2 className="animate-spin" size={20}/> : <RefreshCw size={20}/>} Хронология яратиш
               </button>
           </div>
 
@@ -75,7 +75,7 @@ const Timeline: React.FC<TimelineProps> = ({ onBack }) => {
                       ))}
                   </div>
               ) : (
-                  <div className="flex flex-col items-center justify-center h-full text-slate-400 opacity-50"><Clock size={48} className="mb-4"/><p>Ma'lumot kutilmoqda...</p></div>
+                  <div className="flex flex-col items-center justify-center h-full text-slate-400 opacity-50"><Clock size={48} className="mb-4"/><p>Маълумот кутилмоқда...</p></div>
               )}
           </div>
        </div>

@@ -122,7 +122,7 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
       // @ts-ignore
       const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
       if (!SpeechRecognition) {
-        toast("Brauzerda ovozli yozish imkoniyati yo'q", "error");
+        toast("Браузерда овозли юзиш имконияти ёқ", "error");
         return;
       }
       
@@ -154,7 +154,7 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
 
   const handleKeySubmit = () => {
       if (!tempKeyInput.trim()) {
-          toast("Iltimos, API kalitni kiriting", "error");
+          toast("Илтимос, API калитни киритинг", "error");
           return;
       }
       const trimmedKey = tempKeyInput.trim();
@@ -238,7 +238,7 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
       const imgs = await generatePhotorobotVariants(prompt, 5, targetType, activeKey);
       setVariants(imgs);
       setStep('SELECT');
-      toast("5 ta realistik variant shakllantirildi", "success");
+      toast("Цингъ на реалистик вариант шакллантирилди", "success");
     } catch (e) {
         console.error(e);
         const errorMsg = e instanceof Error ? e.message : String(e);
@@ -247,7 +247,7 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
           setUserApiKey("");
           setShowKeyModal(true);
         } else {
-          toast(errorMsg.slice(0, 120) || "Rasm generatsiyasida xatolik.", "error");
+          toast(errorMsg.slice(0, 120) || "Расм генератсиясида хатолик.", "error");
         }
     } finally {
       setLoading(false);
@@ -259,7 +259,7 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
       setHistory([img]);
       setHistoryIndex(0);
       setStep('STUDIO');
-      toast("Variant tanlandi. Tahrirlash rejimidasiz.", "info");
+      toast("Вариант танланди. Таҳрирлась режимидасиз.", "info");
   };
 
   const applyEdit = async () => {
@@ -267,7 +267,7 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
     const activeKey = userApiKey;
     if (!activeKey) {
       setShowKeyModal(true);
-      toast("Tahrirlash uchun API kalit kiriting", "error");
+      toast("Таҳрирлаш учун API калит киритинг", "error");
       return;
     }
     setIsEditing(true);
@@ -293,7 +293,7 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
       
       setSelectedImage(newImg);
       setEditPrompt('');
-      toast("O'zgarishlar kiritildi", "success");
+      toast("Озгаришлар киритилди", "success");
     } catch (e) {
       console.error(e);
       const errorMsg = e instanceof Error ? e.message : String(e);

@@ -33,7 +33,7 @@ function saveDb(data: SavedDocument[]): void {
     }
     localStorage.setItem(STORAGE_KEY, serialized);
   } catch (e) {
-    const msg = "Xotira to'ldi yoki saqlash imkonsiz. Eski hujjatlarni o'chiring yoki brauzer xotirasini tozalang.";
+    const msg = "Хотира тўлди ёки сақлаш имкониёсиз. Эски ҳужжатларни ўчиринг ёки браузер хотирасини тозалаң.";
     console.error("Storage error", e);
     throw new Error(msg);
   }
@@ -47,7 +47,7 @@ export const storageService = {
   saveDocument(doc: Omit<SavedDocument, "id" | "createdAt">): SavedDocument {
     const normalized: Omit<SavedDocument, "id" | "createdAt"> = {
       ...doc,
-      title: (doc.title ?? "").trim() || "Nomsiz",
+      title: (doc.title ?? "").trim() || "Номсиз",
       category: doc.category,
       tags: Array.isArray(doc.tags) ? doc.tags : [],
     };

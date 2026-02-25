@@ -14,37 +14,37 @@ export interface ProtocolTemplateEntry {
 
 export const PROTOCOL_TEMPLATES: Record<ProtocolType, ProtocolTemplateEntry> = {
   [ProtocolType.GUMONLANUVCHI]: {
-    title: "GUMON QILINUVCHINI SO'ROQ QILISH",
-    code: "JPK 112-modda",
-    role: "Gumonlanuvchi",
+    title: "ГУМОН ҚИЛИНУВЧИНИ СЎРОҚ ҚИЛИШ",
+    code: "ЖПК 112-модда",
+    role: "Гумон қилинувчи",
     legalInfo:
       "Гумон қилинувчини сўроқ қилиш унинг ҳуқуқ ва мажбуриятларини (ЖПК 48-модда) тушунтиришдан бошланади. У сўроққа адвокат билан келишга ва кўрсатув беришдан бош тортишга ҳақли.",
   },
   [ProtocolType.GUVOH]: {
-    title: "GUVOHNI SO'ROQ QILISH",
-    code: "JPK 66-modda",
-    role: "Guvoh",
+    title: "ГУВОҲНИ СЎРОҚ ҚИЛИШ",
+    code: "ЖПК 66-модда",
+    role: "Гувоҳ",
     legalInfo:
       "Гувоҳнинг ҳуқуқ ва мажбуриятлари (ЖПК 66-модда). Гувоҳ била туриб ёлғон кўрсатма берганлик учун жиноий жавобгарликка тортилиши ҳақида (ЖК 238-модда) огоҳлантирилиши шарт.",
   },
   [ProtocolType.AYBLANUVCHI]: {
-    title: "AYBLANUVCHINI SO'ROQ QILISH",
-    code: "JPK 112-modda",
-    role: "Ayblanuvchi",
+    title: "АЙБЛАНУВЧИНИ СЎРОҚ ҚИЛИШ",
+    code: "ЖПК 112-модда",
+    role: "Айбланувчи",
     legalInfo:
       "Айбланувчининг ҳуқуқлари (ЖПК 46-модда): Айблов моҳиятини билиш, далиллар билан танишиш, ҳимоячига эга бўлиш. Сўроқ пайтида руҳий ёки жисмоний тазйиқ ўтказиш тақиқланади.",
   },
   [ProtocolType.JABRLANUVCHI]: {
-    title: "JABRLANUVCHINI SO'ROQ QILISH",
-    code: "JPK 96-modda",
-    role: "Jabrlanuvchi",
+    title: "ЖАБРЛАНУВЧИНИ СЎРОҚ ҚИЛИШ",
+    code: "ЖПК 96-модда",
+    role: "Жабрланувчи",
     legalInfo:
       "Жабрланувчига етказилган зарарни қоплашни талаб қилиш, иш материаллари билан танишиш ҳуқуқлари тушунтирилади (ЖПК 55-модда).",
   },
   [ProtocolType.YUZLASHTIRISH]: {
-    title: "YUZLASHTIRISH BAYONNOMASI",
-    code: "JPK 123-modda",
-    role: "Ikkinchi Taraf",
+    title: "ЮЗЛАШТИРИШ БАЁННОМАСИ",
+    code: "ЖПК 123-модда",
+    role: "Иккинчи Тараф",
     legalInfo:
       "Юзлаштириш илгари сўроқ қилинган икки шахснинг кўрсатувларида жиддий қарама-қаршиликлар бўлган ҳолларда ўтказилади.",
   },

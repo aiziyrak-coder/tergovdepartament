@@ -72,14 +72,14 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
           const file = e.target.files[0];
           
           if (file.size > MAX_FILE_SIZE) {
-              toast("Fayl hajmi juda katta! Maksimal 25 MB.", "error");
+              toast("Файл ҳажми жуда катта! Максимал 25 MB.", "error");
               return;
           }
 
           setMediaFile(file);
           setMediaUrl(URL.createObjectURL(file));
           setProtocolData(prev => ({ ...prev, fileName: file.name }));
-          toast("Audio fayl yuklandi.", "info");
+          toast("Аудио файл юклинди.", "info");
       }
   };
 
@@ -111,15 +111,15 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
               const initialSpeakers = Array.from(new Set(results.map(r => r.speaker)));
               setAllSpeakers(initialSpeakers.length > 0 ? initialSpeakers : ['Speaker 1', 'Speaker 2']);
               setActiveTab('DOC');
-              toast("Tahlil muvaffaqiyatli yakunlandi.", "success");
+              toast("Таҳлил муваффақиятли якунланди.", "success");
           } else {
-              toast("Matn aniqlanmadi yoki audio sifati past.", "warning");
+              toast("Матн аниқланмади ёки аудио сифати паст.", "warning");
           }
 
       } catch (e) {
           console.error(e);
           const msg = e instanceof Error ? e.message : "Noma'lum";
-          toast("Tizim xatoligi: " + msg, "error");
+          toast("Тизим хатолиги: " + msg, "error");
       } finally {
           setLoading(false);
       }
@@ -141,7 +141,7 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
       const newSpeakerName = `Speaker ${allSpeakers.length + 1}`;
       if (!allSpeakers.includes(newSpeakerName)) {
           setAllSpeakers(prev => [...prev, newSpeakerName]);
-          toast("Yangi ishtirokchi ro'yxatga qo'shildi", "success");
+          toast("Янги иштирокчи рўйхатга қўшилди", "success");
       }
   };
 
@@ -159,7 +159,7 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
     if (deleteSegmentId) {
       setSegments((prev) => prev.filter((s) => s.id !== deleteSegmentId));
       setDeleteSegmentId(null);
-      toast("Qator o'chirildi", "info");
+      toast("Қатор ўчирилди", "info");
     }
   }, [deleteSegmentId, toast]);
 
@@ -223,28 +223,28 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      toast("Stenogramma (.doc) yuklab olindi", "success");
+      toast("Стенограмма (.doc) юклаб олинди", "success");
   };
 
   return (
     <div className="w-full h-full flex flex-col bg-[#F8FAFC] overflow-hidden relative font-sans text-slate-900">
         <div className="h-20 border-b border-slate-200 bg-white flex items-center justify-between px-8 shrink-0 z-20 shadow-sm">
             <div className="flex items-center gap-6">
-                <button type="button" onClick={onBack} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-all" aria-label="Orqaga">
+                <button type="button" onClick={onBack} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-all" aria-label="Ортага">
                     <ArrowLeft size={20} className="text-slate-500"/>
                 </button>
                 <div>
                     <h2 className="text-xl font-black text-slate-900 flex items-center gap-3 tracking-tight uppercase">
                         <Mic className="text-blue-600" size={24}/>
-                        <span className="text-blue-600">Stenogramma</span>
+                        <span className="text-blue-600">Стенограмма</span>
                     </h2>
-                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Audio Tahlil Moduli</p>
+                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Аудио Таҳлил Модули</p>
                 </div>
             </div>
             {/* Steps */}
             <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
-                <button type="button" onClick={() => setActiveTab('UPLOAD')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === 'UPLOAD' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'}`} aria-pressed={activeTab === 'UPLOAD'}>1. Yuklash</button>
-                <button type="button" disabled={segments.length===0} onClick={() => setActiveTab('DOC')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === 'DOC' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'}`} aria-pressed={activeTab === 'DOC'}>2. Tahrirlash</button>
+                <button type="button" onClick={() => setActiveTab('UPLOAD')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === 'UPLOAD' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'}`} aria-pressed={activeTab === 'UPLOAD'}>1. Юклаш</button>
+                <button type="button" disabled={segments.length===0} onClick={() => setActiveTab('DOC')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === 'DOC' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'}`} aria-pressed={activeTab === 'DOC'}>2. Таҳрирлаш</button>
             </div>
         </div>
 
@@ -255,8 +255,8 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
                         {loading && (
                              <div className="absolute inset-0 bg-white/95 z-20 flex flex-col items-center justify-center p-10 text-center animate-in fade-in">
                                  <Loader2 size={64} className="text-blue-600 animate-spin mb-6"/>
-                                 <h3 className="text-2xl font-black text-slate-800 uppercase mb-2">AI Tahlil Qilmoqda...</h3>
-                                 <p className="text-base text-slate-500 font-medium mb-8">AI ovozlar sonini va matnni aniqlamoqda. Iltimos kuting.</p>
+                                 <h3 className="text-2xl font-black text-slate-800 uppercase mb-2">AI Таҳлил Қилмоқда...</h3>
+                                 <p className="text-base text-slate-500 font-medium mb-8">AI овозлар сонини ва матнни аниқламоқда. Илтимос кутинг.</p>
                              </div>
                         )}
 
@@ -266,8 +266,8 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
                             </div>
                             
                             <div className="text-center">
-                                <h3 className="text-2xl font-black text-slate-800 uppercase mb-2">Audio Faylni Yuklash</h3>
-                                <p className="text-slate-500 font-medium">MP3, WAV, M4A formatlar. Maksimal hajm: 25 MB.</p>
+                                <h3 className="text-2xl font-black text-slate-800 uppercase mb-2">Аудио Файлни Юклаш</h3>
+                                <p className="text-slate-500 font-medium">MP3, WAV, M4A форматлар. Максимал ҳажм: 25 MB.</p>
                             </div>
 
                             {!mediaFile ? (
@@ -275,7 +275,7 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
                                     <div className="p-4 bg-white rounded-full mb-4 shadow-sm group-hover:shadow-md transition-all">
                                         <Upload size={32} className="text-slate-400 group-hover:text-blue-600"/>
                                     </div>
-                                    <span className="text-sm font-bold text-slate-600 group-hover:text-blue-700">Faylni tanlash uchun bosing</span>
+                                    <span className="text-sm font-bold text-slate-600 group-hover:text-blue-700">Файлни танлаш учун босинг</span>
                                     <input type="file" accept="audio/*" onChange={handleFileSelect} className="hidden"/>
                                 </label>
                             ) : (
@@ -295,13 +295,13 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
                                     <div className="bg-amber-50 p-4 rounded-xl border border-amber-200 flex gap-3 items-start">
                                         <AlertCircle className="text-amber-500 shrink-0 mt-0.5" size={18}/>
                                         <p className="text-xs text-amber-800 font-medium">
-                                            AI avtomatik ravishda spikerlarni ajratadi. Agar xatolik bo'lsa, keyingi bosqichda qo'lda to'g'irlash mumkin.
+                                            AI автоматик равишда спикерларни ажратади. Агар хатолик бўлса, кейинги босқичда қўлда тўғирлаш мумкин.
                                         </p>
                                     </div>
 
                                     <button onClick={processAudioFile} disabled={loading} className="w-full py-5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-sm shadow-xl shadow-blue-200 flex justify-center gap-3 transition-all active:scale-95 disabled:opacity-50 uppercase tracking-widest">
                                         {loading ? <Activity className="animate-spin"/> : <CheckCircle2/>} 
-                                        {loading ? 'Yuborilmoqda...' : 'Tahlilni Boshlash'}
+                                        {loading ? 'Юборилмоқда...' : 'Таҳлилни Бошлаш'}
                                     </button>
                                 </div>
                             )}
@@ -315,15 +315,15 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
                     {/* LEFT: MAIN TRANSCRIPT EDITOR */}
                     <div className="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
                         <div className="h-16 border-b border-slate-200 px-6 flex items-center justify-between bg-slate-50">
-                            <h3 className="text-sm font-black text-slate-600 uppercase">Tahrirlash Rejimi</h3>
+                            <h3 className="text-sm font-black text-slate-600 uppercase">Таҳрирлаш Режими</h3>
                             <button onClick={downloadWordDocument} className="text-xs font-bold bg-slate-900 text-white px-4 py-2 rounded-xl hover:bg-slate-700 transition-all flex items-center gap-2 shadow-lg shadow-slate-300">
-                                <Download size={16}/> WORD YUKLASH
+                                <Download size={16}/> WORD ЮКЛАШ
                             </button>
                         </div>
                         <div className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar bg-slate-50/50">
                             {segments.length === 0 && (
                                 <div className="text-center p-10 text-slate-400">
-                                    Matn topilmadi. Qayta urinib ko'ring.
+                                    Матн топилмади. Қайта уриниб кўринг.
                                 </div>
                             )}
                             {segments.map((seg, idx) => (
@@ -372,14 +372,14 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
                     <div className="w-[360px] h-full flex flex-col gap-4">
                         {/* 1. STENOGRAM METADATA */}
                         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col h-[40%]">
-                             <h3 className="text-xs font-black text-slate-500 uppercase mb-4 flex items-center gap-2"><FileText size={14}/> Stenogramma Ma'lumotlari</h3>
+                             <h3 className="text-xs font-black text-slate-500 uppercase mb-4 flex items-center gap-2"><FileText size={14}/> Стенограмма Маълумотлари</h3>
                              <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-2">
                                  <div>
                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Taqdim etgan fuqarolar</label>
                                    <input value={protocolData.applicants} onChange={e=>setProtocolData({...protocolData, applicants:e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
                                  </div>
                                  <div>
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Sana va Vaqt</label>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Сана ва Вақт</label>
                                     <div className="grid grid-cols-3 gap-2 mt-1">
                                         <input type="date" value={protocolData.date} onChange={e=>setProtocolData({...protocolData, date:e.target.value})} className="col-span-2 bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
                                         <input type="time" value={protocolData.startTime} onChange={e=>setProtocolData({...protocolData, startTime:e.target.value})} className="bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
@@ -387,18 +387,18 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
                                     <input type="time" value={protocolData.endTime} onChange={e=>setProtocolData({...protocolData, endTime:e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold mt-2"/>
                                  </div>
                                  <div>
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Shahar</label>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Шаҳар</label>
                                     <input value={protocolData.city} onChange={e=>setProtocolData({...protocolData, city:e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
                                  </div>
                                  <div>
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Tergovchi (Unvon va F.I.SH)</label>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Терговчи (Унвон ва Ф.И.Ш)</label>
                                     <div className="flex gap-2">
                                         <input value={protocolData.investigatorRank} onChange={e=>setProtocolData({...protocolData, investigatorRank:e.target.value})} placeholder="Unvon" className="w-1/3 bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
                                         <input value={protocolData.investigatorName} onChange={e=>setProtocolData({...protocolData, investigatorName:e.target.value})} placeholder="F.I.SH" className="w-2/3 bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
                                     </div>
                                  </div>
                                  <div>
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Qurilma / Fayl Turi</label>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Тюро Атўж Тури</label>
                                     <input value={protocolData.deviceInfo} onChange={e=>setProtocolData({...protocolData, deviceInfo:e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
                                  </div>
                                  <div>
@@ -406,7 +406,7 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
                                     <input value={protocolData.legalArticles} onChange={e=>setProtocolData({...protocolData, legalArticles:e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
                                  </div>
                                  <div>
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Ish Mazmuni (Preamble)</label>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Ой Мазмуни (Preamble)</label>
                                     <textarea value={protocolData.caseDetails} onChange={e=>setProtocolData({...protocolData, caseDetails:e.target.value})} className="w-full h-20 bg-slate-50 border border-slate-200 rounded p-2 text-xs font-medium resize-none"/>
                                  </div>
                              </div>
@@ -415,14 +415,14 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
                         {/* 2. SPEAKER MAPPER (GLOBAL RENAME) */}
                         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col flex-1">
                              <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-xs font-black text-slate-500 uppercase flex items-center gap-2"><Users size={14}/> Ishtirokchilar</h3>
+                                <h3 className="text-xs font-black text-slate-500 uppercase flex items-center gap-2"><Users size={14}/> Иштирокчилар</h3>
                                 <button onClick={handleAddSpeaker} className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-lg font-bold hover:bg-blue-100 transition-colors flex items-center gap-1">
-                                    <UserPlus size={12}/> Qo'shish
+                                    <UserPlus size={12}/> Қўшиш
                                 </button>
                              </div>
                              
                              <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-2">
-                                 {allSpeakers.length === 0 && <div className="text-center text-xs text-slate-400 italic py-4">Ishtirokchilar topilmadi</div>}
+                                 {allSpeakers.length === 0 && <div className="text-center text-xs text-slate-400 italic py-4">Иштирокчилар топилмади</div>}
                                  {allSpeakers.map((speaker, i) => (
                                      <div key={i} className="flex flex-col gap-1">
                                          <div className="flex items-center gap-2">
@@ -434,8 +434,8 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
                                                  value={speaker} 
                                                  onChange={(e) => handleGlobalRename(speaker, e.target.value)}
                                                  className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:border-blue-500 transition-colors"
-                                                 placeholder={`Ishtirokchi ${i+1}`}
-                                                 title="Nomni o'zgartirsangiz, butun matn bo'ylab o'zgaradi"
+                                                 placeholder={`Иштирокчи ${i+1}`}
+                                                 title="Номни ўзгартирсангиз, бутун матн бўйлаб ўзгаради"
                                              />
                                          </div>
                                      </div>
@@ -444,7 +444,7 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
                              <div className="bg-blue-50 p-3 rounded-xl mt-2">
                                  <p className="text-[10px] text-blue-700 font-medium flex items-start gap-1">
                                      <AlertCircle size={10} className="mt-0.5 shrink-0"/>
-                                     Izoh: Bu yerdan o'zgartirish butun matnga ta'sir qiladi. Alohida qator uchun chap tarafdagi ro'yxatdan tanlang.
+                                     Изоҳ: Бу ёрдан ўзгартириш бутун матнга яМис қилади. Алохида қатор учун чап тарафидан танланг.
                                  </p>
                              </div>
                         </div>
@@ -457,8 +457,8 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
                                         content: JSON.stringify(segments),
                                         metadata: { ...protocolData }
                                     });
-                                    toast("Arxivga saqlandi", "success");
-                                }} className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-xs flex justify-center gap-2 hover:bg-slate-800 transition-all shadow-lg"><Save size={16}/> LOYIHANI SAQLASH</button>
+                                    toast("Архивга сақланди", "success");
+                                }} className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-xs flex justify-center gap-2 hover:bg-slate-800 transition-all shadow-lg"><Save size={16}/> ЛОЙЙАНИ САқЛАШ</button>
                     </div>
                 </div>
             )}
@@ -466,10 +466,10 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
 
         <ConfirmModal
           open={deleteSegmentId !== null}
-          title="Qatorni o'chirish"
-          message="Ushbu stenogramma qatori o'chiriladi. Davom etasizmi?"
-          confirmLabel="O'chirish"
-          cancelLabel="Bekor qilish"
+          title="Қаторни ўчириш"
+          message="Ушбу стенограмма қатори ўчирилади. Давом этасизми?"
+          confirmLabel="Очириш"
+          cancelLabel="Бекор қилиш"
           variant="danger"
           onConfirm={confirmDeleteSegment}
           onCancel={() => setDeleteSegmentId(null)}

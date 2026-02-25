@@ -43,9 +43,9 @@ const Settings: React.FC<SettingsProps> = ({ onBack }) => {
             <div>
                 <h2 className="text-xl font-black text-slate-900 flex items-center gap-3 tracking-tight uppercase">
                     <SettingsIcon className="text-slate-600" size={24}/>
-                    Tizim <span className="text-slate-600">Sozlamalari</span>
+                    Тизим <span className="text-slate-600">Сохламалари</span>
                 </h2>
-                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Konfiguratsiya va Xavfsizlik</p>
+                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Конфигуратсия ва Хавфсизлик</p>
             </div>
         </div>
       </div>
@@ -60,8 +60,8 @@ const Settings: React.FC<SettingsProps> = ({ onBack }) => {
                     <Globe size={24}/>
                 </div>
                 <div>
-                    <h3 className="text-lg font-black text-slate-800 uppercase">Interfeys Tili</h3>
-                    <p className="text-sm text-slate-500 font-medium">Platformaning asosiy ishchi tilini tanlang.</p>
+                    <h3 className="text-lg font-black text-slate-800 uppercase">Интерфейс Тили</h3>
+                    <p className="text-sm text-slate-500 font-medium">Платформанинг асосий ишчи тилини танланг.</p>
                 </div>
              </div>
 
@@ -95,8 +95,8 @@ const Settings: React.FC<SettingsProps> = ({ onBack }) => {
                     <Shield size={24}/>
                 </div>
                 <div>
-                    <h3 className="text-lg font-black text-slate-800 uppercase">Xavfsizlik va API</h3>
-                    <p className="text-sm text-slate-500 font-medium">Ma'lumotlar shifrlanishi va API kalitlari boshqaruvi.</p>
+                    <h3 className="text-lg font-black text-slate-800 uppercase">Хавфсизлик ва API</h3>
+                    <p className="text-sm text-slate-500 font-medium">Маълумотлар шифрланиши ва API калитлари бошқаруви.</p>
                 </div>
              </div>
 
@@ -104,10 +104,10 @@ const Settings: React.FC<SettingsProps> = ({ onBack }) => {
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                         <Lock size={18} className="text-emerald-500"/>
-                        <span className="text-sm font-bold text-slate-700 uppercase tracking-wide">Google Gemini API Kaliti</span>
+                        <span className="text-sm font-bold text-slate-700 uppercase tracking-wide">Google Gemini API Калити</span>
                     </div>
                     <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1">
-                        <CheckCircle2 size={12}/> Himoyalangan
+                        <CheckCircle2 size={12}/> Химояланган
                     </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -120,7 +120,7 @@ const Settings: React.FC<SettingsProps> = ({ onBack }) => {
                 </div>
                 <p className="text-[10px] text-slate-400 mt-2 font-medium flex items-center gap-1">
                     <Shield size={10}/>
-                    Xavfsizlik talablariga ko'ra, API kaliti server muhitida (.env) saqlanadi va interfeys orqali o'zgartirilmaydi.
+                    Хавфсизлик талабларига кўра API калити сервер мухитида (.env) сақланади ва интерфейс орқали ўзгартирилмайди.
                 </p>
              </div>
           </div>
@@ -132,15 +132,15 @@ const Settings: React.FC<SettingsProps> = ({ onBack }) => {
                     <Database size={24}/>
                 </div>
                 <div>
-                    <h3 className="text-lg font-black text-slate-800 uppercase">Ma'lumotlar Bazasi</h3>
-                    <p className="text-sm text-slate-500 font-medium">Mahalliy saqlangan kesh va vaqtinchalik fayllarni boshqarish.</p>
+                    <h3 className="text-lg font-black text-slate-800 uppercase">Маълумотлар Базаси</h3>
+                    <p className="text-sm text-slate-500 font-medium">Маъломотлар ва двох онлайн босимавчи файлларни дисюнтинг.
                 </div>
              </div>
 
              <div className="flex items-center justify-between p-6 bg-red-50 rounded-2xl border border-red-100">
                 <div>
-                    <h4 className="font-bold text-red-900 text-sm uppercase mb-1">Tizimni Tozalash</h4>
-                    <p className="text-xs text-red-700/80 font-medium">Barcha saqlangan hujjatlar, sozlamalar va keshni o'chirib yuboradi.</p>
+                    <h4 className="font-bold text-red-900 text-sm uppercase mb-1">Тизимни Тозалаш</h4>
+                    <p className="text-xs text-red-700/80 font-medium">Барча сайланган хужжатлар, сожламалар ва кешни ўчириб юборди.
                 </div>
                 <button
                     type="button"
@@ -148,7 +148,7 @@ const Settings: React.FC<SettingsProps> = ({ onBack }) => {
                     disabled={clearing}
                     className="px-6 py-3 bg-white border border-red-200 text-red-600 rounded-xl font-bold text-xs hover:bg-red-600 hover:text-white transition-all shadow-sm flex items-center gap-2 disabled:opacity-60"
                 >
-                    {clearing ? "Tozalanmoqda..." : <><Trash2 size={16}/> TOZALASH</>}
+                    {clearing ? "Тозаланмоқда..." : <><Trash2 size={16}/> ТОЗАЛАШ</>}
                 </button>
              </div>
           </div>
@@ -158,10 +158,10 @@ const Settings: React.FC<SettingsProps> = ({ onBack }) => {
 
       <ConfirmModal
         open={showClearConfirm}
-        title="Tizimni tozalash"
-        message="Barcha mahalliy ma'lumotlar (arxiv, sozlamalar, kesh) butunlay o'chiriladi. Bu amalni qaytarib bo'lmaydi. Davom etasizmi?"
-        confirmLabel="Tozalash"
-        cancelLabel="Bekor qilish"
+        title="Тизимни тозалаш"
+        message="Барча маялли маълумотлар (архив, сожламалар, кеш) бутунлай ўчирилади. Бу амални қайтариб бўлмайди. Давом этасизми?"
+        confirmLabel="Тозалаш"
+        cancelLabel="Бекор қилиш"
         variant="danger"
         loading={clearing}
         onConfirm={handleClearCacheConfirm}

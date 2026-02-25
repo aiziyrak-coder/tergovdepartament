@@ -43,12 +43,12 @@ const EvidenceBoard: React.FC<EvidenceBoardProps> = ({ onBack, boards, setBoards
     <div className="flex h-full flex-col bg-[#F8FAFC] overflow-hidden font-sans relative text-slate-900">
       <div className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-20 shrink-0 shadow-sm">
           <div className="flex items-center gap-4">
-              <button type="button" onClick={onBack} className="p-2 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100" aria-label="Orqaga"><ArrowLeft size={20}/></button>
+              <button type="button" onClick={onBack} className="p-2 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100" aria-label="Ортага"><ArrowLeft size={20}/></button>
               <h2 className="text-xl font-bold flex items-center gap-2 text-slate-800"><Network className="text-uzblue" size={24}/> {activeBoard.name}</h2>
           </div>
           <div className="flex gap-3">
-              <button type="button" onClick={() => updateBoard(activeBoardId, { nodes: [...activeBoard.nodes, { id: `n-${Date.now()}`, type: "PERSON", label: "Yangi Shaxs", content: "", x: (-position.x + window.innerWidth / 2) / scale, y: (-position.y + window.innerHeight / 2) / scale } as EvidenceNode] })} className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold shadow-sm hover:shadow-md">+ Shaxs</button>
-              <button type="button" onClick={() => updateBoard(activeBoardId, { nodes: [...activeBoard.nodes, { id: `n-${Date.now()}`, type: "EVIDENCE", label: "Dalil", content: "", x: (-position.x + window.innerWidth / 2) / scale + 50, y: (-position.y + window.innerHeight / 2) / scale + 50 } as EvidenceNode] })} className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold shadow-sm hover:shadow-md">+ Dalil</button>
+              <button type="button" onClick={() => updateBoard(activeBoardId, { nodes: [...activeBoard.nodes, { id: `n-${Date.now()}`, type: "PERSON", label: "Янги Шаһс", content: "", x: (-position.x + window.innerWidth / 2) / scale, y: (-position.y + window.innerHeight / 2) / scale } as EvidenceNode] })} className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold shadow-sm hover:shadow-md">+ Шаһс</button>
+              <button type="button" onClick={() => updateBoard(activeBoardId, { nodes: [...activeBoard.nodes, { id: `n-${Date.now()}`, type: "EVIDENCE", label: "Далил", content: "", x: (-position.x + window.innerWidth / 2) / scale + 50, y: (-position.y + window.innerHeight / 2) / scale + 50 } as EvidenceNode] })} className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold shadow-sm hover:shadow-md">+ Далил</button>
           </div>
       </div>
 

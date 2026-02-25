@@ -274,7 +274,7 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ onBack }) => {
               participants: [...prev.participants, { id: Date.now().toString(), role: newParticipant.role, name: newParticipant.name }]
           }));
           setNewParticipant({ ...newParticipant, name: '' });
-          toast("Ishtirokchi qo'shildi", "success");
+          toast("Одди истирокчи қўшилди", "success");
       }
   };
 

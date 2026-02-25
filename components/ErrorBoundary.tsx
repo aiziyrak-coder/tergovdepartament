@@ -40,13 +40,13 @@ export class ErrorBoundary extends Component<Props, State> {
               <AlertTriangle size={40} aria-hidden />
             </div>
             <h2 className="text-xl font-black text-slate-900 mb-2">
-              {this.props.fallbackTitle ?? "Xatolik yuz berdi"}
+              {this.props.fallbackTitle ?? "Хатолик юз берди"}
             </h2>
             <p className="text-sm text-slate-600 mb-6">
-              Modul ishlashda nosozlik aniqlandi. Sahifani yangilab yoki orqaga qayting.
+              Модул ишлашда нозолик аниқланди. Саҳифани янгилаб ёки орқага қайтинг.
             </p>
             <details className="text-left mb-6 p-4 bg-slate-50 rounded-xl text-xs font-mono text-slate-600 overflow-auto max-h-32">
-              <summary className="cursor-pointer font-bold text-slate-700">Texnik ma'lumot</summary>
+              <summary className="cursor-pointer font-bold text-slate-700">Техник маълумот</summary>
               <pre className="mt-2 whitespace-pre-wrap break-words">{this.state.error.message}</pre>
             </details>
             <button
@@ -55,7 +55,7 @@ export class ErrorBoundary extends Component<Props, State> {
               className="inline-flex items-center gap-2 px-6 py-3 bg-uzblue text-white rounded-xl font-bold text-sm hover:bg-blue-600 transition-colors"
             >
               <RefreshCw size={18} />
-              Qayta urinish
+              Қайта уринаш
             </button>
           </div>
         </div>

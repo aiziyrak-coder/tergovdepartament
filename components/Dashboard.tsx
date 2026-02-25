@@ -15,22 +15,22 @@ interface DashboardProps {
   setModule: (m: ModuleType) => void;
 }
 
-/** Farg'ona shahri koordinatalari */
+/** Фарғона шахри координаталари */
 const FERGANA_LAT = 40.3864;
 const FERGANA_LON = 71.7864;
 const WEATHER_REFRESH_MS = 10 * 60 * 1000; // 10 min
 
 /** Open-Meteo WMO weather_code → ўзбекча тавсиф */
 function weatherCodeToLabel(code: number): string {
-  if (code === 0) return "Ochiq, quyoshli";
-  if (code >= 1 && code <= 3) return code === 1 ? "Asosan ochiq" : code === 2 ? "O'rtacha bulutli" : "Qorong'u bulutli";
-  if (code >= 45 && code <= 48) return "Tuman";
-  if (code >= 51 && code <= 67) return "Yomg'ir";
-  if (code >= 71 && code <= 77) return "Qor";
-  if (code >= 80 && code <= 82) return "Yomg'irli";
-  if (code >= 85 && code <= 86) return "Qorli";
-  if (code >= 95 && code <= 99) return "Momaqaldiroq";
-  return "O'zgaruvchan";
+  if (code === 0) return "Очиқ, қуёшли";
+  if (code >= 1 && code <= 3) return code === 1 ? "Асосан очиқ" : code === 2 ? "Ўртача булутли" : "Қоронғу булутли";
+  if (code >= 45 && code <= 48) return "Туман";
+  if (code >= 51 && code <= 67) return "Ёмғир";
+  if (code >= 71 && code <= 77) return "Қор";
+  if (code >= 80 && code <= 82) return "Ёмғирли";
+  if (code >= 85 && code <= 86) return "Қорли";
+  if (code >= 95 && code <= 99) return "Момақалдироқ";
+  return "Ўзгарувчан";
 }
 
 interface WeatherState {
@@ -51,7 +51,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
   const [notifications, setNotifications] = useState<NotificationItem[]>([
       { id: '1', title: "Янги топшириқ", message: "Бошқарма бошлиғидан 2 та янги иш келиб тушди.", time: "10:30", read: false, type: 'info' },
       { id: '2', title: "Муддати оз қолди", message: "№300002/2025 иш бўйича тергов муддати тугамоқда.", time: "09:15", read: false, type: 'alert' },
-      { id: '3', title: "Тизим янгиланди", message: "Ziyrak AI 2.4 версиясига муваффақиятли ўтди.", time: "Кеча", read: true, type: 'success' },
+      { id: '3', title: "Тизим янгиланди", message: "Зийрак AI 2.4 версиясига муваффақиятли ўтди.", time: "Кеча", read: true, type: 'success' },
   ]);
 
   useEffect(() => {
@@ -70,7 +70,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
         setWeather((w) => ({ ...w, loading: true, error: false }));
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${FERGANA_LAT}&longitude=${FERGANA_LON}&current=temperature_2m,weather_code`;
         const res = await fetch(url);
-        if (!res.ok) throw new Error("Ob-havo yuklanmadi");
+        if (!res.ok) throw new Error("Об-ҳаво юклан-мади");
         const data = await res.json();
         const cur = data?.current;
         setWeather({
@@ -134,7 +134,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
                     type="button"
                     onClick={() => setShowNotifications(!showNotifications)}
                     className={`p-2.5 rounded-xl transition-all relative group ${showNotifications ? 'bg-uzblue text-white shadow-lg' : 'bg-white border border-slate-200 text-slate-500 hover:border-uzblue hover:text-uzblue'}`}
-                    aria-label={showNotifications ? "Bildirishnomalarni yopish" : "Bildirishnomalar"}
+                    aria-label={showNotifications ? "Билдириснномаларни ёпиш" : "Билдириснномалар"}
                     aria-expanded={showNotifications}
                   >
                       <Bell size={20}/>
@@ -148,10 +148,10 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
                       <div className="absolute top-full right-0 mt-4 w-96 bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/50 overflow-hidden z-50 animate-in slide-in-from-top-5 duration-200 ring-1 ring-black/5">
                           <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                               <h3 className="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-2">
-                                  <Bell size={14}/> Bildirishnomalar
+                                  <Bell size={14}/> Билдириснномалар
                               </h3>
                               {notifications.length > 0 && (
-                                <button type="button" onClick={clearAllNotifications} className="text-[10px] font-bold text-slate-400 hover:text-red-500" aria-label="Barcha bildirishnomalarni tozalash">TOZALASH</button>
+                                <button type="button" onClick={clearAllNotifications} className="text-[10px] font-bold text-slate-400 hover:text-red-500" aria-label="Барча билдириснномаларни тозалаш">ТОЗАЛАШ</button>
                               )}
                           </div>
                           <div className="max-h-80 overflow-y-auto custom-scrollbar">
@@ -178,8 +178,8 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
                                                   </div>
                                                   <p className="text-xs text-slate-500 leading-snug">{note.message}</p>
                                                   {!note.read && (
-                                                      <button type="button" onClick={() => markAsRead(note.id)} className="mt-2 text-[10px] font-bold text-uzblue hover:underline flex items-center gap-1" aria-label="O'qilgan deb belgilash">
-                                                          <Check size={10}/> O'qildi deb belgilash
+                                                      <button type="button" onClick={() => markAsRead(note.id)} className="mt-2 text-[10px] font-bold text-uzblue hover:underline flex items-center gap-1" aria-label="Ўқилган деб белгилаш">
+                                                          <Check size={10}/> Ўқилди деб белгилаш
                                                       </button>
                                                   )}
                                               </div>
@@ -226,10 +226,10 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
                              <CloudSun size={32}/>
                           </div>
                           <div>
-                              <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Ob-havo</div>
+                              <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Об-ҳаво</div>
                               <div className="flex items-baseline gap-3">
                                 {weather.loading ? (
-                                  <span className="text-lg font-bold text-slate-400">Yuklanmoqda...</span>
+                                  <span className="text-lg font-bold text-slate-400">Юклан-моқда...</span>
                                 ) : weather.error ? (
                                   <span className="text-sm font-bold text-slate-500">Фарғона — маълумот йўқ</span>
                                 ) : (
@@ -238,7 +238,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
                                       {weather.temp != null ? `${Math.round(weather.temp)}°C` : '—'}
                                     </span>
                                     <span className="text-sm font-bold text-slate-500">
-                                      {weather.code != null ? weatherCodeToLabel(weather.code) : ''}, Farg'ona
+                                      {weather.code != null ? weatherCodeToLabel(weather.code) : ''}, Фарғона
                                     </span>
                                   </>
                                 )}
@@ -250,7 +250,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
 
                       <div className="relative z-10 flex items-center gap-6 w-full md:w-auto justify-end">
                            <div className="text-right">
-                              <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Bugungi Sana</div>
+                              <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Бугунги Сана</div>
                               <div className="text-lg font-bold text-slate-800 capitalize">{new Date().toLocaleDateString('uz-UZ', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
                            </div>
                            <div className="p-3 bg-uzblue/5 text-uzblue rounded-2xl border border-uzblue/10">
@@ -278,7 +278,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
                               <div>
                                   <h4 className="text-xl font-tech font-bold text-slate-900 group-hover:text-uzblue transition-colors">{t('protocol')}</h4>
                                   <p className="text-xs text-slate-500 mt-2 font-medium leading-relaxed">
-                                      Ovozli so'roq jarayonini avtomatik bayonnomaga aylantirish va yuridik tahlil.
+                                      Овозли сўроқ жараёнини автоматик баённомага айлантириш ва юридик тахлил.
                                   </p>
                               </div>
                               <div className="flex items-center gap-2 text-xs font-bold text-slate-400 group-hover:text-uzblue mt-4">
@@ -333,9 +333,9 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
                                   <UserSquare2 size={24}/>
                               </div>
                               <div>
-                                  <h4 className="text-xl font-tech font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">Fotorobot</h4>
+                                  <h4 className="text-xl font-tech font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">Фоторобот</h4>
                                   <p className="text-xs text-slate-500 mt-2 font-medium leading-relaxed">
-                                      Guvoh ko'rsatmalari asosida gumonlanuvchi qiyofasini tiklash.
+                                      Гувоҳ кўрсатмалари асосида гумонланувчи қиёфасини тиклаш.
                                   </p>
                               </div>
                               <div className="flex items-center gap-2 text-xs font-bold text-slate-400 group-hover:text-indigo-600 mt-4">
@@ -352,9 +352,9 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
                                   <GraduationCap size={24}/>
                               </div>
                               <div>
-                                  <h4 className="text-xl font-tech font-bold text-slate-900 group-hover:text-amber-600 transition-colors">Virtual Murabbiy</h4>
+                                  <h4 className="text-xl font-tech font-bold text-slate-900 group-hover:text-amber-600 transition-colors">Виртуал Мураббий</h4>
                                   <p className="text-xs text-slate-500 mt-2 font-medium leading-relaxed">
-                                      Tergov taktikasi, strategiyasi va yuridik maslahatlar markazi.
+                                      Тергов тактикаси, стратегияси ва юридик маслаҳатлар маркази.
                                   </p>
                               </div>
                               <div className="flex items-center gap-2 text-xs font-bold text-slate-400 group-hover:text-amber-600 mt-4">
@@ -371,9 +371,9 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
                                   <Database size={24}/>
                               </div>
                               <div>
-                                  <h4 className="text-xl font-tech font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">Arxiv & Hujjatlar</h4>
+                                  <h4 className="text-xl font-tech font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">Архив & Ҳужжатлар</h4>
                                   <p className="text-xs text-slate-500 mt-2 font-medium leading-relaxed">
-                                      Barcha tergov hujjatlari va dalillarning elektron himoyalangan arxivi.
+                                      Барча тергов ҳужжатлари ва далиллар номинглі электрон ҳимояланган архиви.
                                   </p>
                               </div>
                               <div className="flex items-center gap-2 text-xs font-bold text-slate-400 group-hover:text-emerald-600 mt-4">
@@ -390,7 +390,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
           <div className="w-[350px] bg-white rounded-3xl border border-white/50 shadow-xl overflow-hidden flex flex-col backdrop-blur-md">
               <div className="p-6 border-b border-slate-100 bg-slate-50/50">
                   <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                      <History size={14}/> Oxirgi Faoliyat
+                      <History size={14}/> Охирги Фаолият
                   </h3>
               </div>
               
@@ -398,7 +398,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
                    {recentDocs.length === 0 ? (
                       <div className="text-center py-10 opacity-40">
                           <FileText size={48} className="mx-auto mb-2 text-slate-400"/>
-                          <p className="text-xs font-bold text-slate-500">Hozircha bo'sh</p>
+                          <p className="text-xs font-bold text-slate-500">Ҳозирча бўш</p>
                       </div>
                    ) : (
                       recentDocs.map((item) => (

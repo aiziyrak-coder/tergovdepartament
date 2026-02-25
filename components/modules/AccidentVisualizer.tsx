@@ -262,13 +262,13 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
       {/* HEADER */}
       <div className="h-20 border-b border-slate-200 bg-white flex items-center justify-between px-8 shrink-0 z-20 shadow-sm">
         <div className="flex items-center gap-6">
-             <button type="button" onClick={onBack} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-uzblue hover:text-white transition-all" aria-label="Orqaga">
+             <button type="button" onClick={onBack} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-uzblue hover:text-white transition-all" aria-label="Ортага">
                 <ArrowLeft size={20}/>
              </button>
              <div>
                 <h2 className="text-xl font-black text-slate-900 flex items-center gap-3 tracking-tight uppercase">
                     <Video className="text-uzred" size={24}/>
-                    Avtohalokat <span className="text-uzred">Ekspertizasi</span>
+                    Автоҳалокат <span className="text-uzred">Экспертизаси</span>
                 </h2>
                 <div className="flex items-center gap-2 mt-1">
                     <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Video Generatsiya Moduli (Veo)</p>

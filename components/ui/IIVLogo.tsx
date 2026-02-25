@@ -18,7 +18,7 @@ export const IIVLogo: React.FC<IIVLogoProps> = ({ className }) => {
       className={className} 
       fill="none" 
       xmlns="http://www.w3.org/2000/svg"
-      aria-label="IIV Tergov Departamenti Logosi"
+      aria-label="IIV Тергов Департаменти Логоси"
     >
       <defs>
         <linearGradient id={gradShieldId} x1="0" y1="0" x2="0" y2="1">
@@ -92,8 +92,8 @@ export const IIVLogo: React.FC<IIVLogoProps> = ({ className }) => {
 
       {/* --- TEXT (YOZUVLAR) --- */}
       <g transform="translate(250 330)">
-          <text y="0" textAnchor="middle" fontFamily="Arial, sans-serif" fontWeight="900" fontSize="42" fill="white" style={{textShadow: "0 2px 4px rgba(0,0,0,0.5)"}}>TERGOV</text>
-          <text y="40" textAnchor="middle" fontFamily="Arial, sans-serif" fontWeight="bold" fontSize="26" fill="white" style={{textShadow: "0 2px 4px rgba(0,0,0,0.5)"}}>DEPARTAMENTI</text>
+          <text y="0" textAnchor="middle" fontFamily="Arial, sans-serif" fontWeight="900" fontSize="42" fill="white" style={{textShadow: "0 2px 4px rgba(0,0,0,0.5)"}}>ТЕРГОВ</text>
+          <text y="40" textAnchor="middle" fontFamily="Arial, sans-serif" fontWeight="bold" fontSize="26" fill="white" style={{textShadow: "0 2px 4px rgba(0,0,0,0.5)"}}>ДЕПАРТАМЕНТИ</text>
       </g>
 
       {/* --- BORDER TEXT (CHETKI YOZUVLAR) --- */}
@@ -109,7 +109,7 @@ export const IIVLogo: React.FC<IIVLogoProps> = ({ className }) => {
         fontFamily="Arial"
         letterSpacing="1px"
       >
-        O'ZBEKISTON RESPUBLIKASI
+        Ў'ЗБЕКИСТОН РЕСПУБЛИКАСИ
       </text>
 
       {/* Right Text: ICHKI ISHLAR VAZIRLIGI */}
@@ -124,7 +124,7 @@ export const IIVLogo: React.FC<IIVLogoProps> = ({ className }) => {
         fontFamily="Arial"
         letterSpacing="1px"
       >
-        ICHKI ISHLAR VAZIRLIGI
+        ИЧҲИ ИШЛАР ВАЗИРЛИГИ
       </text>
 
     </svg>

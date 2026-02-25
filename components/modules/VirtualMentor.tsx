@@ -271,9 +271,9 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
 
   const getModeLabel = (mode: MentorMode) => {
     switch(mode) {
-        case MentorMode.PLANNER: return "Strateg (Planner)";
-        case MentorMode.CRITIC: return "Tanqidchi (Critic)";
-        case MentorMode.QUALIFIER: return "Psixolog (Profiler)";
+        case MentorMode.PLANNER: return "Стратег (Planner)";
+        case MentorMode.CRITIC: return "Танқидчи (Critic)";
+        case MentorMode.QUALIFIER: return "Психолог (Profiler)";
         default: return "Umumiy";
     }
   };

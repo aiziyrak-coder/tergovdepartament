@@ -287,22 +287,24 @@ export async function identifySpeakersInText(
   userApiKey?: string
 ): Promise<DialogSegment[]> {
   const ai = getAiClient(userApiKey);
-  const prompt = `Vazifa: Quyidagi matnni faqat KIM GAPIRGANINI belgilash — matnni o'zgartirmang.
+  const prompt = `Вазифа: Қуйидаги матнни фақат КИМ ГАПИРГАНИНИ белгилаш — матнни ўзгартирманг.
 
-QAT'IY TALABLAR:
-1) Har bir segmentdagi "text" maydoni yuqoridagi matndan AYNAN nusxa bo'lishi kerak. Bitta so'zni ham qo'shmang, o'chirmang yoki o'zgartirmang. Faqat matnni ketma-ket bo'laklarga bo'ling va har biriga speakerId bering.
-2) Tergovchi (investigator): savollar, rasmiy so'zlar. ${secondRoleName} (suspect): javoblar, bayonot.
-3) Bitta gapiruvchining ketma-ket so'zlari = bitta segment. Aniq savol va aniq javob ajratilganda ikki segment.
-4) Agar butun matn bir kishining so'zi bo'lsa — faqat BITTA segment, to'liq matn bilan.
+ҚАТ'ИЙ ТАЛАБЛАР:
+1) Ҳар бир сегментдаги "text" майдони юқоридаги матндан АЁН нусха бўлиши керак. Биттта сўзни ҳам қўшманг, ўчирманг ёки ўзгартирманг. Фақат матнни кетма-кет бўлакларга бўлинг ва ҳар бирига speakerId беринг.
+2) Терговчи (investigator): саволлар, расмий сўзлар. ${secondRoleName} (suspect): жавоблар, баённоллар.
+3) Биттта гапирувчининг кетма-кет сўзлари = биттта сегмент. Аниқ савол ва аниқ жавоб ажратилганда икки сегмент.
+4) Агар бутун матн бир кишининг сўзи бўлса — фақат БИТТТА сегмент, тўлиқ матн билан.
 
-Oldingi oxirgi gapiruvchi: ${lastSpeakerId}.
+Олдинги охирги гапирувчи: ${lastSpeakerId}.
 
-KIRUVCHI MATN (shu matndan faqat nusxa oling):
+КИРУВЧИ МАТН (шу матндан фақат нусха олинг):
 """
 ${text}
 """
 
-Javob: faqat JSON massiv. Har bir element: speakerId ("investigator" yoki "suspect"), speakerName ("Tergovchi" yoki "${secondRoleName}"), text (matndan AYNAN nusxa, hech qanday o'zgarishsiz), timestamp ("00:00").`;
+ЖАВОБ: Фақат JSON массив кириллицада. Ҳар бир элемент: speakerId ("investigator" ёки "suspect"), speakerName ("Терговчи" ёки "${secondRoleName}"), text (матндан АЁН нусха кириллицада, ҳеч қандай ўзгаришсиз), timestamp ("00:00").
+
+ЭСДА САҚЛАНГ: ҲАММА ЖАВОБ ЎЗБЕК КИРИЛЛИЦАСИДА БУЛ СИНИН!`;
 
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
@@ -379,13 +381,15 @@ export async function transcribeAndDiarizeByVoice(
 ): Promise<DialogSegment[]> {
   if (!audioBase64?.trim()) return [];
   const ai = getAiClient(userApiKey);
-  const prompt = `Bu tergov (savol-javob) yozuvi. AUDIONI tinglang va:
-1) Har bir gapiruvchini OVOZ TEMBERI (ovoz xususiyati) bo'yicha ajrating — bir xil odamning ovazi bitta speaker, boshqa ovoz boshqa speaker.
-2) Matnni transkripsiya qiling (o'zbek lotin).
-3) Speaker 1 = Tergovchi (investigator), Speaker 2 = ${secondRoleName} (suspect). Oldingi oxirgi gapiruvchi: ${lastSpeakerId}.
-4) Har bir replika uchun: speakerId ("investigator" yoki "suspect"), speakerName ("Tergovchi" yoki "${secondRoleName}"), text (to'liq matn), timestamp (MM:SS).
+  const prompt = `Бу терговни (савол-жавоб) ёзуви. АУДИОНИ тингланг ва:
+1) Ҳар бир гапирувчини ОВОЗ ТЕМБРИ (овоз хусусияти) бўйича ажринг — бир хил одамнинг овози биттта speaker, бошқа овоз бошқа speaker.
+2) Матнни транскрибция қилинг (ўзбек кириллица).
+3) Speaker 1 = Терговчи (investigator), Speaker 2 = ${secondRoleName} (suspect). Олдинги охирги гапирувчи: ${lastSpeakerId}.
+4) Ҳар бир реплика учун: speakerId ("investigator" ёки "suspect"), speakerName ("Терговчи" ёки "${secondRoleName}"), text (тўлиқ матн кириллицада), timestamp (MM:SS).
 
-Javob: faqat JSON massiv. Har bir element: speakerId, speakerName, text, timestamp.`;
+ЖАВОБ: Фақат JSON массив кириллицада. Ҳар бир элемент: speakerId, speakerName, text (кириллица), timestamp.
+
+МУҲИМ: ҲАР БИР СЎЗНИ ЎЗБЕК КИРИЛЛИЦАСИДА ЁЗИНГ!`;
 
   try {
     const response = await withTimeout(
@@ -670,25 +674,27 @@ function getLangLabel(lang: AppLanguage): string {
 }
 
 /** High-quality prompt: accurate transcription + multi-speaker diarization. Used for both Stenogram and Jonli so'roq. */
-const HIGH_QUALITY_TRANSCRIBE_PROMPT = (langLabel: string) => `Siz tergov, guvohlik yoki so'roq audio yozuvini transkripsiya qilasiz. HUQUQIY HUJJAT — har bir so'z muhim.
+const HIGH_QUALITY_TRANSCRIBE_PROMPT = (langLabel: string) => `Сиз терговни, гувохликни ёки сўроқ аудио ёзувини транскрибция қиласиз. ҲУҚУҚИЙ ҲУЖЖАТ — ҳар бир сўз муҳим.
 
-MATN ANIQLIGI (eng muhim):
-- Har bir so'zni, har bir tovushni AYNAN eshitilganidek yozing. Parafraz qilmang, qisqartirmang.
-- Ismlar, familiyalar, manzillar, telefon raqamlari, sanalar, summastlar — barchasini aniq va to'g'ri yozing.
-- Huquqiy atamalar (ЖПК, жиноят, айбланувчи, гувоҳ, терговчи va boshqalar) to'g'ri yozilsin.
-- Past ovoz, shovqin ortida gapirilgan so'zlar — diqqat bilan tinglang va yozing.
-- Shubhali bo'lsa ham, eshitilganidek yozing (keyin tuzatish mumkin).
+МАТН АНИҚЛИГИ (энг муҳим):
+- Ҳар бир сўзни, ҳар бир товушни АЁН эшитилганидек ёзинг. Парафраз қилманг, қисқартирманг.
+- Исмлар, фамилиялар, манзиллар, телефон рақамлари, сана, суммалар — бараси аниқ ва тўғри ёзилсин.
+- Ҳуқуқий атамалар (ЖПК, жиноят, айбланувчи, гувоҳ, терговчи ва бошқалар) тўғри ёзилсин.
+- Паст овоз, шовқин ортида гапирилган сўзлар — диққат билан тингланг ва ёзинг.
+- Шубҳали бўлса ҳам, эшитилганидек ёзинг (кейин тузатиш мумкин).
 
-SHAXSLAR (DIARIZATSIYA):
-- Har bir ALOHIDA OVOZ = alohida shaxs. Speaker 1, Speaker 2, Speaker 3, Speaker 4, Speaker 5 va hokazo — gapiruvchilar soni qancha bo'lsa shuncha.
-- Bitta odamning barcha replikalari bir xil Speaker. Boshqa odam = yangi Speaker.
-- 2 kishi gapirsa: Speaker 1, Speaker 2. 4 kishi gapirsa: Speaker 1, 2, 3, 4. Hech qachon boshqa odamni bitta Speaker ga birlashtirmang.
+ШАХСЛАР (ДАРИРИЗАТСИЯ):
+- Ҳар бир АЛОҲИДА ОВОЗ = алоҳида шахс. Speaker 1, Speaker 2, Speaker 3, Speaker 4, Speaker 5 ва ҳоказо — гапирувчилар сони қанча бўлса шунча.
+- Биттта одамнинг барча репликалари бир хил Speaker. Бошқа одам = янги Speaker.
+- 2 киши гапирса: Speaker 1, Speaker 2. 4 киши гапирса: Speaker 1, 2, 3, 4. Ҳеч қачон бошқа одамни биттта Speaker га бирлаштирманг.
 
-VAQT: Har bir replika boshlanishi uchun timestamp MM:SS (masalan 00:15, 01:42).
+ВАҚТ: Ҳар бир реплика бошланиши учун timestamp MM:SS (масалан 00:15, 01:42).
 
-TIL: ${langLabel}.
+ТИЛ: ${langLabel}.
 
-Chiqish: faqat JSON massiv. Har bir element: id ("seg_1", "seg_2"...), speaker ("Speaker 1", "Speaker 2"...), text (to'liq matn), timestamp (MM:SS).`;
+ЧИҚИШ: Фақат JSON массив. Ҳар бир элемент: id ("seg_1", "seg_2"...), speaker ("Speaker 1", "Speaker 2"...), text (тўлиқ матн кириллицада), timestamp (MM:SS).
+
+МУҲИМ: Ҳамма сўзлар, жумалар ва таҳлил ФАҚАТ ЎЗБЕК КИРИЛЛИЦАСИДА БУЛ СИНИН!`;
 
 export async function transcribeAudio(
   base64: string,
