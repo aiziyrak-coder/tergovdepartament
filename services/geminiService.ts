@@ -165,13 +165,23 @@ async function transcribeWithOpenRouter(
   const format = getAudioFormat(file);
   const isUzbek = lang !== AppLanguage.RU;
 
+  // Ask Gemini to transcribe AND diarize speakers directly from the audio.
+  // JSON output lets us map each turn to a separate TranscriptSegment with speaker label.
   const prompt = isUzbek
-    ? "Bu o'zbek tilidagi rasmiy tergov yoki guvohlik audioyozuvidir. " +
-      "Har bir so'zni so'zma-so'z, aniq transkriptsiya qil. " +
-      "Faqat transkriptsiya matnini qaytар, hech qanday izoh yoki sarlavha yozma."
-    : "Это официальная запись допроса или показаний на русском языке. " +
-      "Транскрибируй каждое слово дословно и точно. " +
-      "Верни только текст транскрипции, без пояснений и заголовков.";
+    ? `Bu o'zbek tilidagi rasmiy tergov yoki so'roq audioyozuvidir.
+Vazifang:
+1. Har bir so'zni so'zma-so'z, aniq transkriptsiya qil.
+2. Gapiruvchilarni ovozlari bo'yicha aniqla va har bir navbatni alohida yoz.
+3. Natijani FAQAT quyidagi JSON massiv formatida qaytар (boshqa hech narsa yozma):
+[{"speaker":"Gapiruvchi 1","text":"..."},{"speaker":"Gapiruvchi 2","text":"..."}]
+Eslatma: "Gapiruvchi 1" odatda tergovchi (savol beradi), "Gapiruvchi 2" esa so'roq qilinuvchi.`
+    : `Это официальная аудиозапись допроса на русском языке.
+Задача:
+1. Транскрибируй каждое слово дословно и точно.
+2. Определи говорящих по голосу и каждую реплику запиши отдельно.
+3. Верни ТОЛЬКО JSON-массив (без пояснений):
+[{"speaker":"Говорящий 1","text":"..."},{"speaker":"Говорящий 2","text":"..."}]
+Примечание: "Говорящий 1" — следователь (задаёт вопросы), "Говорящий 2" — допрашиваемый.`;
 
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
@@ -186,7 +196,6 @@ async function transcribeWithOpenRouter(
       temperature: 0,
       messages: [{
         role: "user",
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         content: [
           { type: "text", text: prompt },
           { type: "input_audio", input_audio: { data: base64Data, format } },
@@ -202,10 +211,27 @@ async function transcribeWithOpenRouter(
 
   type ORResponse = { choices?: Array<{ message?: { content?: string } }> };
   const json = await res.json() as ORResponse;
-  const text = json.choices?.[0]?.message?.content ?? "";
-  if (!text.trim()) return [];
+  const raw = (json.choices?.[0]?.message?.content ?? "").trim();
+  if (!raw) return [];
 
-  return [{ id: "seg_1", speaker: "Speaker 1", text: text.trim(), timestamp: "00:00" }];
+  // Parse JSON speaker segments from Gemini's response
+  type RawSeg = { speaker?: string; text?: string };
+  const cleaned = raw.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "").trim();
+  const parsed = safeParseJson<RawSeg[]>(cleaned, []);
+
+  if (Array.isArray(parsed) && parsed.length > 0) {
+    return parsed
+      .filter((s) => s.text?.trim())
+      .map((s, i) => ({
+        id: `seg_${i + 1}`,
+        speaker: s.speaker?.trim() || `Gapiruvchi ${(i % 2) + 1}`,
+        text: s.text!.trim(),
+        timestamp: "",
+      }));
+  }
+
+  // Fallback: return as single segment if JSON parsing fails
+  return [{ id: "seg_1", speaker: isUzbek ? "Gapiruvchi 1" : "Говорящий 1", text: raw, timestamp: "00:00" }];
 }
 
 // --- WAV ENCODING (for Groq fallback compatibility) ---
