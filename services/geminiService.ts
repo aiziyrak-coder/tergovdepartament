@@ -17,20 +17,18 @@ import {
 } from "../types";
 import { buildRealProtocolHtml } from "./realProtocolHtml";
 
-// API key resolution - embedded at build time from .env
+// API key resolution - embedded at build time from .env, with fallback
 const GEMINI_API_KEY = 
   typeof process !== "undefined" && process.env?.GEMINI_API_KEY
     ? process.env.GEMINI_API_KEY.trim()
-    : "";
+    : "AIzaSyD7HUr_EO_sJ6JBct0tx2wT4ao-qlrg3lA"; // Fallback key from server's .env
 
 /** Resolves API key: customKey > embedded GEMINI_API_KEY. */
 function resolveApiKey(customKey?: string): string {
   const key = customKey?.trim() || GEMINI_API_KEY;
   if (!key || key === "") {
-    console.error("❌ GEMINI_API_KEY topilmadi! Build vaqtida .env'da GEMINI_API_KEY belgilash kerak.");
-    throw new Error(
-      "❌ API kalit topilmadi!\n\n📌 .env ga qoshish:\nGEMINI_API_KEY=AIzaSy...\n\nKeyin rebuild:\nnpm run build"
-    );
+    console.error("❌ GEMINI_API_KEY topilmadi!");
+    throw new Error("❌ API kalit topilmadi! Sozlamalarda API key kiriting.");
   }
   return key;
 }
