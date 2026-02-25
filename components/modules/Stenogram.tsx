@@ -12,7 +12,30 @@ interface StenogramProps {
 }
 
 // Maksimal fayl hajmi 25MB (Base64 encoding bilan hisoblaganda API limiti uchun xavfsiz chegara)
-const MAX_FILE_SIZE = 25 * 1024 * 1024; 
+const MAX_FILE_SIZE = 25 * 1024 * 1024;
+
+// Groq Whisper qo'llab-quvvatlaydigan audio formatlar
+const GROQ_SUPPORTED_EXTS = new Set(['mp3', 'wav', 'wave', 'ogg', 'flac', 'm4a', 'mp4', 'webm', 'opus', 'mpeg', 'mpga']);
+
+const EXT_TO_MIME: Record<string, string> = {
+  mp3: 'audio/mpeg', mpga: 'audio/mpeg', mpeg: 'audio/mpeg',
+  wav: 'audio/wav', wave: 'audio/wav',
+  ogg: 'audio/ogg',
+  flac: 'audio/flac',
+  m4a: 'audio/m4a',
+  mp4: 'audio/mp4',
+  webm: 'audio/webm',
+  opus: 'audio/opus',
+};
+
+/** Returns a Groq-compatible MIME type using the filename extension as ground truth. */
+function getGroqMimeType(file: File): string {
+  const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+  if (EXT_TO_MIME[ext]) return EXT_TO_MIME[ext];
+  // Fallback: strip codec params from browser-provided type
+  const base = file.type.split(';')[0].trim().toLowerCase();
+  return EXT_TO_MIME[base.split('/')[1]] ?? base || 'audio/webm';
+}
 
 function escapeHtml(value: string): string {
   return value
@@ -70,9 +93,15 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files && e.target.files[0]) {
           const file = e.target.files[0];
-          
+
           if (file.size > MAX_FILE_SIZE) {
               toast("Файл ҳажми жуда катта! Максимал 25 MB.", "error");
+              return;
+          }
+
+          const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+          if (!GROQ_SUPPORTED_EXTS.has(ext)) {
+              toast(`"${ext.toUpperCase()}" формат қўллаб-қувватланмайди. Илтимос MP3, WAV, M4A, OGG, FLAC ёки WebM файл юкланг.`, "error");
               return;
           }
 
@@ -102,8 +131,9 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
               reader.readAsDataURL(mediaFile);
           });
 
-          // Send to API
-          const results = await transcribeAudio(base64, mediaFile.type, "STENOGRAM", true, language);
+          // Send to API — use filename-based MIME type for reliable Groq compatibility
+          const groqMime = getGroqMimeType(mediaFile);
+          const results = await transcribeAudio(base64, groqMime, "STENOGRAM", true, language);
           
           if (results && results.length > 0) {
               setSegments(results);
@@ -267,7 +297,7 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
                             
                             <div className="text-center">
                                 <h3 className="text-2xl font-black text-slate-800 uppercase mb-2">Аудио Файлни Юклаш</h3>
-                                <p className="text-slate-500 font-medium">MP3, WAV, M4A форматлар. Максимал ҳажм: 25 MB.</p>
+                                <p className="text-slate-500 font-medium">MP3, WAV, M4A, OGG, FLAC, WebM форматлар. Максимал ҳажм: 25 MB.</p>
                             </div>
 
                             {!mediaFile ? (
@@ -276,7 +306,7 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
                                         <Upload size={32} className="text-slate-400 group-hover:text-blue-600"/>
                                     </div>
                                     <span className="text-sm font-bold text-slate-600 group-hover:text-blue-700">Файлни танлаш учун босинг</span>
-                                    <input type="file" accept="audio/*" onChange={handleFileSelect} className="hidden"/>
+                                    <input type="file" accept=".mp3,.wav,.m4a,.ogg,.flac,.webm,.opus,.mp4,audio/mpeg,audio/wav,audio/ogg,audio/flac,audio/m4a,audio/mp4,audio/webm,audio/opus" onChange={handleFileSelect} className="hidden"/>
                                 </label>
                             ) : (
                                 <div className="w-full max-w-lg space-y-4">
