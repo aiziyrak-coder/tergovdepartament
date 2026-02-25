@@ -21,7 +21,7 @@ import { buildRealProtocolHtml } from "./realProtocolHtml";
 const GEMINI_API_KEY = 
   typeof process !== "undefined" && process.env?.GEMINI_API_KEY
     ? process.env.GEMINI_API_KEY.trim()
-    : "AIzaSyDo0GOaezJpTrIp9zIr3oUzn47CkwdPvIk"; // Fallback key from server's .env
+    : ""; // Fallback key from server's .env (set in .env file on server)
 
 /** Resolves API key: customKey > embedded GEMINI_API_KEY. */
 function resolveApiKey(customKey?: string): string {
