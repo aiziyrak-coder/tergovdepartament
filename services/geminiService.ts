@@ -17,12 +17,21 @@ import {
 } from "../types";
 import { buildRealProtocolHtml } from "./realProtocolHtml";
 
-const GEMINI_KEY_ENV = typeof process !== "undefined" ? process.env?.GEMINI_API_KEY : undefined;
+// API key resolution - embedded at build time from .env
+const GEMINI_API_KEY = 
+  typeof process !== "undefined" && process.env?.GEMINI_API_KEY
+    ? process.env.GEMINI_API_KEY.trim()
+    : "";
 
-/** Resolves API key: customKey > GEMINI_API_KEY from .env (embedded at build time). */
+/** Resolves API key: customKey > embedded GEMINI_API_KEY. */
 function resolveApiKey(customKey?: string): string {
-  const key = customKey?.trim() || GEMINI_KEY_ENV;
-  if (!key) throw new Error("❌ ХАТОЛИК: API kalit topilmadi!\n\n📌 .env 'da GEMINI_API_KEY ni belgilang va qayta build qiling:\nnpm run build\n\n🔗 Yangi key: https://console.cloud.google.com/");
+  const key = customKey?.trim() || GEMINI_API_KEY;
+  if (!key || key === "") {
+    console.error("❌ GEMINI_API_KEY topilmadi! Build vaqtida .env'da GEMINI_API_KEY belgilash kerak.");
+    throw new Error(
+      "❌ API kalit topilmadi!\n\n📌 .env ga qoshish:\nGEMINI_API_KEY=AIzaSy...\n\nKeyin rebuild:\nnpm run build"
+    );
+  }
   return key;
 }
 
