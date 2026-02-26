@@ -240,15 +240,7 @@ export function buildRealProtocolHtml(
 </head>
 <body>
 <h1>${headingTitleHtml}</h1>
-<table width="100%" border="0" cellpadding="0" cellspacing="0">
-  <colgroup><col width="50%"/><col width="50%"/></colgroup>
-  <tr>
-    <td width="50%" align="left" valign="top"
-        style="font-size:14pt;font-family:'Times New Roman',serif;padding:0 0 12pt 0;">${escapeHtml(date)}</td>
-    <td width="50%" align="right" valign="top"
-        style="font-size:14pt;font-family:'Times New Roman',serif;padding:0 0 12pt 0;text-align:right;">${escapeHtml(city)}</td>
-  </tr>
-</table>
+<p style="font-size:14pt;font-family:'Times New Roman',serif;margin:0 0 12pt 0;padding:0;overflow:hidden;line-height:1.4;"><span style="float:right;display:inline-block;">${escapeHtml(city)}</span>${escapeHtml(date)}</p>
 <p class="intro">
   ${escapeHtml(city)} ИИБ ${escapeHtml(officeNumber)} тергов бўлими катта терговчиси ${escapeHtml(investigatorRank)} ${escapeHtml(investigatorName)},
   ушбу куни иш юритувимда бўлган ${caseNumber ? `${escapeHtml(caseNumber)}-сонли жиноят иши бўйича` : "жиноят иши бўйича"} хизмат хонамда, табиий ёруғликда
