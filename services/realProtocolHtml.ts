@@ -134,6 +134,10 @@ interface DialogueTurn {
   kind: DialogueKind;
   text: string;
 }
+interface DialoguePair {
+  question: string;
+  answer: string;
+}
 
 /**
  * Normalizes raw transcript to protocol-friendly Q/A turns.
@@ -160,6 +164,69 @@ function normalizeDialogueTurns(transcript: DialogSegment[]): DialogueTurn[] {
   }
 
   return raw;
+}
+
+function normalizeCompare(text: string): string {
+  return text.toLowerCase().replace(/[^a-z0-9\u0400-\u04ff]+/gi, " ").trim();
+}
+
+function groupTurnsToPairs(turns: DialogueTurn[]): DialoguePair[] {
+  const pairs: DialoguePair[] = [];
+  let currentQuestion = "";
+  let currentAnswers: string[] = [];
+
+  for (const turn of turns) {
+    if (turn.kind === "question") {
+      if (currentQuestion || currentAnswers.length > 0) {
+        pairs.push({
+          question: currentQuestion || "Савол берилмади",
+          answer: currentAnswers.join(" ").trim() || "____________________________________________________________",
+        });
+      }
+      currentQuestion = turn.text;
+      currentAnswers = [];
+      continue;
+    }
+
+    if (!currentQuestion) {
+      currentQuestion = "Менга берилган саволларга қуйидагича жавоб бераман:";
+    }
+    currentAnswers.push(turn.text);
+  }
+
+  if (currentQuestion || currentAnswers.length > 0) {
+    pairs.push({
+      question: currentQuestion || "Савол берилмади",
+      answer: currentAnswers.join(" ").trim() || "____________________________________________________________",
+    });
+  }
+
+  return pairs;
+}
+
+function ensureMandatoryInterrogationPairs(pairs: DialoguePair[]): DialoguePair[] {
+  const mandatory: DialoguePair[] = [
+    {
+      question: "Сиз кўрсатув беришни хоҳлайсизми, агар кўрсатув беришни хоҳласангиз, қайси тилда кўрсатув бера оласиз?",
+      answer: "Мен кўрсатув беришни хоҳлайман ва кўрсатувларимни ўзбек тилида бераман.",
+    },
+    {
+      question: "Кўрсатувларингиз қайси алифбода ёзиб олинишини хоҳлайсиз, кирилл алифбосидами ёки лотин алифбосидами?",
+      answer: "Мен кўрсатувларимни кирилл алифбосида ёзиб олинишини хоҳлайман.",
+    },
+    {
+      question: "Кўрсатувларингиз компьютер воситасида ёзиб олинишига қарши эмасмисиз?",
+      answer: "Менинг кўрсатувларим компьютер воситасида ёзиб олинишига қарши эмасман.",
+    },
+  ];
+
+  const existingQuestions = pairs.map((p) => normalizeCompare(p.question));
+  const missingMandatory = mandatory.filter((m) => {
+    const q = normalizeCompare(m.question);
+    return !existingQuestions.some((e) => e.includes(q.slice(0, 24)) || q.includes(e.slice(0, 24)));
+  });
+
+  return [...missingMandatory, ...pairs];
 }
 
 /**
@@ -218,28 +285,14 @@ export function buildRealProtocolHtml(
 
   const dialogueBlocks: string[] = [];
   const normalizedTurns = normalizeDialogueTurns(transcript);
-  for (let i = 0; i < normalizedTurns.length; i++) {
-    const current = normalizedTurns[i];
-    if (current.kind === "question") {
-      dialogueBlocks.push(
-        `<p class="role-sign"><strong>${escapeHtml(roleLabel)}</strong> _________ ${escapeHtml(personShortName || "____________")}</p>`
-      );
-      dialogueBlocks.push(`<p class="qa"><strong>Савол:</strong> ${escapeHtml(current.text)}</p>`);
+  const pairedDialogue = ensureMandatoryInterrogationPairs(groupTurnsToPairs(normalizedTurns));
 
-      const next = normalizedTurns[i + 1];
-      if (next && next.kind === "answer") {
-        dialogueBlocks.push(`<p class="qa"><strong>Жавоб:</strong> ${escapeHtml(next.text)}</p>`);
-        i += 1;
-      } else {
-        dialogueBlocks.push(`<p class="qa"><strong>Жавоб:</strong> ____________________________________________________________</p>`);
-      }
-      continue;
-    }
-
+  for (const pair of pairedDialogue) {
     dialogueBlocks.push(
       `<p class="role-sign"><strong>${escapeHtml(roleLabel)}</strong> _________ ${escapeHtml(personShortName || "____________")}</p>`
     );
-    dialogueBlocks.push(`<p class="qa"><strong>Жавоб:</strong> ${escapeHtml(current.text)}</p>`);
+    dialogueBlocks.push(`<p class="qa"><strong>Савол:</strong> ${escapeHtml(pair.question)}</p>`);
+    dialogueBlocks.push(`<p class="qa"><strong>Жавоб:</strong> ${escapeHtml(pair.answer)}</p>`);
   }
   const dialogueHtml = dialogueBlocks.length
     ? dialogueBlocks.join("\n")
