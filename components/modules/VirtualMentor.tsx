@@ -218,11 +218,11 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
       setLibLoading(true);
       setLibResult(null);
       try {
-          const data = await searchLegalDatabase(libQuery, AppLanguage.UZ_LATN);
+          const data = await searchLegalDatabase(libQuery, AppLanguage.UZ_CYRL);
           setLibResult(data);
           toast("Hujjatlar topildi", "success");
       } catch (e) {
-          const msg = e instanceof Error ? e.message : "Qidiruvda xatolik.";
+          const msg = e instanceof Error ? e.message : "Қидирувда хатолик.";
           toast(msg, "error");
       } finally {
           setLibLoading(false);
@@ -233,12 +233,12 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
   const startQuiz = async (topic: string) => {
       setLoading(true);
       try {
-          const questions = await generateAcademyQuiz(topic, AppLanguage.UZ_LATN);
+          const questions = await generateAcademyQuiz(topic, AppLanguage.UZ_CYRL);
           setActiveQuiz(questions);
           setQuizAnswers({});
           setQuizScore(null);
       } catch (e) {
-          const msg = e instanceof Error ? e.message : "Test tuzishda xatolik.";
+          const msg = e instanceof Error ? e.message : "Тест тузишда хатолик.";
           toast(msg, "error");
       } finally {
           setLoading(false);
@@ -366,7 +366,7 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
                     {loading && (
                         <div className="flex items-center gap-3 p-4 bg-white border border-slate-200 rounded-2xl w-fit shadow-sm">
                             <Loader2 className="animate-spin text-amber-500" size={18}/>
-                            <span className="text-xs font-bold text-slate-500 uppercase">Strategik tahlil ketmoqda...</span>
+                            <span className="text-xs font-bold text-slate-500 uppercase">Стратегик таҳлил кетмоқда...</span>
                         </div>
                     )}
                     {isSpeaking && (
@@ -376,7 +376,7 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
                                  <div className="w-1 bg-amber-500 animate-[bounce_1s_infinite_0.1s] h-4"></div>
                                  <div className="w-1 bg-amber-500 animate-[bounce_1s_infinite_0.2s] h-3"></div>
                              </div>
-                             <span className="text-[10px] font-bold text-amber-600 uppercase">Ovozli javob...</span>
+                             <span className="text-[10px] font-bold text-amber-600 uppercase">Овозли жавоб...</span>
                          </div>
                     )}
                 </div>
@@ -402,7 +402,7 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
                             value={input} 
                             onChange={e => setInput(e.target.value)} 
                             onKeyDown={e => e.key === 'Enter' && handleSend()}
-                            placeholder={isListening ? "Gapiring..." : `${getModeLabel(mentorMode)} rejimidan so'rang...`}
+                            placeholder={isListening ? "Гапиринг..." : `${getModeLabel(mentorMode)} режимидан сўранг...`}
                             className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-6 py-4 text-sm outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-50 transition-all text-slate-900 placeholder-slate-400"
                         />
                         <button onClick={() => handleSend()} className="p-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-lg shadow-slate-200 transition-all active:scale-95">
@@ -425,7 +425,7 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
                                 onClick={() => setAcademyTab('COURSES')}
                                 className={`px-6 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${academyTab === 'COURSES' ? 'bg-amber-50 text-amber-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                               >
-                                  <GraduationCap size={16}/> O'quv Kurslari
+                                  <GraduationCap size={16}/> Ўқув Курслари
                               </button>
                               <button 
                                 onClick={() => setAcademyTab('LIBRARY')}
@@ -444,7 +444,7 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
                               <div className="max-w-6xl mx-auto">
                                   <div className="mb-8">
                                       <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight mb-2">Malaka Oshirish Kurslari</h2>
-                                      <p className="text-slate-500 font-medium">IIV Akademiyasi va Ziyrak AI hamkorligidagi maxsus o'quv dasturlari.</p>
+                                      <p className="text-slate-500 font-medium">ИИВ Академияси ва Зиёрак AI ҳамкорлигидаги махсус ўқув дастурлари.</p>
                                   </div>
 
                                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -487,7 +487,7 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
                                                     <div className="shrink-0 pt-1 text-blue-600"><Lightbulb size={24}/></div>
                                                     <div>
                                                         <h4 className="font-black text-blue-900 text-sm uppercase mb-1">AI Simulyatsiya</h4>
-                                                        <p className="text-sm text-blue-800/80 mb-4">Ushbu mavzu bo'yicha sun'iy intellekt sizning bilimingizni tekshirish uchun individual imtihon tuzib beradi.</p>
+                                                        <p className="text-sm text-blue-800/80 mb-4">Ушбу мавзу бўйича сунъий интеллект сизнинг билимингизни текшириш учун индивидуал имтиҳон тузиб беради.</p>
                                                         <button 
                                                             onClick={() => startQuiz(selectedCourse.title)}
                                                             disabled={loading}
@@ -500,15 +500,15 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
                                                 </div>
 
                                                 <div>
-                                                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">Video Darslar</h3>
+                                                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">Видео Дарслар</h3>
                                                     <div className="space-y-3">
-                                                        {['1-dars. Kirish va Nazariya', '2-dars. Amaliy mashg\'ulot', '3-dars. Xatolar tahlili', '4-dars. Keyslar Tahlili (Case Study)'].map((l, i) => (
+                                                        {['1-дарс. Кириш ва Назария', '2-дарс. Амалий машғулот', '3-дарс. Хатолар таҳлили', '4-дарс. Кейслар Таҳлили'].map((l, i) => (
                                                             <div 
                                                                 key={i} 
-                                                                onClick={() => toast("Video darslar tayyorlanmoqda. Imtihon va Qonunchilik qidiruvi bo'limlaridan foydalaning.", "info")}
+                                                                onClick={() => toast("Видео дарслар тайёрланмоқда. Имтиҳон ва Қонунчилик қидируви бўлимларидан фойдаланинг.", "info")}
                                                                 className="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer group active:scale-95 transition-all"
                                                                 role="button"
-                                                                aria-label="Video dars"
+                                                                aria-label="Видео Дарс"
                                                             >
                                                                 <div className="flex items-center gap-4">
                                                                     <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-amber-500 group-hover:text-white transition-all"><PlayCircle size={20}/></div>
@@ -572,11 +572,11 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
 
                                                 {quizScore === null ? (
                                                     <button onClick={submitQuiz} className="w-full mt-8 py-4 bg-slate-900 text-white rounded-xl font-bold uppercase tracking-widest hover:bg-slate-800 shadow-xl transition-all">
-                                                        Yakunlash va Tekshirish
+                                                        Якунлаш ва Текшириш
                                                     </button>
                                                 ) : (
                                                     <button onClick={() => setActiveQuiz(null)} className="w-full mt-8 py-4 bg-slate-100 text-slate-600 rounded-xl font-bold uppercase tracking-widest hover:bg-slate-200 transition-all">
-                                                        Chiqish
+                                                        Чиқиш
                                                     </button>
                                                 )}
                                             </div>
@@ -602,7 +602,7 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
                                               <input 
                                                   value={libQuery}
                                                   onChange={(e) => setLibQuery(e.target.value)}
-                                                  placeholder="Modda raqami, farmon yoki kalit so'zni kiriting (Lex.uz)..."
+                                                  placeholder="Модда рақами, фармон ёки калит сўзни киритинг (Lex.uz)..."
                                                   className="w-full p-4 pl-12 rounded-xl bg-slate-50 border border-slate-200 outline-none focus:border-blue-500 font-medium text-slate-800"
                                               />
                                               <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"/>
@@ -613,13 +613,13 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
                                               className="px-8 py-4 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all flex items-center gap-2"
                                           >
                                               {libLoading ? <Loader2 className="animate-spin"/> : <Search size={20}/>}
-                                              QIDIRISH
+                                              ҚИДИРИШ
                                           </button>
                                       </form>
                                       
                                       <div className="mt-6 flex gap-2 flex-wrap">
                                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest py-2 mr-2">Tezkor Filtrlar:</span>
-                                          {['Hammasi', 'JK (Jinoyat Kodeksi)', 'JPK (Jarayon)', 'Plenum Qarorlari', 'Prezident Farmonlari'].map(filter => (
+                                          {['Hammasi', 'JK (Jinoyat Kodeksi)', 'JPK (Jarayon)', 'Plenum Қарорларi', 'Prezident Farmonlari'].map(filter => (
                                               <button key={filter} onClick={() => setLibQuery(filter === 'Hammasi' ? '' : filter)} className="px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-[10px] font-bold text-slate-600 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all">
                                                   {filter}
                                               </button>
@@ -643,7 +643,7 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
                                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                           {/* Articles Column */}
                                           <div className="space-y-4">
-                                              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest pl-2">Topilgan Moddalar</h3>
+                                              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest pl-2">Topilgan Моддалар</h3>
                                               {libResult.articles.map((art, i) => (
                                                   <div key={i} className="bg-white p-5 rounded-2xl border border-slate-200 hover:border-blue-300 transition-all group cursor-pointer hover:shadow-md">
                                                       <div className="flex items-center justify-between mb-2">
@@ -656,12 +656,12 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
                                                       <p className="text-xs text-slate-500 line-clamp-3">{art.summary}</p>
                                                   </div>
                                               ))}
-                                              {libResult.articles.length === 0 && <div className="text-center p-4 text-slate-400 text-xs">Moddalar topilmadi</div>}
+                                              {libResult.articles.length === 0 && <div className="text-center p-4 text-slate-400 text-xs">Моддалар топилмади</div>}
                                           </div>
 
                                           {/* Precedents Column */}
                                           <div className="space-y-4">
-                                              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest pl-2">Sud Amaliyoti va Qarorlar</h3>
+                                              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest pl-2">Суд Амалиёти ва Қарорлар</h3>
                                               {libResult.precedents.map((prec, i) => (
                                                   <div key={i} className="bg-white p-5 rounded-2xl border border-slate-200 hover:border-green-300 transition-all hover:shadow-md">
                                                       <div className="flex items-center gap-2 mb-3 text-green-600">
@@ -671,12 +671,12 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
                                                       <h4 className="font-bold text-slate-800 text-sm mb-2">{prec.title}</h4>
                                                       {prec.link && (
                                                           <a href={prec.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-500 hover:underline mt-2">
-                                                              <ExternalLink size={12}/> Manbani ochish (Lex.uz)
+                                                              <ExternalLink size={12}/> Манбани очиш (Lex.uz)
                                                           </a>
                                                       )}
                                                   </div>
                                               ))}
-                                              {libResult.precedents.length === 0 && <div className="text-center p-4 text-slate-400 text-xs">Qarorlar topilmadi</div>}
+                                              {libResult.precedents.length === 0 && <div className="text-center p-4 text-slate-400 text-xs">Қарорлар топилмади</div>}
                                           </div>
                                       </div>
                                   </div>
@@ -694,7 +694,7 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
                                           <input 
                                               value={sampleSearch}
                                               onChange={(e) => setSampleSearch(e.target.value)}
-                                              placeholder="Namuna qidirish..."
+                                              placeholder="Намуна қидириш..."
                                               className="bg-transparent outline-none text-sm px-3 w-48"
                                           />
                                       </div>
@@ -726,17 +726,17 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
                                               
                                               <button 
                                                   type="button"
-                                                  onClick={() => { onOpenTemplates?.(); toast("Shablonlar galereyasiga yo'naltirildi. Kerakli shablonni tanlang va yuklab oling.", "success"); }}
+                                                  onClick={() => { onOpenTemplates?.(); toast("Шаблонлар галереясига йўналтирилди. Керакли шаблонни танланг ва юклаб олинг.", "success"); }}
                                                   className="w-full py-2 bg-slate-50 text-slate-600 hover:bg-amber-500 hover:text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2"
-                                                  aria-label="Shablonni yuklab olish"
+                                                  aria-label="Шаблонни юклаб олиш"
                                               >
-                                                  <Download size={14}/> YUKLASH
+                                                  <Download size={14}/> ЮКЛАШ
                                               </button>
                                           </div>
                                       ))}
                                       {filteredSamples.length === 0 && (
                                           <div className="col-span-full text-center p-8 text-slate-400 text-sm italic">
-                                              Hujjatlar topilmadi.
+                                              Ҳужжатлар топилмади.
                                           </div>
                                       )}
                                   </div>

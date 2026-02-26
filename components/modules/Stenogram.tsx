@@ -116,7 +116,7 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
 
       } catch (e) {
           console.error(e);
-          const msg = e instanceof Error ? e.message : "Noma'lum";
+          const msg = e instanceof Error ? e.message : "Номаълум";
           toast("Тизим хатолиги: " + msg, "error");
       } finally {
           setLoading(false);

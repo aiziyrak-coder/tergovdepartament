@@ -22,7 +22,7 @@ const EvidenceBoard: React.FC<EvidenceBoardProps> = ({ onBack, boards, setBoards
   
   useEffect(() => {
       if (boards.length === 0) {
-          setBoards([{ id: 'case-001', name: 'Yangi Ish', nodes: [], edges: [], isActive: true }]);
+          setBoards([{ id: 'case-001', name: 'Янги Иш', nodes: [], edges: [], isActive: true }]);
           setActiveBoardId('case-001');
       }
       setPosition({ x: window.innerWidth/3, y: window.innerHeight/3 });

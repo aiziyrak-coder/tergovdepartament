@@ -13,21 +13,21 @@ interface PhotoRobotProps { onBack: () => void; }
 
 // --- EXPANDED CONSTANTS FOR HUMAN ---
 const FACE_SHAPES = ['Oval', 'Yumaloq', 'To\'rtburchak', 'Romb', 'Yuraksimon', 'Uzunchoq', 'To\'lacha', 'Boshqa'];
-const SKIN_TONES = ['Och (Oq)', 'Bug\'doyrang', 'Qoracha', 'Juda qora'];
-const EYE_COLORS = ['Jigarrang', 'Qora', 'Ko\'k', 'Yashil', 'Kulrang'];
-const EYE_SHAPES = ['Bodomqovoq', 'Katta', 'Qisiq (Osiyo)', 'Chuqur joylashgan', 'Bo\'rtib chiqqan'];
-const EYEBROWS = ['Qalin', 'Ingichka', 'To\'g\'ri', 'Yoyimon', 'Tutashgan'];
-const NOSE_SHAPES = ['To\'g\'ri', 'Qirraburun', 'Puchuq', 'Katta', 'Uchi qayrilgan'];
-const LIP_TYPES = ['O\'rtacha', 'Yupqa', 'Qalin (To\'liq)', 'Yuqori lab ingichka'];
-const CHIN_TYPES = ['O\'rtacha', 'O\'tkir (Uchli)', 'Kvadrat', 'Ikkiga ajralgan', 'Bo\'rtib chiqqan'];
+const SKIN_TONES = ['Оч (Оқ)', 'Буғдойранг', 'Қорача', 'Жуда қора'];
+const EYE_COLORS = ['Жигарранг', 'Қора', 'Кўк', 'Яшил', 'Кулранг'];
+const EYE_SHAPES = ['Бодомқовоқ', 'Катта', 'Қисиқ (Осиё)', 'Чуқур жойлашган', 'Бўртиб чиққан'];
+const EYEBROWS = ['Qalin', 'Ingichka', 'Тўғри', 'Yoyimon', 'Tutashgan'];
+const NOSE_SHAPES = ['Тўғри', 'Қиррабурун', 'Пучуқ', 'Катта', 'Учи қайрилган'];
+const LIP_TYPES = ['Ўртача', 'Yupqa', 'Qalin (To\'liq)', 'Yuqori lab ingichka'];
+const CHIN_TYPES = ['Ўртача', 'Ўткир (Учли)', 'Квадрат', 'Иккига ажралган', 'Бўртиб чиққан'];
 const HAIR_STYLES = ['Kall (Sochsiz)', 'Kalga olingan (Buzz)', 'Qisqa (Sport)', 'O\'rta uzunlik', 'Uzun', 'Jingalak', 'Afro', 'Kokil'];
-const BEARD_STYLES = ['Yo\'q (Silliq)', 'Yengil soqol (Stubble)', 'To\'liq soqol', 'Echkisilak', 'Mo\'ylov', 'Bak bakenbard'];
-const BODY_TYPES = ['O\'rtacha', 'Ozg\'in', 'Sportchi (Muskul)', 'To\'lacha (Semiz)'];
+const BEARD_STYLES = ['Йўқ (Силлиқ)', 'Енгил соқол', 'Тўлиқ соқол', 'Эчкисилак', 'Мўйлов', 'Бакенбард'];
+const BODY_TYPES = ['Ўртача', 'Ozg\'in', 'Sportchi (Muskul)', 'To\'lacha (Semiz)'];
 
 // --- EXPANDED CONSTANTS FOR OBJECTS ---
 const BUILDING_TYPES = ['Turar-joy (Hovli)', 'Ko\'p qavatli uy', 'Tijorat (Ofis/Do\'kon)', 'Sanoat (Zavod/Ombor)', 'Maishiy xizmat', 'Davlat muassasasi'];
 const CAR_TYPES = ['Sedan', 'Sport (Coupe)', 'SUV (Jip)', 'Crossover', 'Hatchback', 'Universal', 'Kabriolet', 'Yuk mashinasi', 'Avtobus', 'Damas/Labo'];
-const CAR_DECOR = ['Oddiy', 'Tuning', 'Sportiv', 'Eski/Urinib qolgan'];
+const CAR_DECOR = ['Оддий', 'Тюнинг', 'Спортив', 'Ески/Кухнайиб қолган'];
 
 const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
   const { toast } = useToast();
@@ -42,25 +42,25 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
       gender: 'Erkak', 
       age: 30, 
       ethnicity: 'Markaziy Osiyo (O\'zbek)', 
-      skinTone: 'Bug\'doyrang',
-      bodyType: 'O\'rtacha',
+      skinTone: 'Буғдойранг',
+      bodyType: 'Ўртача',
       // Face
       faceShape: 'Oval', 
-      forehead: 'O\'rtacha',
-      cheeks: 'O\'rtacha',
+      forehead: 'Ўртача',
+      cheeks: 'Ўртача',
       // Eyes & Brows
-      eyeColor: 'Jigarrang', 
-      eyeShape: 'Bodomqovoq',
-      eyebrows: 'To\'g\'ri',
+      eyeColor: 'Жигарранг', 
+      eyeShape: 'Бодомқовоқ',
+      eyebrows: 'Тўғри',
       // Nose & Mouth
-      noseShape: 'To\'g\'ri', 
-      lipType: 'O\'rtacha',
-      chinType: 'O\'rtacha',
-      earShape: 'O\'rtacha',
+      noseShape: 'Тўғри', 
+      lipType: 'Ўртача',
+      chinType: 'Ўртача',
+      earShape: 'Ўртача',
       // Hair
       hairStyle: 'Qisqa (Sport)', 
-      hairColor: 'Qora', 
-      beardStyle: 'Yo\'q (Silliq)',
+      hairColor: 'Қора', 
+      beardStyle: 'Йўқ (Силлиқ)',
       // Accessories
       glasses: 'Yo\'q',
       clothing: 'Oddiy ko\'ylak',
@@ -69,15 +69,15 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
 
   // --- EXPANDED OBJECT STATE ---
   const [objectFeatures, setObjectFeatures] = useState({ 
-    category: 'Avtomobil', 
+    category: 'Автомобил', 
     // Car specifics
     carType: 'Sedan',
     brand: '', 
-    color: 'Oq',
-    carCondition: 'Yangi',
-    windows: 'Oddiy', // Tonirovka
-    rims: 'Oddiy', // Diska
-    licensePlate: 'Ko\'rinmaydi',
+    color: 'Оқ',
+    carCondition: 'Янги',
+    windows: 'Оддий', // Tonirovka
+    rims: 'Оддий', // Diska
+    licensePlate: 'Кўринмайди',
     // Building specifics
     buildingType: 'Turar-joy (Hovli)',
     floors: '1 qavatli',
@@ -258,7 +258,7 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
     } catch (e) {
       console.error(e);
       const errorMsg = e instanceof Error ? e.message : String(e);
-      toast(errorMsg.slice(0, 120) || "Tahrirlashda xatolik yuz berdi.", "error");
+      toast(errorMsg.slice(0, 120) || "Таҳрирлашда хатолик юз берди.", "error");
     } finally {
       setIsEditing(false);
     }
@@ -290,7 +290,7 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      toast("JPG fayl yuklab olindi", "success");
+      toast("ЖПГ файл юклаб олинди", "success");
   };
 
   return (
@@ -363,12 +363,12 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
 
                                {/* SECTION 2: FACE DETAILS */}
                                <div className="space-y-3 pb-4 border-b border-slate-100">
-                                   <h4 className="text-xs font-black text-slate-400 uppercase flex items-center gap-2 mb-2"><ScanFace size={14}/> Yuz Tuzilishi</h4>
+                                   <h4 className="text-xs font-black text-slate-400 uppercase flex items-center gap-2 mb-2"><ScanFace size={14}/> Йуз Тузилиши</h4>
                                    
                                    <div className="grid grid-cols-2 gap-3">
-                                       <div><label className="text-[9px] font-bold text-slate-500 block mb-1">Yuz Shakli</label>
+                                       <div><label className="text-[9px] font-bold text-slate-500 block mb-1">Йуз Шакли</label>
                                        <select value={features.faceShape} onChange={e => setFeatures({...features, faceShape: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-uzblue">{FACE_SHAPES.map(o=><option key={o}>{o}</option>)}</select></div>
-                                       <div><label className="text-[9px] font-bold text-slate-500 block mb-1">Teri Rangi</label>
+                                       <div><label className="text-[9px] font-bold text-slate-500 block mb-1">Тери Ранги</label>
                                        <select value={features.skinTone} onChange={e => setFeatures({...features, skinTone: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-uzblue">{SKIN_TONES.map(o=><option key={o}>{o}</option>)}</select></div>
                                    </div>
 
@@ -382,48 +382,48 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
 
                                {/* SECTION 3: EYES & NOSE */}
                                <div className="space-y-3 pb-4 border-b border-slate-100">
-                                   <h4 className="text-xs font-black text-slate-400 uppercase flex items-center gap-2 mb-2"><Eye size={14}/> Ko'z va Burun</h4>
+                                   <h4 className="text-xs font-black text-slate-400 uppercase flex items-center gap-2 mb-2"><Eye size={14}/> Кўз ва Бурун</h4>
                                    <div className="grid grid-cols-2 gap-3">
-                                       <div><label className="text-[9px] font-bold text-slate-500 block mb-1">Ko'z Rangi</label>
+                                       <div><label className="text-[9px] font-bold text-slate-500 block mb-1">Кўз Ранги</label>
                                        <select value={features.eyeColor} onChange={e => setFeatures({...features, eyeColor: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-uzblue">{EYE_COLORS.map(o=><option key={o}>{o}</option>)}</select></div>
-                                       <div><label className="text-[9px] font-bold text-slate-500 block mb-1">Ko'z Shakli</label>
+                                       <div><label className="text-[9px] font-bold text-slate-500 block mb-1">Кўз Шакли</label>
                                        <select value={features.eyeShape} onChange={e => setFeatures({...features, eyeShape: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-uzblue">{EYE_SHAPES.map(o=><option key={o}>{o}</option>)}</select></div>
                                    </div>
                                    <div className="grid grid-cols-2 gap-3">
                                        <div><label className="text-[9px] font-bold text-slate-500 block mb-1">Qoshlar</label>
                                        <select value={features.eyebrows} onChange={e => setFeatures({...features, eyebrows: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-uzblue">{EYEBROWS.map(o=><option key={o}>{o}</option>)}</select></div>
-                                       <div><label className="text-[9px] font-bold text-slate-500 block mb-1">Burun</label>
+                                       <div><label className="text-[9px] font-bold text-slate-500 block mb-1">Бурун</label>
                                        <select value={features.noseShape} onChange={e => setFeatures({...features, noseShape: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-uzblue">{NOSE_SHAPES.map(o=><option key={o}>{o}</option>)}</select></div>
                                    </div>
                                </div>
 
                                {/* SECTION 4: HAIR & BEARD */}
                                <div className="space-y-3 pb-4 border-b border-slate-100">
-                                   <h4 className="text-xs font-black text-slate-400 uppercase flex items-center gap-2 mb-2"><Scissors size={14}/> Soch va Soqol</h4>
+                                   <h4 className="text-xs font-black text-slate-400 uppercase flex items-center gap-2 mb-2"><Scissors size={14}/> Соч ва Соқол</h4>
                                    <div className="grid grid-cols-2 gap-3">
-                                       <div><label className="text-[9px] font-bold text-slate-500 block mb-1">Soch Turmagi</label>
+                                       <div><label className="text-[9px] font-bold text-slate-500 block mb-1">Соч Турмаги</label>
                                        <select value={features.hairStyle} onChange={e => setFeatures({...features, hairStyle: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-uzblue">{HAIR_STYLES.map(o=><option key={o}>{o}</option>)}</select></div>
-                                       <div><label className="text-[9px] font-bold text-slate-500 block mb-1">Soch Rangi</label>
+                                       <div><label className="text-[9px] font-bold text-slate-500 block mb-1">Соч Ранги</label>
                                        <input value={features.hairColor} onChange={e => setFeatures({...features, hairColor: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-uzblue"/></div>
                                    </div>
                                    {features.gender === 'Erkak' && (
-                                       <div><label className="text-[9px] font-bold text-slate-500 block mb-1">Soqol/Mo'ylov</label>
+                                       <div><label className="text-[9px] font-bold text-slate-500 block mb-1">Соқол/Мўйлов</label>
                                        <select value={features.beardStyle} onChange={e => setFeatures({...features, beardStyle: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-uzblue">{BEARD_STYLES.map(o=><option key={o}>{o}</option>)}</select></div>
                                    )}
                                </div>
 
                                {/* SECTION 5: CLOTHING & DETAILS */}
                                <div className="space-y-3">
-                                   <h4 className="text-xs font-black text-slate-400 uppercase flex items-center gap-2 mb-2"><Shirt size={14}/> Kiyim va Belgilar</h4>
-                                   <div><label className="text-[9px] font-bold text-slate-500 block mb-1">Kiyim Uslubi</label>
-                                   <input value={features.clothing} onChange={e => setFeatures({...features, clothing: e.target.value})} placeholder="Mas: Qora kurtka, oq kepka..." className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-uzblue"/></div>
+                                   <h4 className="text-xs font-black text-slate-400 uppercase flex items-center gap-2 mb-2"><Shirt size={14}/> Кийим ва Белгилар</h4>
+                                   <div><label className="text-[9px] font-bold text-slate-500 block mb-1">Кийим Услуби</label>
+                                   <input value={features.clothing} onChange={e => setFeatures({...features, clothing: e.target.value})} placeholder="Мас.: Қора куртка, оқ кепка..." className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-uzblue"/></div>
                                    
                                    <div className="grid grid-cols-2 gap-3">
-                                       <div><label className="text-[9px] font-bold text-slate-500 block mb-1">Ko'zoynak</label>
-                                       <select value={features.glasses} onChange={e => setFeatures({...features, glasses: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-uzblue"><option>Yo'q</option><option>Qora ko'zoynak</option><option>Optik ko'zoynak</option></select></div>
+                                       <div><label className="text-[9px] font-bold text-slate-500 block mb-1">Кўзойнак</label>
+                                       <select value={features.glasses} onChange={e => setFeatures({...features, glasses: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-uzblue"><option>Йўқ</option><option>Қора кўзойнак</option><option>Оптик кўзойнак</option></select></div>
                                    </div>
 
-                                   <div><label className="text-[9px] font-bold text-slate-500 block mb-1">Qo'shimcha Belgilar</label>
+                                   <div><label className="text-[9px] font-bold text-slate-500 block mb-1">Қўшимча Белгилар</label>
                                    <textarea value={features.details} onChange={e => setFeatures({...features, details: e.target.value})} placeholder="Chandiq, xol, tatuirovka joylashuvi..." className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs h-20 outline-none focus:border-uzblue resize-none"></textarea></div>
                                </div>
                              </>
@@ -438,7 +438,7 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
                                  <option>Qurol / Pichoq</option>
                                </select></div>
 
-                               {objectFeatures.category === 'Avtomobil' && (
+                               {objectFeatures.category === 'Автомобил' && (
                                  <div className="space-y-3 animate-in fade-in slide-in-from-top-1 bg-slate-50 p-4 rounded-xl border border-slate-200">
                                    <h4 className="text-xs font-black text-slate-400 uppercase mb-2">Avtomobil Tafsilotlari</h4>
                                    <div className="grid grid-cols-2 gap-3">
@@ -454,15 +454,15 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
                                        <div><label className="text-[9px] font-bold text-slate-500 block mb-1">Oynalar (Tonirovka)</label>
                                        <select value={objectFeatures.windows} onChange={e => setObjectFeatures({...objectFeatures, windows: e.target.value})} className="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-uzgreen"><option>Oddiy</option><option>Qoraytirillgan (Tonirovka)</option><option>Parda</option></select></div>
                                        <div><label className="text-[9px] font-bold text-slate-500 block mb-1">Diskalar</label>
-                                       <select value={objectFeatures.rims} onChange={e => setObjectFeatures({...objectFeatures, rims: e.target.value})} className="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-uzgreen"><option>Oddiy (Kalpak)</option><option>Qotishma (Lity)</option><option>Katta Sport</option></select></div>
+                                       <select value={objectFeatures.rims} onChange={e => setObjectFeatures({...objectFeatures, rims: e.target.value})} className="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-uzgreen"><option>Оддий (Калпак)</option><option>Қотишма (Литий)</option><option>Катта Спорт</option></select></div>
                                    </div>
                                    
                                    <div><label className="text-[9px] font-bold text-slate-500 block mb-1">Davlat Raqami</label>
-                                   <select value={objectFeatures.licensePlate} onChange={e => setObjectFeatures({...objectFeatures, licensePlate: e.target.value})} className="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-uzgreen"><option>Ko'rinmaydi</option><option>Bor (O'zbekiston)</option><option>Bor (Chet el)</option><option>Yechib olingan</option></select></div>
+                                   <select value={objectFeatures.licensePlate} onChange={e => setObjectFeatures({...objectFeatures, licensePlate: e.target.value})} className="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-uzgreen"><option>Ko'rinmaydi</option><option>Бор (Ўзбекистон)</option><option>Бор (Чет эл)</option><option>Ечиб олинган</option></select></div>
                                  </div>
                                )}
 
-                               {objectFeatures.category === 'Bino / Inshoot' && (
+                               {objectFeatures.category === 'Бино / Иншоот' && (
                                  <div className="space-y-3 animate-in fade-in slide-in-from-top-1 bg-slate-50 p-4 rounded-xl border border-slate-200">
                                    <h4 className="text-xs font-black text-slate-400 uppercase mb-2">Bino Tafsilotlari</h4>
                                    <div><label className="text-[9px] font-bold text-slate-500 block mb-1">Bino Turi</label>
@@ -477,12 +477,12 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
                                  </div>
                                )}
 
-                               <textarea value={objectFeatures.marks} onChange={e => setObjectFeatures({...objectFeatures, marks: e.target.value})} placeholder="Shikastlar, yozuvlar va alohida belgilar..." className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm h-32 outline-none focus:border-uzgreen resize-none"></textarea>
+                               <textarea value={objectFeatures.marks} onChange={e => setObjectFeatures({...objectFeatures, marks: e.target.value})} placeholder="Шикастлар, езувлар ва алоҳида белгилар..." className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm h-32 outline-none focus:border-uzgreen resize-none"></textarea>
                              </>
                            )}
                         </div>
                       ) : (
-                        <textarea value={narrativeText} onChange={e => setNarrativeText(e.target.value)} placeholder="Gumonlanuvchi yoki ashyoni erkin tilda ta'riflang..." className="w-full flex-1 bg-slate-50 border border-slate-200 rounded-2xl p-5 text-sm outline-none focus:border-uzblue resize-none min-h-[300px] shadow-inner"></textarea>
+                        <textarea value={narrativeText} onChange={e => setNarrativeText(e.target.value)} placeholder="Гумонланувчи ёки ашёни еркин тавсифланг..." className="w-full flex-1 bg-slate-50 border border-slate-200 rounded-2xl p-5 text-sm outline-none focus:border-uzblue resize-none min-h-[300px] shadow-inner"></textarea>
                       )}
                     </>
                   )}
@@ -490,8 +490,8 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
                   {step === 'SELECT' && (
                     <div className="space-y-4 animate-in slide-in-from-left">
                        <h3 className="text-sm font-black uppercase text-slate-800">5 ta Realistik Variant</h3>
-                       <p className="text-xs text-slate-500">Tahrirlash va yakuniy xulosa uchun mos variantni tanlang.</p>
-                       <button onClick={() => setStep('INPUT')} className="w-full py-3 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-200">ORQAGA QAYTISH</button>
+                       <p className="text-xs text-slate-500">Таҳрирлаш ва якуний хулоса учун мос вариантни танланг.</p>
+                       <button onClick={() => setStep('INPUT')} className="w-full py-3 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-200">ОРҚАГА ҚАЙТИШ</button>
                     </div>
                   )}
 
@@ -499,13 +499,13 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
                     <div className="space-y-6 animate-in slide-in-from-left">
                        <div className="bg-uzblue/5 p-4 rounded-2xl border border-uzblue/10">
                           <h3 className="text-xs font-black text-uzblue uppercase mb-2 flex items-center gap-2">
-                             <Layers size={14}/> AI Studiya (Realistik Tahrirlash)
+                             <Layers size={14}/> AI Студия (Реалистик Таҳрирлаш)
                           </h3>
                           <div className="relative">
                             <textarea 
                                 value={editPrompt} 
                                 onChange={e => setEditPrompt(e.target.value)} 
-                                placeholder="Masalan: 'Ko'zini jigarrang qil', 'Burnini kichraytir', 'Yoritishni kuchaytir'..." 
+                                placeholder="Масалан: 'Кўзини жигарранг қил', 'Бурнини кичрайтир', 'Йоритишни кучайтир'..." 
                                 className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm h-28 outline-none focus:border-uzblue resize-none pr-10"
                             ></textarea>
                             <button 
@@ -542,7 +542,7 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
                 <div className="p-6 border-t border-slate-100">
                     <button onClick={() => generate()} disabled={loading} className={`w-full py-4 ${targetType === 'HUMAN' ? 'bg-uzblue shadow-uzblue/20' : 'bg-uzgreen shadow-uzgreen/20'} text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl flex items-center justify-center gap-3 active:scale-95 transition-all`}>
                         {loading ? <Loader2 className="animate-spin" size={20}/> : <Zap fill="currentColor" size={20}/>}
-                        {loading ? 'VARIANTLAR YARATILMOQDA...' : '5 TA REAL FOTO YARATISH'}
+                        {loading ? 'ВАРИАНТЛАР ЯРАТИЛМОҚДА...' : '5 TA РЕАЛ ФОТО ЯРАТИШ'}
                     </button>
                 </div>
               )}
@@ -554,19 +554,19 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
                   <div className="absolute inset-0 bg-white/80 backdrop-blur-md z-50 flex flex-col items-center justify-center gap-6">
                       <div className="w-24 h-24 border-4 border-slate-200 border-t-uzblue rounded-full animate-spin"></div>
                       <h3 className="text-2xl font-black text-slate-800 animate-pulse uppercase tracking-widest text-center">
-                          AI 5 ta realistik variant ustida<br/>ishlamoqda...
+                          AI 5 та реалистик вариант устида<br/>ишламоқда...
                       </h3>
-                      <p className="text-slate-500 font-medium">Bu jarayon 30 soniyagacha vaqt olishi mumkin</p>
+                      <p className="text-slate-500 font-medium">Бу жараён 30 сониягача вақт олиши мумкин</p>
                   </div>
               )}
 
               {step === 'INPUT' && !loading && (
                 <div className="text-center opacity-20 group">
                     <div className="w-48 h-48 bg-white rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl border-4 border-slate-200 group-hover:scale-110 transition-transform">
-                        {targetType === 'HUMAN' ? <ScanFace size={80} /> : (objectFeatures.category === 'Bino / Inshoot' ? <Building2 size={80}/> : (objectFeatures.category === 'Avtomobil' ? <Car size={80}/> : <Box size={80}/>))}
+                        {targetType === 'HUMAN' ? <ScanFace size={80} /> : (objectFeatures.category === 'Бино / Иншоот' ? <Building2 size={80}/> : (objectFeatures.category === 'Автомобил' ? <Car size={80}/> : <Box size={80}/>))}
                     </div>
-                    <h2 className="text-3xl font-black uppercase tracking-tighter">Ma'lumotlar kutilmoqda</h2>
-                    <p className="text-lg font-medium mt-2">Chap tarafdan parametrlarni to'ldiring</p>
+                    <h2 className="text-3xl font-black uppercase tracking-tighter">Маълумотлар кутилмоқда</h2>
+                    <p className="text-lg font-medium mt-2">Чап томондан параметрларни тўлдиринг</p>
                 </div>
               )}
 
@@ -576,11 +576,11 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
                         <div key={i} onClick={() => handleSelectImage(v)} className="group relative aspect-square bg-white rounded-3xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl border-2 border-transparent hover:border-uzblue hover:-translate-y-2 transition-all">
                             <img src={v} className="w-full h-full object-cover"/>
                             <div className="absolute top-4 left-4 bg-black/50 text-white px-3 py-1 rounded-full text-xs font-bold backdrop-blur-sm">
-                                Variant {i+1}
+                                Вариант {i+1}
                             </div>
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-8">
                                 <span className="px-8 py-3 bg-uzblue text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl scale-90 group-hover:scale-100 transition-transform">
-                                    Tanlash va Tahrirlash
+                                    Танлаш ва Таҳрирлаш
                                 </span>
                             </div>
                         </div>
@@ -594,7 +594,7 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
                         {isEditing && (
                             <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-20 flex flex-col items-center justify-center gap-4">
                                 <div className="w-16 h-16 border-4 border-slate-200 border-t-uzblue rounded-full animate-spin"></div>
-                                <span className="bg-white px-4 py-2 rounded-full font-bold text-slate-800 shadow-lg text-xs uppercase tracking-wider">AI O'zgartirmoqda...</span>
+                                <span className="bg-white px-4 py-2 rounded-full font-bold text-slate-800 shadow-lg text-xs uppercase tracking-wider">AI Ўзгартирмоқда...</span>
                             </div>
                         )}
                         <img src={selectedImage} className="w-full h-full object-contain bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"/>
@@ -608,8 +608,8 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
                         <button onClick={downloadImage} className="px-8 py-4 bg-white border border-slate-200 text-slate-700 rounded-2xl font-bold text-sm shadow-sm hover:bg-slate-50 flex items-center gap-3 transition-all active:scale-95">
                             <Download size={20}/> JPG YUKLAB OLISH
                         </button>
-                        <button onClick={() => { storageService.saveDocument({ title: 'Fotorobot: ' + (targetType==='HUMAN'?features.gender:objectFeatures.category), category: 'PHOTOROBOT', mediaUrl: selectedImage!, tags: ['AI', targetType], description: 'AI orqali shakllantirilgan realistik foto' }); toast("Arxivga saqlandi!", "success"); onBack(); }} className="px-10 py-4 bg-uzblue text-white rounded-2xl font-black text-sm shadow-xl shadow-uzblue/20 hover:bg-uzblue/90 flex items-center gap-3 transition-all active:scale-95">
-                            <Save size={20}/> ARXIVGA SAQLASH
+                        <button onClick={() => { storageService.saveDocument({ title: 'Fotorobot: ' + (targetType==='HUMAN'?features.gender:objectFeatures.category), category: 'PHOTOROBOT', mediaUrl: selectedImage!, tags: ['AI', targetType], description: 'AI орқали шакллантирилган реалистик фото' }); toast("Архивга сақланди!", "success"); onBack(); }} className="px-10 py-4 bg-uzblue text-white rounded-2xl font-black text-sm shadow-xl shadow-uzblue/20 hover:bg-uzblue/90 flex items-center gap-3 transition-all active:scale-95">
+                            <Save size={20}/> АРХИВГА САҚЛАШ
                         </button>
                     </div>
                 </div>

@@ -22,10 +22,10 @@ interface FileItem {
 }
 
 const STAGE_LABELS = [
-  "To'qnashuvdan avval",
-  "To'qnashuv lahzasi",
-  "Darhol oqibat",
-  "Politsiya sahnasi",
+  "Тўқнашувдан аввал",
+  "Тўқнашув лаҳзаси",
+  "Дарҳол оқибат",
+  "Политсия саҳнаси",
 ];
 
 const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
@@ -77,13 +77,13 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
           // Handle HEIC conversion
           if (file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic')) {
               try {
-                  toast("HEIC format o'zgartirilmoqda...", "info");
+                  toast("ХЕИЦ формат ўзгартирилмоқда...", "info");
                   const converted = await heic2any({ blob: file, toType: 'image/jpeg' });
                   const blob = Array.isArray(converted) ? converted[0] : converted;
                   processFile = new File([blob], file.name.replace(/\.heic$/i, '.jpg'), { type: 'image/jpeg' });
               } catch(e) {
                   console.error("HEIC conversion failed", e);
-                  toast("HEIC formatini o'qishda xatolik", "error");
+                  toast("ХЕИЦ форматини ўқишда хатолик", "error");
                   continue; // Skip failed conversion
               }
           }
@@ -122,18 +122,18 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
           const result = await Promise.race([
               analyzeForensicDocuments(files, language),
               new Promise<DocumentAnalysisResult | null>((_, reject) =>
-                  setTimeout(() => reject(new Error("Tahlil vaqti tugadi (60 s). Qayta urinib ko'ring.")), ANALYSIS_TIMEOUT_MS)
+                  setTimeout(() => reject(new Error("Таҳлил вақти тугади (60 с). Қайта уриниб кўринг.")), ANALYSIS_TIMEOUT_MS)
               ),
           ]);
           if (result && (result.summary || result.vehicle1Type)) {
               setAnalysisResult(result);
               setEditableSummary(result.summary);
-              toast("Tahlil muvaffaqiyatli yakunlandi", "success");
+              toast("Таҳлил муваффақиятли якунланди", "success");
           } else {
-              throw new Error("Bo'sh natija qaytdi");
+              throw new Error("Бўш натижа қайтди");
           }
       } catch (e) {
-          const msg = e instanceof Error ? e.message : "Tahlilda xatolik yuz berdi. Rasm sifatini tekshiring.";
+          const msg = e instanceof Error ? e.message : "Таҳлилда хатолик юз берди. Расм сифатини текширинг.";
           toast(msg, "error");
       } finally {
           setAnalyzing(false);
@@ -147,21 +147,21 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
       setIsPlaying(false);
       const refinedAnalysis = { ...analysisResult, summary: editableSummary };
 
-      toast("Sahnalar generatsiya qilinmoqda...", "info");
+      toast("Саҳналар генератсия қилинмоқда...", "info");
 
       try {
           const result = await generateForensicVideo(refinedAnalysis, selectedView, language);
-          if (result.frames.length === 0) throw new Error("Rasmlar qaytmadi.");
+          if (result.frames.length === 0) throw new Error("Расмлар қайтмади.");
 
           setFrames(result.frames);
           setActiveFrame(0);
           setIsPlaying(true);
           setExpertExplanation(result.explanation);
           setTechnicalDetails(result.technicalDetails as Record<string, unknown>);
-          toast(`${result.frames.length} ta sahna muvaffaqiyatli yaratildi!`, "success");
+          toast(`${result.frames.length} та саҳна муваффақиятли яратилди!`, "success");
       } catch (e) {
           console.error("Scene Gen Error:", e);
-          toast(e instanceof Error ? e.message : "Sahnalarni yaratishda xatolik.", "error");
+          toast(e instanceof Error ? e.message : "Саҳналарни яратишда хатолик.", "error");
       } finally {
           setGenerating(false);
       }
@@ -170,22 +170,22 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
   const saveToArchive = () => {
       if (!analysisResult) return;
       storageService.saveDocument({
-          title: `Avtohalokat rekonstruksiya: ${analysisResult.timeOfDay || "Noma'lum vaqt"}`,
+          title: `Автоҳалокат реконструксияси: ${analysisResult.timeOfDay || "Номаълум вақт"}`,
           category: 'VIDEO',
           description: editableSummary,
           content: expertExplanation || '',
-          tags: ['Rekonstruksiya', selectedView],
+          tags: ['Реконструксия', selectedView],
           metadata: technicalDetails,
       });
-      toast("Arxivga saqlandi.", "success");
+      toast("Архивга сақланди.", "success");
   };
 
   const getViewLabel = (view: CameraView) => {
       switch(view) {
-          case 'CCTV_STREET': return { icon: Cctv, label: 'Kuzatuv Kamerasi' };
-          case 'DASHCAM_CAR': return { icon: Disc, label: 'Video Registrator' };
-          case 'DRONE_TOP': return { icon: Map, label: 'Dron (Yuqoridan)' };
-          case 'WITNESS_PHONE': return { icon: Eye, label: 'Guvoh Telefoni' };
+          case 'CCTV_STREET': return { icon: Cctv, label: 'Кузатув Камераси' };
+          case 'DASHCAM_CAR': return { icon: Disc, label: 'Видео Регистратор' };
+          case 'DRONE_TOP': return { icon: Map, label: 'Дрон (Юқоридан)' };
+          case 'WITNESS_PHONE': return { icon: Eye, label: 'Гувоҳ Телефони' };
       }
   }
 
@@ -203,7 +203,7 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
                     <Video className="text-uzred" size={24}/>
                     Автоҳалокат <span className="text-uzred">Экспертизаси</span>
                 </h2>
-                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">AI Sahnani Rekonstruksiya Moduli</p>
+                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">AI Саҳнани Реконструксия Moduli</p>
              </div>
         </div>
       </div>
@@ -216,14 +216,14 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
             {/* 1. UPLOAD */}
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                 <h3 className="text-xs font-black text-slate-500 uppercase mb-4 flex items-center gap-2">
-                    <FileText size={14} className="text-uzblue"/> Ekspert Xulosasi
+                    <FileText size={14} className="text-uzblue"/> Експерт Хулосаси
                 </h3>
 
                 <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 bg-slate-50 rounded-xl cursor-pointer hover:border-uzblue hover:bg-blue-50 transition-all group relative overflow-hidden">
                     <input type="file" multiple accept="image/png, image/jpeg, image/jpg, image/webp, application/pdf, .heic" className="hidden" onChange={handleFileUpload}/>
                     <div className="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none">
                         <Upload size={28} className="text-slate-400 group-hover:text-uzblue mb-3 transition-colors"/>
-                        <p className="text-xs font-bold text-slate-600 group-hover:text-uzblue">Fayl yuklash (JPG/PNG/PDF)</p>
+                        <p className="text-xs font-bold text-slate-600 group-hover:text-uzblue">Файл юклаш (JPG/PNG/PDF)</p>
                     </div>
                 </label>
 
@@ -241,7 +241,7 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
                         </div>
                     ))}
                     {files.length === 0 && (
-                        <div className="text-center p-2 text-xs text-slate-400 italic">Hozircha fayllar yo'q</div>
+                        <div className="text-center p-2 text-xs text-slate-400 italic">Ҳозирча файллар йўқ</div>
                     )}
                 </div>
 
@@ -251,7 +251,7 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
                     className="w-full mt-4 py-3 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all uppercase tracking-wider shadow-lg shadow-slate-200"
                 >
                     {analyzing ? <Loader2 className="animate-spin" size={16}/> : <Activity size={16}/>}
-                    {analyzing ? 'Tahlil qilinmoqda...' : 'Hujjatni Tahlil Qilish'}
+                    {analyzing ? 'Таҳлил қилинмоқда...' : 'Ҳужжатни Таҳлил Қилиш'}
                 </button>
             </div>
 
@@ -282,7 +282,7 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
                             "Tezlik V1": analysisResult.estimatedSpeedV1,
                             "Tezlik V2": analysisResult.estimatedSpeedV2,
                             "Ob-havo": analysisResult.weather,
-                            "Vaqt": analysisResult.timeOfDay
+                            "Вақт": analysisResult.timeOfDay
                         }).map(([k, v], i) => (
                             <div key={i} className="bg-slate-50 p-3 rounded-lg border border-slate-100">
                                 <div className="text-[9px] text-slate-400 uppercase font-black mb-1">{k}</div>
@@ -321,9 +321,9 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
                     <div className="flex flex-col items-center gap-6 z-20">
                         <div className="w-20 h-20 border-4 border-slate-200 border-t-uzblue rounded-full animate-spin"/>
                         <p className="text-sm font-bold text-slate-500 uppercase tracking-widest animate-pulse">
-                            {analyzing ? "Hujjatlar o'qilmoqda..." : "AI sahnalar yaratmoqda..."}
+                            {analyzing ? "Ҳужжатлар ўқилмоқда..." : "AI саҳналар яратмоқда..."}
                         </p>
-                        {generating && <p className="text-xs text-slate-400">4 ta sahna parallel generatsiya qilinmoqda, ~30-60 soniya</p>}
+                        {generating && <p className="text-xs text-slate-400">4 та саҳна параллел генератсия қилинмоқда, ~30-60 сония</p>}
                     </div>
                 ) : frames.length > 0 ? (
                     <div className="w-full h-full flex flex-col gap-3">
@@ -332,11 +332,11 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
                             <img
                                 key={activeFrame}
                                 src={frames[activeFrame]}
-                                alt={STAGE_LABELS[activeFrame] ?? `Sahna ${activeFrame + 1}`}
+                                alt={STAGE_LABELS[activeFrame] ?? `Саҳна ${activeFrame + 1}`}
                                 className="w-full h-full object-contain animate-fadeIn"
                             />
                             <div className="absolute top-3 left-3 bg-black/60 text-white text-xs font-bold px-3 py-1.5 rounded-lg backdrop-blur-sm">
-                                {STAGE_LABELS[activeFrame] ?? `Sahna ${activeFrame + 1}`}
+                                {STAGE_LABELS[activeFrame] ?? `Саҳна ${activeFrame + 1}`}
                             </div>
                             <div className="absolute top-3 right-3 bg-black/60 text-white text-xs font-bold px-3 py-1.5 rounded-lg backdrop-blur-sm">
                                 {activeFrame + 1} / {frames.length}
@@ -371,8 +371,8 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
                 ) : (
                     <div className="text-center opacity-30">
                         <Video size={80} className="mx-auto mb-4 text-slate-400"/>
-                        <h3 className="text-xl font-black text-slate-400 uppercase tracking-widest">Sahnani Rekonstruksiya</h3>
-                        <p className="text-xs text-slate-400 mt-2">Hujjatlarni yuklang, tahlil qiling, keyin "Rekonstruksiya" tugmasini bosing</p>
+                        <h3 className="text-xl font-black text-slate-400 uppercase tracking-widest">Саҳнани Реконструксия</h3>
+                        <p className="text-xs text-slate-400 mt-2">Ҳужжатларни юкланг, таҳлил қилинг, кейин "Реконструксия" тугмасини босинг</p>
                     </div>
                 )}
             </div>
@@ -381,7 +381,7 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
             <div className="h-20 bg-white border border-slate-200 rounded-2xl flex items-center justify-between px-6 shadow-sm">
                 <div className="flex items-center gap-4">
                     <div className="flex flex-col">
-                        <span className="text-[10px] text-slate-400 uppercase font-black">Tanlangan Rakurs</span>
+                        <span className="text-[10px] text-slate-400 uppercase font-black">Танланган Ракурс</span>
                         <span className="text-sm text-slate-800 font-bold">{getViewLabel(selectedView).label}</span>
                     </div>
                 </div>
@@ -393,7 +393,7 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
                         disabled={frames.length === 0}
                         className="px-6 py-3 rounded-xl bg-white border border-slate-200 text-slate-600 hover:border-uzblue hover:text-uzblue transition-all font-bold text-xs flex items-center gap-2 disabled:opacity-50"
                     >
-                        <Save size={16}/> ARXIVGA SAQLASH
+                        <Save size={16}/> АРХИВГА САҚЛАШ
                     </button>
                     <button
                         type="button"
@@ -402,7 +402,7 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
                         className="px-8 py-3 rounded-xl bg-uzred text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-uzred/20 hover:bg-red-700 transition-all active:scale-95 disabled:opacity-50"
                     >
                         {generating ? <Loader2 className="animate-spin" size={16}/> : <Play size={16} fill="currentColor"/>}
-                        {generating ? 'YARATILMOQDA...' : 'REKONSTRUKSIYA'}
+                        {generating ? 'ЯРАТИЛМОҚДА...' : 'РЕКОНСТРУКСИЯ'}
                     </button>
                 </div>
             </div>

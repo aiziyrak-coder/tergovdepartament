@@ -29,7 +29,7 @@ const LegalSearch: React.FC<LegalSearchProps> = ({ onBack }) => {
       const hasContent = (data.analysis?.trim().length ?? 0) > 0 || (data.articles?.length ?? 0) > 0 || (data.precedents?.length ?? 0) > 0;
       toast(hasContent ? "Кыдирув натижалари тайор" : "Маълумот топилмади. Сўрўвни ўзгартиб қайта уриниб кўринг.", hasContent ? "success" : "info");
     } catch (error) {
-      const msg = error instanceof Error ? error.message : "Qidiruvda xatolik yuz berdi.";
+      const msg = error instanceof Error ? error.message : "Қидирувда хатолик юз берди.";
       toast(msg, "error");
     } finally {
       setLoading(false);
@@ -66,7 +66,7 @@ const LegalSearch: React.FC<LegalSearchProps> = ({ onBack }) => {
                           onChange={(e) => setQuery(e.target.value)}
                           placeholder="Савол яки калит сўзни киритинг (Масалан: 'Фирибгарлик учун ёд ')..."
                           className="w-full bg-transparent p-4 text-lg text-slate-900 outline-none placeholder-slate-400 font-medium"
-                          aria-label="Yuridik qidiruv so'rovi"
+                          aria-label="Юридик қидирув сўрови"
                       />
                       <button type="submit" disabled={loading} className="bg-uzblue hover:bg-blue-600 text-white px-8 py-3 rounded-xl font-bold transition-all disabled:opacity-50 flex items-center gap-2">
                           {loading ? <Loader2 className="animate-spin"/> : <Search size={18}/>} 

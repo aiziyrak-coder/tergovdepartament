@@ -219,9 +219,9 @@ export function buildRealProtocolHtml(
   body { font-family: 'Times New Roman', serif; font-size: 14pt; line-height: 1.35; margin: 2cm auto; max-width: 21cm; padding: 0 2cm; color: #000; }
   h1 { font-size: 14pt; text-align: center; margin: 0 0 14pt 0; font-weight: bold; text-transform: uppercase; letter-spacing: 0.2px; }
   .doc-wrap { max-width: 21cm; margin: 0 auto; }
-  .date-city { width: 100%; border-collapse: collapse; margin-bottom: 12pt; border: none; }
-  .date-city td { width: 50%; vertical-align: top; font-size: 14pt; border: none; padding: 0; }
-  .date-city td:last-child { text-align: right; }
+  .date-city { width: 100%; border-collapse: collapse; margin-bottom: 12pt; border: none; table-layout: fixed; }
+  .date-city td { width: 50%; vertical-align: top; font-size: 14pt; border: none; padding: 0; white-space: nowrap; }
+  .date-city td.city-cell { text-align: right; }
   .intro { text-align: justify; text-indent: 30pt; margin: 0 0 10pt 0; font-size: 14pt; }
   .time-row { width: 100%; border-collapse: collapse; margin: 10pt 0 6pt 0; }
   .time-row td { width: 50%; font-weight: bold; text-decoration: underline; font-size: 14pt; }
@@ -243,10 +243,12 @@ export function buildRealProtocolHtml(
 </head>
 <body>
 <h1>${headingTitleHtml}</h1>
-<table class="date-city" border="0" cellpadding="0" cellspacing="0">
+<table class="date-city" width="100%" border="0" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;table-layout:fixed;border:none;margin-bottom:12pt;">
   <tr>
-    <td style="width:50%;text-align:left;">${escapeHtml(date)}</td>
-    <td style="width:50%;text-align:right;">${escapeHtml(city)}</td>
+    <td width="50%" align="left" valign="top" class="date-cell"
+        style="width:50%;border:none;padding:0;font-size:14pt;text-align:left;white-space:nowrap;">${escapeHtml(date)}</td>
+    <td width="50%" align="right" valign="top" class="city-cell"
+        style="width:50%;border:none;padding:0;font-size:14pt;text-align:right;white-space:nowrap;">${escapeHtml(city)}</td>
   </tr>
 </table>
 <p class="intro">

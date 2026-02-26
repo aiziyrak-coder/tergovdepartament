@@ -158,7 +158,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setModule }) => {
                               {notifications.length === 0 ? (
                                   <div className="p-8 text-center text-slate-400">
                                       <Bell size={32} className="mx-auto mb-2 opacity-50"/>
-                                      <p className="text-xs font-medium">Yangi xabarlar yo'q</p>
+                                      <p className="text-xs font-medium">Янги хабарлар йўқ</p>
                                   </div>
                               ) : (
                                   notifications.map(note => (

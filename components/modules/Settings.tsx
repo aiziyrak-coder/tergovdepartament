@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { ArrowLeft, Settings as SettingsIcon, Globe, Shield, Database, Trash2, CheckCircle2, Lock } from "lucide-react";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { AppLanguage } from "../../types";
 import { useToast } from "../../contexts/ToastContext";
 import { ConfirmModal } from "../ui/ConfirmModal";
 
@@ -10,7 +9,7 @@ interface SettingsProps {
 }
 
 const Settings: React.FC<SettingsProps> = ({ onBack }) => {
-  const { language, setLanguage } = useLanguage();
+  const { language } = useLanguage();
   const { toast } = useToast();
   const [clearing, setClearing] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -27,7 +26,7 @@ const Settings: React.FC<SettingsProps> = ({ onBack }) => {
       }
       appKeys.forEach((key) => localStorage.removeItem(key));
       setClearing(false);
-      toast("Tizim keshlari tozalandi. Barcha mahalliy ma'lumotlar o'chirildi.", "success");
+      toast("Тизим кешлари тозаланди. Барча маҳаллий маълумотлар ўчирилди.", "success");
     }, 800);
   };
 
@@ -55,36 +54,19 @@ const Settings: React.FC<SettingsProps> = ({ onBack }) => {
           
           {/* LANGUAGE SETTINGS */}
           <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
-             <div className="flex items-start gap-4 mb-6">
+             <div className="flex items-start gap-4">
                 <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
                     <Globe size={24}/>
                 </div>
-                <div>
+                <div className="flex-1">
                     <h3 className="text-lg font-black text-slate-800 uppercase">Интерфейс Тили</h3>
-                    <p className="text-sm text-slate-500 font-medium">Платформанинг асосий ишчи тилини танланг.</p>
+                    <p className="text-sm text-slate-500 font-medium mb-4">Платформанинг расмий тили.</p>
+                    <div className="flex items-center gap-3 p-4 rounded-xl border-2 border-uzblue bg-blue-50 ring-2 ring-blue-100 w-fit">
+                      <span className="text-2xl">🇺🇿</span>
+                      <span className="text-sm font-bold text-uzblue">Ўзбек (Кирилл)</span>
+                      <CheckCircle2 size={16} className="ml-2 text-uzblue"/>
+                    </div>
                 </div>
-             </div>
-
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {[
-                  { id: AppLanguage.UZ_LATN, label: "O'zbek (Lotin)", flag: "🇺🇿" },
-                  { id: AppLanguage.UZ_CYRL, label: "Ўзбек (Кирилл)", flag: "🇺🇿" },
-                  { id: AppLanguage.RU, label: "Русский", flag: "🇷🇺" },
-                  { id: AppLanguage.EN, label: "English", flag: "🇺🇸" },
-                ].map((langItem) => (
-                  <button
-                    type="button"
-                    key={langItem.id}
-                    onClick={() => { setLanguage(langItem.id); toast(`Til o'zgartirildi: ${langItem.label}`, "success"); }}
-                    className={`p-4 rounded-xl border-2 transition-all text-left flex items-center gap-3 ${language === langItem.id ? "border-uzblue bg-blue-50 ring-2 ring-blue-100" : "border-slate-100 bg-slate-50 hover:border-slate-300"}`}
-                    aria-pressed={language === langItem.id}
-                    aria-label={`Til: ${langItem.label}`}
-                  >
-                    <span className="text-2xl">{langItem.flag}</span>
-                    <span className={`text-sm font-bold ${language === langItem.id ? 'text-uzblue' : 'text-slate-600'}`}>{langItem.label}</span>
-                    {language === langItem.id && <CheckCircle2 size={16} className="ml-auto text-uzblue"/>}
-                  </button>
-                ))}
              </div>
           </div>
 

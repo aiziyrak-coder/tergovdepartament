@@ -25,7 +25,7 @@ const Statistics: React.FC<StatisticsProps> = ({ onBack }) => {
               photorobots: docs.filter(d => d.category === 'PHOTOROBOT').length,
           });
       } catch {
-          toast("Statistika yuklanmadi. Keyinroq urinib ko'ring.", "error");
+          toast("Статистика юкланмади. Кейинроқ уриниб кўринг.", "error");
       }
   }, [toast]);
 
@@ -126,8 +126,8 @@ const Statistics: React.FC<StatisticsProps> = ({ onBack }) => {
                        <div className="space-y-3">
                            {[
                                { id: "300002/2025", name: "Фуқаро A.K. иши", days: 2, status: "Critical" },
-                               { id: "300015/2025", name: "Магазин ўгџрилиги", days: 5, status: "Warning" },
-                               { id: "300022/2025", name: "YTH Farg'ona ko'chasi", days: 7, status: "Warning" },
+                               { id: "300015/2025", name: "Магазин ўгџрилиги", days: 5, status: "Огоҳлантириш" },
+                               { id: "300022/2025", name: "ЙТҲ Фарғона кўчаси", days: 7, status: "Огоҳлантириш" },
                            ].map((task, i) => (
                                <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
                                    <div>

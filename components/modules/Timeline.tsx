@@ -29,7 +29,7 @@ const Timeline: React.FC<TimelineProps> = ({ onBack }) => {
       const result = await Promise.race([
         generateTimelineFromText(text, language),
         new Promise<TimelineEvent[]>((_, reject) =>
-          setTimeout(() => reject(new Error("Xronologiya vaqti tugadi. Qayta urinib ko'ring.")), TIMEOUT_MS)
+          setTimeout(() => reject(new Error("Хронология вақти тугади. Қайта уриниб кўринг.")), TIMEOUT_MS)
         ),
       ]);
       setEvents(result);

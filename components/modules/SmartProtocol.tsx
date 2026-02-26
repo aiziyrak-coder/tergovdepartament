@@ -6,7 +6,7 @@ import {
 import { ProtocolMetadata, ProtocolType, DialogSegment, AppLanguage, ProtocolLanguage } from "../../types";
 import { useToast } from "../../contexts/ToastContext";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { generateLegalProtocol, transcribeAudio } from "../../services/geminiService";
+import { generateLegalProtocol, transcribeAudio, latinUzbekToCyrillic } from "../../services/geminiService";
 import { PROTOCOL_TEMPLATES, type ProtocolTemplateEntry } from "../../config/protocolTemplates";
 
 /** Safe template getter */
@@ -297,9 +297,10 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
               }
             }
             if (finalText) {
-              setLiveTranscript((prev) => (prev ? prev + " " + finalText : finalText));
+              const cyFinal = latinUzbekToCyrillic(finalText);
+              setLiveTranscript((prev) => (prev ? prev + " " + cyFinal : cyFinal));
             }
-            setInterimTranscript(interim);
+            setInterimTranscript(latinUzbekToCyrillic(interim));
           };
           recognition.onerror = () => {
             // Silent; optional: setInterimTranscript("") on no-speech
@@ -374,12 +375,22 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
       }
 
       // Convert to DialogSegment format (no timestamps for protocol - only stenogram needs them)
-      const dialogSegments: DialogSegment[] = segments.map((seg, idx) => ({
-        speakerId: seg.speaker?.toLowerCase().includes("tergov") ? "investigator" : "suspect",
-        speakerName: seg.speaker || (idx % 2 === 0 ? "Терговчи" : getTemplateEntry(selectedTemplate).role),
-        text: seg.text || "",
-        timestamp: "", // No timestamp for live questioning protocol
-      }));
+      // Speaker assignment: "Гапирувчи 1" / even turns → investigator (Савол:), odd → suspect (Жавоб:)
+      const dialogSegments: DialogSegment[] = segments.map((seg, idx) => {
+        const spk = (seg.speaker ?? "").toLowerCase();
+        const isInvestigator =
+          spk.includes("tergov") ||
+          spk.includes("терговч") ||
+          spk.includes("investigator") ||
+          spk.endsWith("1") ||
+          idx % 2 === 0;
+        return {
+          speakerId: isInvestigator ? "investigator" : "suspect",
+          speakerName: isInvestigator ? "Терговчи" : (getTemplateEntry(selectedTemplate).role || "Гапирувчи"),
+          text: latinUzbekToCyrillic(seg.text || ""),
+          timestamp: "",
+        };
+      });
 
       // Store transcript for display
       const fullText = dialogSegments.map((s) => `${s.speakerName}: ${s.text}`).join("\n\n");
@@ -411,7 +422,7 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
       toast("Баюннома тайор ва юклаб олинди!", "success");
     } catch (e) {
       console.error("Processing error:", e);
-      const msg = (e as Error)?.message || "Xatolik yuz berdi";
+      const msg = (e as Error)?.message || "Хатолик юз берди";
       toast(`Хатолик: ${msg.substring(0, 80)}`, "error");
     } finally {
       setIsProcessing(false);
@@ -554,7 +565,7 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
                 <div className="px-4 py-2.5 border-b border-slate-100 bg-slate-50/80 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                   <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                    Gap ketayotgan matn (real vaqt) — faqat ko‘rinish, yozuv va bayonnoma bundan mustaqil
+                    Реал вақт транскрипцияси — фақат кўриниш учун
                   </span>
                 </div>
                 <div
@@ -567,7 +578,7 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
                   )}
                   {!liveTranscript && !interimTranscript && (
                     <span className="text-slate-400">
-                      {isRecording ? "Gapiring — matn shu yerda paydo bo‘ladi..." : "Yozishni boshlang — suhbat matni real vaqtda ko‘rinadi."}
+                      {isRecording ? "Гапиринг — матн шу ерда пайдо бўлади..." : "Гапиришни бошланг — суҳбат матни реал вақтда кўринади."}
                     </span>
                   )}
                   <div ref={liveTranscriptEndRef} />
@@ -652,7 +663,7 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
                   Ёзув тайёр ({formatTime(recordingTime)}). "Баённома Яратиш" босинг.
                 </span>
               ) : (
-                "Микрофон тугмасини босиб, сџроқни бошланг. Ёзув тугагач, AI таҳлил қилиб баённома тайёрлайди."
+                "Микрофон тугмасини босиб, сўроқни бошланг. Ёзув тугагач, AI таҳлил қилиб баённома тайёрлайди."
               )}
             </p>
 
@@ -670,12 +681,12 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
         <div className="w-[300px] bg-white border-l border-slate-200 flex flex-col z-20">
           <div className="p-6 border-b border-slate-100">
             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-4">
-              <Lightbulb size={14} /> Йџриқнома
+              <Lightbulb size={14} /> Йўриқнома
             </h3>
             <div className="space-y-3 text-[11px] text-slate-600">
               <p className="flex items-start gap-2">
                 <span className="text-uzblue font-bold">1.</span>
-                Чап панелда шахс маълумотларини тџлдиринг
+                Чап панелда шахс маълумотларини тўлдиринг
               </p>
               <p className="flex items-start gap-2">
                 <span className="text-uzblue font-bold">2.</span>
@@ -683,15 +694,15 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
               </p>
               <p className="flex items-start gap-2">
                 <span className="text-uzblue font-bold">3.</span>
-                Сџроқ давомида эркин гапиринг
+                Сўроқ давомида эркин гапиринг
               </p>
               <p className="flex items-start gap-2">
                 <span className="text-uzblue font-bold">4.</span>
-                To'xtatib, "Баённома Яратиш" босинг
+                Тўхтатиб, "Баённома Яратиш" босинг
               </p>
               <p className="flex items-start gap-2">
                 <span className="text-uzblue font-bold">5.</span>
-                AI овозни таҳлил қилиб, тџлиқ ҳужжат тайёрлайди
+                AI овозни таҳлил қилиб, тўлиқ ҳужжат тайёрлайди
               </p>
             </div>
           </div>
@@ -702,7 +713,7 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
                 <Gavel size={14} className="text-amber-500" />
                 <span className="text-[10px] font-black uppercase text-slate-400">Юридик Маълумотнома</span>
               </div>
-              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Иш тури бџйича</p>
+              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Иш тури бўйича</p>
               <p className="text-[10px] font-black text-uzblue uppercase tracking-wide mb-2 border-b border-slate-100 pb-2">
                 {getTemplateEntry(selectedTemplate).title}
               </p>

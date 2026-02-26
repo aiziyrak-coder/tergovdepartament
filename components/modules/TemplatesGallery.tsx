@@ -229,7 +229,7 @@ const TEMPLATE_DB = [
         code: 'ЖПК 125-модда',
         description: 'Жабрланувчи ёки гувоҳ томонидан жиноятчини таниб олиш учун кўрсатиш протоколи.',
         generator: getShablonTanibOlish,
-        tags: ['Таниб олиш', 'Баённома', 'Гувоҳ', 'tanib olish'],
+        tags: ['Таниб олиш', 'Баённома', 'Гувоҳ', 'таниб олиш'],
         color: 'blue'
     },
     {
@@ -360,7 +360,7 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ onBack }) => {
                         <Search className="ml-3 text-slate-400" size={18}/>
                         <input 
                             type="text" 
-                            placeholder="Qidiruv (Mas: 'tanib olish')..." 
+                            placeholder="Qidiruv (Mas: 'таниб олиш')..." 
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="bg-transparent pl-3 pr-4 py-2 text-sm text-slate-800 outline-none w-64 placeholder-slate-400 font-medium"
@@ -423,7 +423,7 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ onBack }) => {
                     {filteredTemplates.length === 0 && (
                         <div className="flex flex-col items-center justify-center h-64 text-slate-400 opacity-50">
                             <Search size={48} className="mb-4"/>
-                            <p className="font-medium">Hech narsa topilmadi: "{search}"</p>
+                            <p className="font-medium">Ҳеч нарса топилмади: "{search}"</p>
                         </div>
                     )}
                 </div>
@@ -445,7 +445,7 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ onBack }) => {
                                 
                                 {/* Basic Fields */}
                                 <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
-                                    <div className="text-[10px] text-slate-400 font-black uppercase">Asosiy Ma'lumotlar</div>
+                                    <div className="text-[10px] text-slate-400 font-black uppercase">Асосий Маълумотлар</div>
                                     <input type="date" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} className="w-full bg-white border border-slate-200 rounded-lg p-3 text-xs font-bold text-slate-800 outline-none focus:border-uzgreen"/>
                                     <input type="text" placeholder="Shahar/Tuman" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} className="w-full bg-white border border-slate-200 rounded-lg p-3 text-xs font-bold text-slate-800 outline-none focus:border-uzgreen"/>
                                     <input type="text" placeholder="Tergovchi (F.I.SH)" value={formData.investigatorName} onChange={e => setFormData({...formData, investigatorName: e.target.value})} className="w-full bg-white border border-slate-200 rounded-lg p-3 text-xs font-bold text-slate-800 outline-none focus:border-uzgreen"/>
@@ -503,7 +503,7 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ onBack }) => {
                                     onClick={handleDownloadWord}
                                     className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-xl shadow-slate-300 transition-all active:scale-95"
                                 >
-                                    <Download size={16}/> WORD YUKLASH
+                                    <Download size={16}/> ВОРД ЮКЛАШ
                                 </button>
                             </div>
                         </div>
@@ -512,7 +512,7 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ onBack }) => {
                         <div className="flex-1 bg-slate-100 relative flex flex-col h-full overflow-hidden">
                             {/* Toolbar */}
                             <div className="h-12 bg-white border-b border-slate-200 flex items-center justify-between px-4 shrink-0 shadow-sm">
-                                <span className="text-[10px] text-slate-400 uppercase font-black">{selectedTemplate.title} (Ko'rib chiqish)</span>
+                                <span className="text-[10px] text-slate-400 uppercase font-black">{selectedTemplate.title} (Кўриб чиқиш)</span>
                                 <div className="flex gap-2">
                                     <button onClick={handlePrint} className="p-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-500 hover:text-slate-800 transition-colors"><Printer size={16}/></button>
                                 </div>

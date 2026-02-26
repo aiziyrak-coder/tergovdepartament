@@ -200,10 +200,10 @@ const App: React.FC = () => {
         )}
         <ConfirmModal
           open={showLogoutConfirm}
-          title="Tizimdan chiqish"
-          message="Haqiqatan ham tizimdan chiqmoqchimisiz? Saqlanmagan ma'lumotlar yo'qolishi mumkin."
-          confirmLabel="Chiqish"
-          cancelLabel="Bekor qilish"
+          title="Тизимдан чиқиш"
+          message="Ҳақиқатан ҳам тизимдан чиқмоқчимисиз? Сақланмаган маълумотлар йўқолиши мумкин."
+          confirmLabel="Чиқиш"
+          cancelLabel="Бекор Қилиш"
           variant="warning"
           onConfirm={handleLogoutConfirm}
           onCancel={() => setShowLogoutConfirm(false)}
