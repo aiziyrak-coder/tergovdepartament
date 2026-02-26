@@ -220,6 +220,10 @@ export function buildRealProtocolHtml(
   h1 { font-size: 14pt; text-align: center; margin: 0 0 14pt 0; font-weight: bold; text-transform: uppercase; letter-spacing: 0.2px; }
   .doc-wrap { max-width: 21cm; margin: 0 auto; }
   .intro { text-align: justify; text-indent: 30pt; margin: 0 0 10pt 0; font-size: 14pt; }
+  .date-city-row { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 0 0 2pt 0; }
+  .date-city-row td { width: 50%; font-size: 14pt; font-family: 'Times New Roman', serif; padding: 0; vertical-align: top; }
+  .date-city-row td:last-child { text-align: right; }
+  .header-separator { border: none; border-top: 1px solid #000; margin: 0 0 12pt 0; }
   .time-row { width: 100%; border-collapse: collapse; margin: 10pt 0 6pt 0; }
   .time-row td { width: 50%; font-weight: bold; text-decoration: underline; font-size: 14pt; }
   .time-row td:last-child { text-align: right; }
@@ -240,7 +244,13 @@ export function buildRealProtocolHtml(
 </head>
 <body>
 <h1>${headingTitleHtml}</h1>
-<p style="font-size:14pt;font-family:'Times New Roman',serif;margin:0 0 12pt 0;padding:0;overflow:hidden;line-height:1.4;"><span style="float:right;display:inline-block;">${escapeHtml(city)}</span>${escapeHtml(date)}</p>
+<table class="date-city-row" width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td align="left">${escapeHtml(date)}</td>
+    <td align="right">${escapeHtml(city)}</td>
+  </tr>
+</table>
+<hr class="header-separator" />
 <p class="intro">
   ${escapeHtml(city)} ИИБ ${escapeHtml(officeNumber)} тергов бўлими катта терговчиси ${escapeHtml(investigatorRank)} ${escapeHtml(investigatorName)},
   ушбу куни иш юритувимда бўлган ${caseNumber ? `${escapeHtml(caseNumber)}-сонли жиноят иши бўйича` : "жиноят иши бўйича"} хизмат хонамда, табиий ёруғликда
