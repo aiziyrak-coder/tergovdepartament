@@ -404,7 +404,7 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
       const a = document.createElement("a");
       a.href = url;
       const templateTitle = getTemplateEntry(selectedTemplate).title;
-      a.download = `${templateTitle}_${metadata.personName || "Nomsiz"}.doc`;
+      a.download = `${templateTitle}_${metadata.personName || "Номсиз"}.doc`;
       a.click();
       URL.revokeObjectURL(url);
 
@@ -476,7 +476,7 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
             className="bg-uzblue hover:bg-blue-600 disabled:opacity-50 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-blue-500/20"
           >
             {isProcessing ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
-            {isProcessing ? processingStatus || "TAHLIL..." : "BAYONNOMA YARATISH"}
+            {isProcessing ? processingStatus || "ТАҲЛИЛ..." : "БАЁННОМА ЯРАТИШ"}
           </button>
         </div>
       </div>
@@ -488,7 +488,7 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
             {/* Metadata fields */}
             <div className="space-y-4">
               <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                <FileText size={12} /> Ой Тафсилотлари
+                <FileText size={12} /> Иш Тафсилотлари
               </h3>
               <select
                 value={Object.prototype.hasOwnProperty.call(PROTOCOL_TEMPLATES, selectedTemplate) ? selectedTemplate : ProtocolType.GUVOH}
@@ -502,43 +502,43 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[9px] text-slate-400 font-bold uppercase">Jinoyat Ishi №</label>
+                  <label className="text-[9px] text-slate-400 font-bold uppercase">Жиноят Иши №</label>
                   <input value={metadata.caseNumber} onChange={(e) => setMetadata({ ...metadata, caseNumber: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
                 </div>
                 <div>
-                  <label className="text-[9px] text-slate-400 font-bold uppercase">Xona №</label>
+                  <label className="text-[9px] text-slate-400 font-bold uppercase">Хона №</label>
                   <input value={metadata.officeNumber} onChange={(e) => setMetadata({ ...metadata, officeNumber: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
                 </div>
               </div>
 
               <div className="pt-4 border-t border-slate-100">
-                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 text-uzblue">Tergovchi</h3>
-                <input value={metadata.investigatorName} onChange={(e) => setMetadata({ ...metadata, investigatorName: e.target.value })} placeholder="F.I.SH" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold mb-2" />
-                <input value={metadata.investigatorRank} onChange={(e) => setMetadata({ ...metadata, investigatorRank: e.target.value })} placeholder="Unvon" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 text-uzblue">Терговчи</h3>
+                <input value={metadata.investigatorName} onChange={(e) => setMetadata({ ...metadata, investigatorName: e.target.value })} placeholder="Ф.И.Ш" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold mb-2" />
+                <input value={metadata.investigatorRank} onChange={(e) => setMetadata({ ...metadata, investigatorRank: e.target.value })} placeholder="Унвон" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
               </div>
 
               <div className="pt-4 border-t border-slate-100">
                 <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 text-uzred">
-                  {getTemplateEntry(selectedTemplate).role} (Anketa)
+                  {getTemplateEntry(selectedTemplate).role} (Анкета)
                 </h3>
                 <div className="space-y-2">
-                  <input value={metadata.personName} onChange={(e) => setMetadata({ ...metadata, personName: e.target.value })} placeholder="1. F.I.SH" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                  <input value={metadata.personName} onChange={(e) => setMetadata({ ...metadata, personName: e.target.value })} placeholder="1. Ф.И.Ш" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
                   <div className="grid grid-cols-2 gap-2">
-                    <input value={metadata.birthDate} onChange={(e) => setMetadata({ ...metadata, birthDate: e.target.value })} placeholder="2. Tug'ilgan sana" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
-                    <input value={metadata.birthPlace} onChange={(e) => setMetadata({ ...metadata, birthPlace: e.target.value })} placeholder="3. Tug'ilgan joy" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                    <input value={metadata.birthDate} onChange={(e) => setMetadata({ ...metadata, birthDate: e.target.value })} placeholder="2. Туғилган сана" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                    <input value={metadata.birthPlace} onChange={(e) => setMetadata({ ...metadata, birthPlace: e.target.value })} placeholder="3. Туғилган жой" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
                   </div>
-                  <input value={metadata.nationality} onChange={(e) => setMetadata({ ...metadata, nationality: e.target.value })} placeholder="4. Millati" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
-                  <input value={metadata.citizenship} onChange={(e) => setMetadata({ ...metadata, citizenship: e.target.value })} placeholder="5. Fuqaroligi" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
-                  <input value={metadata.education} onChange={(e) => setMetadata({ ...metadata, education: e.target.value })} placeholder="6. Ma'lumoti" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
-                  <input value={metadata.workPlace} onChange={(e) => setMetadata({ ...metadata, workPlace: e.target.value })} placeholder="7. Ish joyi" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
-                  <input value={metadata.address} onChange={(e) => setMetadata({ ...metadata, address: e.target.value })} placeholder="8. Yashash joyi" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
-                  <input value={metadata.familyStatus} onChange={(e) => setMetadata({ ...metadata, familyStatus: e.target.value })} placeholder="9. Oilaviy ahvoli" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
-                  <input value={metadata.idDocument} onChange={(e) => setMetadata({ ...metadata, idDocument: e.target.value })} placeholder="10. Pasporti" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
-                  <input value={metadata.conviction} onChange={(e) => setMetadata({ ...metadata, conviction: e.target.value })} placeholder="11. Sudlanganligi" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
-                  <input value={metadata.deputyStatus} onChange={(e) => setMetadata({ ...metadata, deputyStatus: e.target.value })} placeholder="12. Harbiy xizmat" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
-                  <input value={metadata.relationVictim} onChange={(e) => setMetadata({ ...metadata, relationVictim: e.target.value })} placeholder="13. Jabrlanuvchiga aloqasi" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
-                  <input value={metadata.relationSuspect} onChange={(e) => setMetadata({ ...metadata, relationSuspect: e.target.value })} placeholder="14. Ayblanuvchiga aloqasi" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
-                  <input value={metadata.phoneNumber} onChange={(e) => setMetadata({ ...metadata, phoneNumber: e.target.value })} placeholder="15. Telefoni" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                  <input value={metadata.nationality} onChange={(e) => setMetadata({ ...metadata, nationality: e.target.value })} placeholder="4. Миллати" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                  <input value={metadata.citizenship} onChange={(e) => setMetadata({ ...metadata, citizenship: e.target.value })} placeholder="5. Фуқаролиги" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                  <input value={metadata.education} onChange={(e) => setMetadata({ ...metadata, education: e.target.value })} placeholder="6. Маълумоти" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                  <input value={metadata.workPlace} onChange={(e) => setMetadata({ ...metadata, workPlace: e.target.value })} placeholder="7. Иш жойи" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                  <input value={metadata.address} onChange={(e) => setMetadata({ ...metadata, address: e.target.value })} placeholder="8. Яшаш жойи" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                  <input value={metadata.familyStatus} onChange={(e) => setMetadata({ ...metadata, familyStatus: e.target.value })} placeholder="9. Оилавий аҳволи" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                  <input value={metadata.idDocument} onChange={(e) => setMetadata({ ...metadata, idDocument: e.target.value })} placeholder="10. Паспорти" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                  <input value={metadata.conviction} onChange={(e) => setMetadata({ ...metadata, conviction: e.target.value })} placeholder="11. Судланганлиги" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                  <input value={metadata.deputyStatus} onChange={(e) => setMetadata({ ...metadata, deputyStatus: e.target.value })} placeholder="12. Ҳарбий хизмат" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                  <input value={metadata.relationVictim} onChange={(e) => setMetadata({ ...metadata, relationVictim: e.target.value })} placeholder="13. Жабрланувчига алоқаси" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                  <input value={metadata.relationSuspect} onChange={(e) => setMetadata({ ...metadata, relationSuspect: e.target.value })} placeholder="14. Айбланувчига алоқаси" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
+                  <input value={metadata.phoneNumber} onChange={(e) => setMetadata({ ...metadata, phoneNumber: e.target.value })} placeholder="15. Телефони" className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold" />
                 </div>
               </div>
             </div>
@@ -625,12 +625,12 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
                 {isRecording ? (
                   <>
                     <StopCircle size={64} className="text-white mb-2" />
-                    <span className="text-white font-black text-lg">TO'XTATISH</span>
+                    <span className="text-white font-black text-lg">ТўХТАТИШ</span>
                   </>
                 ) : (
                   <>
                     <Mic size={64} className="text-white mb-2" />
-                    <span className="text-white font-black text-lg">BOSHLASH</span>
+                    <span className="text-white font-black text-lg">БОШЛАШ</span>
                   </>
                 )}
               </button>
@@ -646,20 +646,20 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
             {/* Status text */}
             <p className="mt-6 text-sm text-slate-500 text-center max-w-md">
               {isRecording ? (
-                <span className="text-red-600 font-bold">Ovoz yozilmoqda... Gapiring!</span>
+                <span className="text-red-600 font-bold">Овоз ёзилмоқда... Гапиринг!</span>
               ) : audioBlob ? (
                 <span className="text-green-600 font-bold">
-                  Yozuv tayyor ({formatTime(recordingTime)}). "Bayonnoma Yaratish" bosing.
+                  Ёзув тайёр ({formatTime(recordingTime)}). "Баённома Яратиш" босинг.
                 </span>
               ) : (
-                "Mikrofon tugmasini bosib, so'roqni boshlang. Yozuv tugagach, AI tahlil qilib bayonnoma tayyorlaydi."
+                "Микрофон тугмасини босиб, сџроқни бошланг. Ёзув тугагач, AI таҳлил қилиб баённома тайёрлайди."
               )}
             </p>
 
             {/* Transcript preview (if available) */}
             {transcriptText && (
               <div className="mt-6 w-full max-w-2xl bg-white rounded-xl border border-slate-200 p-4 max-h-48 overflow-y-auto">
-                <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">Transkripsiya:</h4>
+                <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">Транскрипция:</h4>
                 <pre className="text-sm text-slate-700 whitespace-pre-wrap font-sans">{transcriptText}</pre>
               </div>
             )}
@@ -670,28 +670,28 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
         <div className="w-[300px] bg-white border-l border-slate-200 flex flex-col z-20">
           <div className="p-6 border-b border-slate-100">
             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-4">
-              <Lightbulb size={14} /> Yo'riqnoma
+              <Lightbulb size={14} /> Йџриқнома
             </h3>
             <div className="space-y-3 text-[11px] text-slate-600">
               <p className="flex items-start gap-2">
                 <span className="text-uzblue font-bold">1.</span>
-                Chap panelda shaxs ma'lumotlarini to'ldiring
+                Чап панелда шахс маълумотларини тџлдиринг
               </p>
               <p className="flex items-start gap-2">
                 <span className="text-uzblue font-bold">2.</span>
-                Katta mikrofon tugmasini bosib yozishni boshlang
+                Катта микрофон тугмасини босиб ёзишни бошланг
               </p>
               <p className="flex items-start gap-2">
                 <span className="text-uzblue font-bold">3.</span>
-                So'roq davomida erkin gapiring
+                Сџроқ давомида эркин гапиринг
               </p>
               <p className="flex items-start gap-2">
                 <span className="text-uzblue font-bold">4.</span>
-                To'xtatib, "Bayonnoma Yaratish" bosing
+                To'xtatib, "Баённома Яратиш" босинг
               </p>
               <p className="flex items-start gap-2">
                 <span className="text-uzblue font-bold">5.</span>
-                AI ovozni tahlil qilib, to'liq hujjat tayyorlaydi
+                AI овозни таҳлил қилиб, тџлиқ ҳужжат тайёрлайди
               </p>
             </div>
           </div>
@@ -700,9 +700,9 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
             <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
               <div className="flex items-center gap-2 mb-2">
                 <Gavel size={14} className="text-amber-500" />
-                <span className="text-[10px] font-black uppercase text-slate-400">Yuridik Ma'lumotnoma</span>
+                <span className="text-[10px] font-black uppercase text-slate-400">Юридик Маълумотнома</span>
               </div>
-              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Ish turi bo'yicha</p>
+              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Иш тури бџйича</p>
               <p className="text-[10px] font-black text-uzblue uppercase tracking-wide mb-2 border-b border-slate-100 pb-2">
                 {getTemplateEntry(selectedTemplate).title}
               </p>
