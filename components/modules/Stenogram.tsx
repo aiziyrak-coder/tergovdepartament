@@ -188,7 +188,12 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
             <div class="subtitle">
                 ${escapeHtml(protocolData.deviceInfo)} даги аудиоёзувларни эшитиш ҳақида
             </div>
-            <p style="font-size:14pt;font-family:'Times New Roman',serif;margin:0 0 12pt 0;padding:0;overflow:hidden;line-height:1.4;"><span style="float:right;display:inline-block;">${escapeHtml(protocolData.city)}</span>${escapeHtml(protocolData.date)} йил</p>
+            <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin:0 0 12pt 0;border-collapse:collapse;table-layout:fixed;">
+              <tr>
+                <td width="50%" align="left" style="font-size:14pt;font-family:'Times New Roman',serif;padding:0;">${escapeHtml(protocolData.date)} йил</td>
+                <td width="50%" align="right" style="font-size:14pt;font-family:'Times New Roman',serif;padding:0;text-align:right;">${escapeHtml(protocolData.city)}</td>
+              </tr>
+            </table>
             <br>
             <p class="justify">
                 Фарғона шаҳар ИИО ФМБ ҳузуридаги тергов бўлими катта терговчиси ${escapeHtml(protocolData.investigatorRank)} ${escapeHtml(protocolData.investigatorName)},
