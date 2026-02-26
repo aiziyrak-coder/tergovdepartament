@@ -219,9 +219,6 @@ export function buildRealProtocolHtml(
   body { font-family: 'Times New Roman', serif; font-size: 14pt; line-height: 1.35; margin: 2cm auto; max-width: 21cm; padding: 0 2cm; color: #000; }
   h1 { font-size: 14pt; text-align: center; margin: 0 0 14pt 0; font-weight: bold; text-transform: uppercase; letter-spacing: 0.2px; }
   .doc-wrap { max-width: 21cm; margin: 0 auto; }
-  .date-city { width: 100%; border-collapse: collapse; margin-bottom: 12pt; border: none; }
-  .date-city td { vertical-align: top; font-size: 14pt; border: none; padding: 0; white-space: nowrap; }
-  .date-city td.city-cell { text-align: right; }
   .intro { text-align: justify; text-indent: 30pt; margin: 0 0 10pt 0; font-size: 14pt; }
   .time-row { width: 100%; border-collapse: collapse; margin: 10pt 0 6pt 0; }
   .time-row td { width: 50%; font-weight: bold; text-decoration: underline; font-size: 14pt; }
@@ -243,12 +240,13 @@ export function buildRealProtocolHtml(
 </head>
 <body>
 <h1>${headingTitleHtml}</h1>
-<table width="100%" border="0" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin-bottom:12pt;">
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <colgroup><col width="50%"/><col width="50%"/></colgroup>
   <tr>
-    <td width="50%" nowrap="nowrap" align="left" valign="top"
-        style="font-size:14pt;font-family:'Times New Roman',serif;text-align:left;white-space:nowrap;padding:0;border:none;">${escapeHtml(date)}</td>
-    <td width="50%" nowrap="nowrap" align="right" valign="top"
-        style="font-size:14pt;font-family:'Times New Roman',serif;text-align:right;white-space:nowrap;padding:0;border:none;">${escapeHtml(city)}</td>
+    <td width="50%" align="left" valign="top"
+        style="font-size:14pt;font-family:'Times New Roman',serif;padding:0 0 12pt 0;">${escapeHtml(date)}</td>
+    <td width="50%" align="right" valign="top"
+        style="font-size:14pt;font-family:'Times New Roman',serif;padding:0 0 12pt 0;text-align:right;">${escapeHtml(city)}</td>
   </tr>
 </table>
 <p class="intro">
