@@ -742,8 +742,17 @@ export async function generateLegalProtocol(
 }
 
 // --- PHOTOROBOT IMAGE GENERATION (DALL-E via OpenRouter) ---
-/** OpenRouter image generation models in priority order. */
+/** OpenRouter image generation models in priority order (for fallback). */
 const IMAGE_MODELS = [
+  "google/gemini-2.5-flash-image",
+  "google/gemini-3-pro-image-preview",
+  "black-forest-labs/flux.2-flex",
+  "openai/dall-e-3",
+  "stability-ai/stable-diffusion-xl",
+];
+
+/** Models used for photorobot: same API (modalities image+text), tried in order until one works. */
+const PHOTOROBOT_MODELS = [
   "google/gemini-2.5-flash-image",
   "google/gemini-3-pro-image-preview",
   "black-forest-labs/flux.2-flex",
@@ -790,8 +799,12 @@ function extractImageUrl(data: any): string | undefined {
  * using image-capable multimodal models (modalities: ["image", "text"]).
  * Tries multiple response format paths for robustness.
  */
-async function openRouterImage(prompt: string): Promise<string> {
-  for (const model of IMAGE_MODELS) {
+async function openRouterImage(prompt: string, preferredModel?: string): Promise<string> {
+  const modelOrder = preferredModel
+    ? [preferredModel, ...IMAGE_MODELS.filter((m) => m !== preferredModel)]
+    : IMAGE_MODELS;
+
+  for (const model of modelOrder) {
     try {
       const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
@@ -839,18 +852,35 @@ export async function generatePhotorobotVariants(
   _type: "HUMAN" | "OBJECT",
   _userApiKey?: string,
 ): Promise<string[]> {
-  const actualCount = Math.max(1, Math.min(count, 4));
+  const actualCount = Math.max(1, Math.min(count, 5));
   const fullPrompt =
     `Forensic identification portrait, photorealistic: ${prompt}. ` +
     `Sharp facial details, neutral solid white background, professional studio lighting, high quality, realistic face.`;
 
+  // 5 parallel calls: round-robin over photorobot models so we get 5 variants (same model can serve multiple)
+  const plannedModels = Array.from(
+    { length: actualCount },
+    (_, i) => PHOTOROBOT_MODELS[i % PHOTOROBOT_MODELS.length],
+  );
   const settled = await Promise.allSettled(
-    Array.from({ length: actualCount }, () => openRouterImage(fullPrompt)),
+    plannedModels.map((model, i) => openRouterImage(`${fullPrompt}\nVariant ${i + 1}.`, model)),
   );
 
   const images = settled
     .filter((r): r is PromiseFulfilledResult<string> => r.status === "fulfilled")
     .map((r) => r.value);
+
+  // Top up to 5 if any call failed: retry with any available model
+  for (let need = actualCount - images.length; need > 0; need--) {
+    try {
+      const img = await openRouterImage(
+        `${fullPrompt}\nAdditional variant ${images.length + 1}.`,
+      );
+      images.push(img);
+    } catch {
+      break;
+    }
+  }
 
   if (images.length === 0) {
     const firstError = settled.find((r) => r.status === "rejected") as PromiseRejectedResult | undefined;
