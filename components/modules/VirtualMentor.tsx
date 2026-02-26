@@ -22,73 +22,73 @@ interface VirtualMentorProps {
 const COURSES_DB: AcademyCourse[] = [
     {
         id: 'c-001',
-        title: "So'roq Taktikasi (Asosiy)",
-        description: "Gumonlanuvchining psixologik holatini aniqlash va noverbal belgilarni o'qish bo'yicha maxsus kurs.",
-        level: 'Boshlang\'ich',
-        duration: '4 soat',
-        topics: ['Noverbal belgilar', 'Psixologik bosim', 'Manipulyatsiya'],
+        title: "Сўроқ Тактикаси (Асосий)",
+        description: "Гумонланувчининг психологик ҳолатини аниқлаш ва новербал белгиларни ўқиш бўйича махсус курс.",
+        level: 'Бошланғич',
+        duration: '4 соат',
+        topics: ['Новербал белгилар', 'Психологик босим', 'Манипуляция'],
         icon: 'brain'
     },
     {
         id: 'c-cyber-01',
-        title: "Kiberjinoyat va IP Tahlil",
-        description: "IP manzillarni aniqlash, VPN/Proxy orqali yashiringan jinoyatchilarni topish va ijtimoiy tarmoqlar (OSINT) tahlili.",
-        level: 'Yuqori',
-        duration: '12 soat',
-        topics: ['IP Geolocation', 'VPN/Proxy Tracking', 'OSINT Tools', 'DDOS va Phishing', 'Email Header Analysis'],
+        title: "Кибержиноят ва IP Таҳлил",
+        description: "IP манзилларни аниқлаш, VPN/Proxy орқали яширинган жиноятчиларни топиш ва ижтимоий тармоқлар (OSINT) таҳлили.",
+        level: 'Юқори',
+        duration: '12 соат',
+        topics: ['IP Геолокация', 'VPN/Proxy Кузатув', 'OSINT Воситалари', 'DDOS ва Фишинг', 'Email Сарлавҳа Таҳлили'],
         icon: 'globe'
     },
     {
         id: 'c-crypto-01',
-        title: "Kriptovalyuta va Blockchain",
-        description: "Kripto-aktivlar bilan bog'liq firibgarliklar, noqonuniy P2P aylanmalari va hamyonlarni (Wallet) kuzatish.",
-        level: 'Yuqori',
-        duration: '10 soat',
-        topics: ['Blockchain Explorer', 'USDT/BTC Tranzaksiyalar', 'Binance P2P Schemes', 'Mixer Services', 'Cold Wallets'],
+        title: "Криптовалюта ва Блокчейн",
+        description: "Крипто-активлар билан боғлиқ фирибгарликлар, ноқонуний P2P айланмалари ва ҳамёнларни кузатиш.",
+        level: 'Юқори',
+        duration: '10 соат',
+        topics: ['Blockchain Тафтишчи', 'USDT/BTC Трансакциялар', 'Binance P2P Схемалар', 'Mixer Хизматлар', 'Совуқ Ҳамёнлар'],
         icon: 'cpu'
     },
     {
         id: 'c-forensic-01',
-        title: "Raqamli Dalillar (Evidence)",
-        description: "Elektron dalillarni (yozishmalar, fayllar) qonuniy rasmiylashtirish, o'chirilgan ma'lumotlarni tiklash va Xeshlash.",
-        level: 'O\'rta',
-        duration: '8 soat',
-        topics: ['Data Recovery', 'Hashing (MD5/SHA)', 'Chain of Custody', 'Mobil Kriminalistika', 'Cloud Extraction'],
+        title: "Рақамли Далиллар (Evidence)",
+        description: "Электрон далилларни (ёзишмалар, файллар) қонуний расмийлаштириш, ўчирилган маълумотларни тиклаш ва хеш-лаш.",
+        level: 'Ўрта',
+        duration: '8 соат',
+        topics: ['Маълумот Тиклаш', 'Хеш-лаш (MD5/SHA)', 'Далиллар Занжири', 'Мобил Криминалистика', 'Cloud Ажратиш'],
         icon: 'database'
     },
     {
         id: 'c-003',
-        title: "Iqtisodiy Jinoyatlar Tahlili",
-        description: "Yashirin buxgalteriya va noqonuniy pul aylanmalarini fosh etish strategiyalari.",
-        level: 'Yuqori',
-        duration: '8 soat',
-        topics: ['Otkatlar', 'Soliqdan qochish', 'Soxta firmalar'],
+        title: "Иқтисодий Жиноятлар Таҳлили",
+        description: "Яширин бухгалтерия ва ноқонуний пул айланмаларини фош этиш стратегиялари.",
+        level: 'Юқори',
+        duration: '8 соат',
+        topics: ['Откатлар', 'Солиқдан қочиш', 'Сохта фирмалар'],
         icon: 'chart'
     }
 ];
 
-// --- SAMPLE DOCUMENTS DATABASE (Extracted from User Input) ---
+// --- SAMPLE DOCUMENTS DATABASE ---
 const SAMPLE_DOCS_DB = [
-    { type: 'Talabnoma', title: 'Vaqtincha foydalanish uchun narsalarni olish haqida Talabnoma', desc: 'JPK 199-modda tartibida' },
-    { type: 'Tilxat', title: 'Olingan narsa va hujjatlarni qabul qilish va qaytarish bo\'yicha Tilxat', desc: 'Ashyoviy dalillar harakati' },
-    { type: 'Bayonnoma', title: 'Hujjatlarni taqdim qilish Bayonnomasi', desc: 'JPK 200, 202-moddalar' },
-    { type: 'Qaror', title: 'Ashyoviy dalil sifatida e\'tirof etish haqida Qaror', desc: 'JPK 203, 204, 207-moddalar' },
-    { type: 'Qaror', title: 'Mol-mulkni xatlash haqida Qaror', desc: 'JPK 290-modda (Zararni qoplash)' },
-    { type: 'Bayonnoma', title: 'Mol-mulkni xatlash to\'g\'risida Bayonnoma', desc: 'Xolislar ishtirokida' },
-    { type: 'Qaror', title: 'Gumon qilinuvchi tariqasida jalb qilish haqida Qaror', desc: 'JPK 359, 360-moddalar' },
-    { type: 'Bayonnoma', title: 'Gumon qilinuvchini so\'roq qilish Bayonnomasi', desc: 'Videokamera yordamida' },
-    { type: 'Qaror', title: 'Ayblanuvchi tariqasida ishda ishtirok etishga jalb qilish Qarori', desc: 'JPK 361-modda' },
-    { type: 'Bayonnoma', title: 'Ayblanuvchini so\'roq qilish Bayonnomasi', desc: 'Himoyachi ishtirokida' },
-    { type: 'Qaror', title: 'Ayblovni o\'zgartirish to\'g\'risida Qaror', desc: 'Yangi ochilgan holatlar bo\'yicha' },
-    { type: 'Qaror', title: 'Qamoqqa olish ehtiyot chorasini qo\'llash haqida Iltimosnoma', desc: 'Sudga taqdim etish uchun' },
-    { type: 'Bayonnoma', title: 'Shaxsni ushlab turish to\'g\'risida Bayonnoma', desc: 'JPK 221-modda tartibida' },
-    { type: 'Qaror', title: 'Pasport va hujjatlarni olish to\'g\'risida Qaror', desc: 'Qonunga xilof ravishda egallangan hujjatlar' },
-    { type: 'Ayblov Xulosasi', title: 'Ayblov Xulosasi (Namuna)', desc: 'Tergov yakunida tuziladigan hujjat' },
-    { type: 'Qaror', title: 'Jinoyat ishini tugatish to\'g\'risida Qaror', desc: 'Reabilitatsiya yoki boshqa asoslar' },
-    { type: 'Qaror', title: 'Lavozimdan chetlashtirish to\'g\'risida Qaror', desc: 'JPK 255-modda' },
-    { type: 'Qaror', title: 'Majburiy keltirish to\'g\'risida Qaror', desc: 'Guvoh yoki ayblanuvchiga nisbatan' },
-    { type: 'Topshiriq', title: 'Xalqaro hamkorlik doirasida so\'rovnoma', desc: 'Boshqa davlatga yuboriladigan so\'rov' },
-    { type: 'Qaror', title: 'Tibbiy muassasaga joylashtirish haqida Qaror', desc: 'Ekspertiza o\'tkazish uchun' }
+    { type: 'Талабнома', title: 'Вақтинча фойдаланиш учун нарсаларни олиш ҳақида Талабнома', desc: 'ЖПК 199-модда тартибида' },
+    { type: 'Тилхат', title: 'Олинган нарса ва ҳужжатларни қабул қилиш ва қайтариш бўйича Тилхат', desc: 'Ашёвий далиллар ҳаракати' },
+    { type: 'Баённома', title: 'Ҳужжатларни тақдим қилиш Баённомаси', desc: 'ЖПК 200, 202-моддалар' },
+    { type: 'Қарор', title: 'Ашёвий далил сифатида эътироф этиш ҳақида Қарор', desc: 'ЖПК 203, 204, 207-моддалар' },
+    { type: 'Қарор', title: 'Мол-мулкни хатлаш ҳақида Қарор', desc: 'ЖПК 290-модда (Зарарни қоплаш)' },
+    { type: 'Баённома', title: 'Мол-мулкни хатлаш тўғрисида Баённома', desc: 'Холислар иштирокида' },
+    { type: 'Қарор', title: 'Гумон қилинувчи тариқасида жалб қилиш ҳақида Қарор', desc: 'ЖПК 359, 360-моддалар' },
+    { type: 'Баённома', title: 'Гумон қилинувчини сўроқ қилиш Баённомаси', desc: 'Видеокамера ёрдамида' },
+    { type: 'Қарор', title: 'Айбланувчи тариқасида ишда иштирок этишга жалб қилиш Қарори', desc: 'ЖПК 361-модда' },
+    { type: 'Баённома', title: 'Айбланувчини сўроқ қилиш Баённомаси', desc: 'Ҳимоячи иштирокида' },
+    { type: 'Қарор', title: 'Айбловни ўзгартириш тўғрисида Қарор', desc: 'Янги очилган ҳолатлар бўйича' },
+    { type: 'Қарор', title: 'Қамоққа олиш эҳтиёт чорасини қўллаш ҳақида Илтимоснома', desc: 'Судга тақдим этиш учун' },
+    { type: 'Баённома', title: 'Шахсни ушлаб туриш тўғрисида Баённома', desc: 'ЖПК 221-модда тартибида' },
+    { type: 'Қарор', title: 'Паспорт ва ҳужжатларни олиш тўғрисида Қарор', desc: 'Қонунга хилоф равишда эгалланган ҳужжатлар' },
+    { type: 'Айблов Хулосаси', title: 'Айблов Хулосаси (Намуна)', desc: 'Тергов якунида тузиладиган ҳужжат' },
+    { type: 'Қарор', title: 'Жиноят ишини тугатиш тўғрисида Қарор', desc: 'Реабилитация ёки бошқа асослар' },
+    { type: 'Қарор', title: 'Лавозимдан четлаштириш тўғрисида Қарор', desc: 'ЖПК 255-модда' },
+    { type: 'Қарор', title: 'Мажбурий келтириш тўғрисида Қарор', desc: 'Гувоҳ ёки айбланувчига нисбатан' },
+    { type: 'Топшириқ', title: 'Халқаро ҳамkorlik доирасида сўровнома', desc: 'Бошқа давлатга юбориладиган сўров' },
+    { type: 'Қарор', title: 'Тиббий муассасага жойлаштириш ҳақида Қарор', desc: 'Экспертиза ўтказиш учун' }
 ];
 
 const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }) => {
@@ -103,7 +103,7 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
   
   // CHAT STATE
   const [messages, setMessages] = useState<Message[]>([
-      { id: '1', role: 'model', content: `${t('welcome')}, Sarvar Ilkhomovich. Men O'zbekiston Respublikasi IIV Tergov Departamentining strategik maslahatchisiman. Kiberxavfsizlik, raqamli dalillar yoki klassik tergov bo'yicha yordam bera olaman.`, timestamp: new Date() }
+      { id: '1', role: 'model', content: `Хуш келибсиз. Мен Ўзбекистон Республикаси ИИВ Тергов Департаментининг стратегик маслаҳатчисиман. Кибер хавфсизлик, рақамли далиллар ёки классик тергов бўйича ёрдам бера оламан.`, timestamp: new Date() }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -121,7 +121,7 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
 
   // ACADEMY - SAMPLE DOCS STATE
   const [sampleSearch, setSampleSearch] = useState('');
-  const [sampleFilter, setSampleFilter] = useState('Barchasi');
+  const [sampleFilter, setSampleFilter] = useState('Барчаси');
 
   // ACADEMY - COURSES STATE
   const [selectedCourse, setSelectedCourse] = useState<AcademyCourse | null>(null);
@@ -146,13 +146,13 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
 
     try {
         const response = await askVirtualMentor(
-            query, 
-            [], 
-            mentorMode, 
-            `MODE: ${mentorMode}. You are an elite instructor/mentor. Speak naturally, professionally, and clearly in Uzbek.`, 
-            AppLanguage.UZ_LATN
+            query,
+            [],
+            mentorMode,
+            `СИЗ: Ўзбекистон Республикаси ИИВ Тергов Департаментининг элита устози ва маслаҳатчисисиз. Режим: ${mentorMode}. МУҲИМ: Барча жавобларни ФАҚАТ ЎЗБЕК КИРИЛЛ алифбосида, расмий ва аниқ тилда беринг. Лотин алифбосидан фойдаланманг.`,
+            AppLanguage.UZ_CYRL
         );
-        const content = response.text || "Xatolik yuz berdi";
+        const content = response.text || "Хатолик юз берди";
         setMessages(prev => [...prev, { id: Date.now().toString(), role: 'model', content: content, timestamp: new Date() }]);
         
         // Auto TTS
@@ -161,9 +161,9 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
         }
 
     } catch (e) {
-        const msg = e instanceof Error ? e.message : "Tizimda xatolik.";
+        const msg = e instanceof Error ? e.message : "Тизимда хатолик.";
         toast(msg, "error");
-        setMessages(prev => [...prev, { id: Date.now().toString(), role: "model", content: "Javob yuborishda xatolik yuz berdi. Qayta urinib ko'ring.", timestamp: new Date() }]);
+        setMessages(prev => [...prev, { id: Date.now().toString(), role: "model", content: "Жавоб юборишда хатолик юз берди. Қайта уриниб кўринг.", timestamp: new Date() }]);
     } finally {
         setLoading(false);
     }
@@ -188,7 +188,7 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
       } else {
           // @ts-ignore
           const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
-          if (!SpeechRecognition) return toast("Mikrofon qo'llab-quvvatlanmaydi", "error");
+          if (!SpeechRecognition) return toast("Микрофон қўллаб-қувватланмайди", "error");
           
           const recognition = new SpeechRecognition();
           recognition.continuous = false;
@@ -204,7 +204,7 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
           };
 
           recognition.onend = () => setIsListening(false);
-          recognition.onerror = () => { setIsListening(false); toast("Ovozni tanishda xatolik", "error"); };
+          recognition.onerror = () => { setIsListening(false); toast("Овозни танишда хатолик", "error"); };
 
           recognitionRef.current = recognition;
           recognition.start();
@@ -286,7 +286,7 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
   // Filter Sample Docs
   const filteredSamples = SAMPLE_DOCS_DB.filter(doc => {
       const matchesSearch = doc.title.toLowerCase().includes(sampleSearch.toLowerCase());
-      const matchesFilter = sampleFilter === 'Barchasi' || doc.type === sampleFilter;
+      const matchesFilter = sampleFilter === 'Барчаси' || doc.type === sampleFilter;
       return matchesSearch && matchesFilter;
   });
 
@@ -462,7 +462,7 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
                                               </div>
                                               
                                               <button className="w-full py-3 bg-slate-50 text-slate-600 font-bold text-xs rounded-xl group-hover:bg-slate-900 group-hover:text-white transition-all">
-                                                  KURSNI BOSHLASH
+                                                  КУРСНИ БОШЛАШ
                                               </button>
                                           </div>
                                       ))}
@@ -701,13 +701,13 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
                                   </div>
 
                                   <div className="flex gap-2 mb-6 flex-wrap">
-                                      {['Barchasi', 'Qaror', 'Bayonnoma', 'Talabnoma', 'Tilxat', 'Ayblov Xulosasi'].map(cat => (
+                                       {['Барчаси', 'Қарор', 'Баённома', 'Талабнома', 'Тилхат', 'Айблов Хулосаси'].map(cat => (
                                           <button 
                                               key={cat}
                                               onClick={() => setSampleFilter(cat)}
                                               className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all flex items-center gap-1 ${sampleFilter === cat ? 'bg-amber-500 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50'}`}
                                           >
-                                              {cat === 'Barchasi' && <Filter size={10}/>} {cat}
+                                              {cat === 'Барчаси' && <Filter size={10}/>} {cat}
                                           </button>
                                       ))}
                                   </div>

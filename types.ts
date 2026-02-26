@@ -287,7 +287,7 @@ export interface AcademyCourse {
     id: string;
     title: string;
     description: string;
-    level: 'Boshlang\'ich' | 'O\'rta' | 'Yuqori';
+    level: 'Boshlang\'ich' | 'O\'rta' | 'Yuqori' | 'Бошланғич' | 'Ўрта' | 'Юқори';
     duration: string;
     topics: string[];
     icon: string;

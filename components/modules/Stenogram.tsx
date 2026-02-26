@@ -107,7 +107,7 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
               setSegments(results);
               // Initialize speakers based on result
               const initialSpeakers = Array.from(new Set(results.map(r => r.speaker)));
-              setAllSpeakers(initialSpeakers.length > 0 ? initialSpeakers : ['Speaker 1', 'Speaker 2']);
+              setAllSpeakers(initialSpeakers.length > 0 ? initialSpeakers : ['Гапирувчи 1', 'Гапирувчи 2']);
               setActiveTab('DOC');
               toast("Таҳлил муваффақиятли якунланди.", "success");
           } else {
@@ -136,7 +136,7 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
 
   // 2. Add a new manual speaker
   const handleAddSpeaker = () => {
-      const newSpeakerName = `Speaker ${allSpeakers.length + 1}`;
+      const newSpeakerName = `Гапирувчи ${allSpeakers.length + 1}`;
       if (!allSpeakers.includes(newSpeakerName)) {
           setAllSpeakers(prev => [...prev, newSpeakerName]);
           toast("Янги иштирокчи рўйхатга қўшилди", "success");
@@ -217,7 +217,7 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Stenogramma_${protocolData.date}.doc`;
+      a.download = `Стенограмма_${protocolData.date}.doc`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -374,7 +374,7 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
                              <h3 className="text-xs font-black text-slate-500 uppercase mb-4 flex items-center gap-2"><FileText size={14}/> Стенограмма Маълумотлари</h3>
                              <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-2">
                                  <div>
-                                   <label className="text-[10px] font-bold text-slate-400 uppercase">Taqdim etgan fuqarolar</label>
+                                   <label className="text-[10px] font-bold text-slate-400 uppercase">Тақдим этган фуқаролар</label>
                                    <input value={protocolData.applicants} onChange={e=>setProtocolData({...protocolData, applicants:e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
                                  </div>
                                  <div>
@@ -392,12 +392,12 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
                                  <div>
                                     <label className="text-[10px] font-bold text-slate-400 uppercase">Терговчи (Унвон ва Ф.И.Ш)</label>
                                     <div className="flex gap-2">
-                                        <input value={protocolData.investigatorRank} onChange={e=>setProtocolData({...protocolData, investigatorRank:e.target.value})} placeholder="Unvon" className="w-1/3 bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
-                                        <input value={protocolData.investigatorName} onChange={e=>setProtocolData({...protocolData, investigatorName:e.target.value})} placeholder="F.I.SH" className="w-2/3 bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
+                                        <input value={protocolData.investigatorRank} onChange={e=>setProtocolData({...protocolData, investigatorRank:e.target.value})} placeholder="Унвон" className="w-1/3 bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
+                                        <input value={protocolData.investigatorName} onChange={e=>setProtocolData({...protocolData, investigatorName:e.target.value})} placeholder="Ф.И.Ш" className="w-2/3 bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
                                     </div>
                                  </div>
                                  <div>
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Тюро Атўж Тури</label>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Диск / Ёзув Қурилмаси Тури</label>
                                     <input value={protocolData.deviceInfo} onChange={e=>setProtocolData({...protocolData, deviceInfo:e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
                                  </div>
                                  <div>
@@ -405,7 +405,7 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
                                     <input value={protocolData.legalArticles} onChange={e=>setProtocolData({...protocolData, legalArticles:e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs font-bold"/>
                                  </div>
                                  <div>
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Ой Мазмуни (Preamble)</label>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Иш Мазмуни</label>
                                     <textarea value={protocolData.caseDetails} onChange={e=>setProtocolData({...protocolData, caseDetails:e.target.value})} className="w-full h-20 bg-slate-50 border border-slate-200 rounded p-2 text-xs font-medium resize-none"/>
                                  </div>
                              </div>
@@ -433,7 +433,7 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
                                                  value={speaker} 
                                                  onChange={(e) => handleGlobalRename(speaker, e.target.value)}
                                                  className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:border-blue-500 transition-colors"
-                                                 placeholder={`Иштирокчи ${i+1}`}
+                                                 placeholder={`Гапирувчи ${i+1}`}
                                                  title="Номни ўзгартирсангиз, бутун матн бўйлаб ўзгаради"
                                              />
                                          </div>
@@ -443,21 +443,21 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
                              <div className="bg-blue-50 p-3 rounded-xl mt-2">
                                  <p className="text-[10px] text-blue-700 font-medium flex items-start gap-1">
                                      <AlertCircle size={10} className="mt-0.5 shrink-0"/>
-                                     Изоҳ: Бу ёрдан ўзгартириш бутун матнга яМис қилади. Алохида қатор учун чап тарафидан танланг.
+                                     Изоҳ: Бу ердан ўзгартириш бутун матнга таъсир қилади. Алоҳида қатор учун чап томондан танланг.
                                  </p>
                              </div>
                         </div>
 
                         <button onClick={() => {
                                     storageService.saveDocument({
-                                        title: `Stenogramma – ${protocolData.date}`,
+                                        title: `Стенограмма – ${protocolData.date}`,
                                         category: 'STENOGRAM',
-                                        tags: ['AI', 'EDITED', 'STENOGRAM'],
+                                        tags: ['AI', 'ТАҲРИРЛАНГАН', 'СТЕНОГРАММА'],
                                         content: JSON.stringify(segments),
                                         metadata: { ...protocolData }
                                     });
                                     toast("Архивга сақланди", "success");
-                                }} className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-xs flex justify-center gap-2 hover:bg-slate-800 transition-all shadow-lg"><Save size={16}/> ЛОЙЙАНИ САқЛАШ</button>
+                                }} className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-xs flex justify-center gap-2 hover:bg-slate-800 transition-all shadow-lg"><Save size={16}/> ЛОЙИҲАНИ САҚЛАШ</button>
                     </div>
                 </div>
             )}

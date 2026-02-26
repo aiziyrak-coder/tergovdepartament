@@ -164,18 +164,19 @@ async function transcribeWithOpenRouter(
 
   // Ask Gemini to transcribe, diarize, AND include timestamps from the audio.
   const prompt = isUzbek
-    ? `Bu o'zbek tilidagi rasmiy tergov yoki so'roq audioyozuvidir.
+    ? `Бу ўзбек тилидаги расмий тергов ёки сўроқ аудиоёзувидир.
 
-MUHIM QOIDALAR:
-- Har bir so'zni SO'ZMA-SO'Z, ANIQ ko'chir. Hech qanday so'zni o'zgartirma, qo'shma yoki o'tkazib yubormа.
-- Gapiruvchilarni OVOZI bo'yicha aniqla (tovush tembri, balandligi).
-- Har bir navbat boshlanish vaqtini (MM:SS formatda) belgilа.
-- "Gapiruvchi 1" = tergovchi (savol beradi), "Gapiruvchi 2" = so'roq qilinuvchi.
+МУҲИМ ҚОИДАЛАР:
+- Ҳар бир сўзни СЎЗ-БА-СЎЗ, АНИҚ кўчир. Ҳеч қандай сўзни ўзгартирма, қўшма ёки ўтказиб юборма.
+- Гапирувчиларни ОВОЗИ бўйича аниқла (товуш тембри, баландлиги).
+- Ҳар бир навбат бошланиш вақтини (MM:SS форматда) белгила.
+- "Гапирувчи 1" = терговчи (савол беради), "Гапирувчи 2" = сўроқ қилинувчи.
+- БАРЧА матнни ЎЗБЕК КИРИЛЛ алифбосида ёз. Лотин ёки бошқа ёзувдан фойдаланма.
 
-FAQAT quyidagi JSON formatda qaytар (boshqa hech narsa yozma, izoh ham yozma):
+ФАҚАТ қуйидаги JSON форматда қайтар (бошқа ҳеч нарса ёзма, изоҳ ҳам ёзма):
 [
-  {"speaker":"Gapiruvchi 1","text":"...","time":"00:00"},
-  {"speaker":"Gapiruvchi 2","text":"...","time":"00:15"}
+  {"speaker":"Гапирувчи 1","text":"...","time":"00:00"},
+  {"speaker":"Гапирувчи 2","text":"...","time":"00:15"}
 ]`
     : `Это официальная аудиозапись допроса на русском языке.
 
@@ -232,14 +233,14 @@ FAQAT quyidagi JSON formatda qaytар (boshqa hech narsa yozma, izoh ham yozma):
       .filter((s) => s.text?.trim())
       .map((s, i) => ({
         id: `seg_${i + 1}`,
-        speaker: s.speaker?.trim() || (isUzbek ? `Gapiruvchi ${(i % 2) + 1}` : `Говорящий ${(i % 2) + 1}`),
+        speaker: s.speaker?.trim() || (isUzbek ? `Гапирувчи ${(i % 2) + 1}` : `Говорящий ${(i % 2) + 1}`),
         text: s.text!.trim(),
         timestamp: s.time?.trim() || "",
       }));
   }
 
   // Fallback: return as single segment if JSON parsing fails
-  return [{ id: "seg_1", speaker: isUzbek ? "Gapiruvchi 1" : "Говорящий 1", text: raw, timestamp: "00:00" }];
+  return [{ id: "seg_1", speaker: isUzbek ? "Гапирувчи 1" : "Говорящий 1", text: raw, timestamp: "00:00" }];
 }
 
 // --- WAV ENCODING (for Groq fallback compatibility) ---
@@ -404,9 +405,9 @@ export async function analyzeForensicDocuments(
           ...imageContent,
           {
             type: "text",
-            text: `Analyze these forensic documents/images. Return ONLY a JSON object with these exact fields:
+            text: `Ушбу суриштирув ҳужжатлари/тасвирларини таҳлил қилинг. ФАҚАТ қуйидаги майдонлар билан JSON объект қайтаринг (ЎЗБЕК КИРИЛЛ алифбосида):
 {"summary":"...","vehicle1Type":"...","vehicle2Type":"...","estimatedSpeedV1":"...","estimatedSpeedV2":"...","weather":"...","timeOfDay":"..."}
-Language: ${language}`,
+Барча матнлар ЎЗБЕК КИРИЛЛ алифбосида бўлсин.`,
           },
         ],
       },
@@ -427,7 +428,7 @@ Language: ${language}`,
       timeOfDay: String(parsed?.timeOfDay ?? ""),
     };
   } catch {
-    throw new Error("Tahlil natijasi o'qilishi mumkin emas. Qayta urinib ko'ring.");
+    throw new Error("Таҳлил натижаси ўқилиши мумкин эмас. Қайта уриниб кўринг.");
   }
 }
 
@@ -446,17 +447,18 @@ export async function correctTranscriptUzbek(text: string, userApiKey?: string):
         messages: [
           {
             role: "user",
-            content: `Vazifa: Tergov stenogrammasining ovozni tanlash natijasidagi xatolarni tuzating. Faqat to'g'rilangan matnni qaytaring, hech qanday izoh yozmang.
+            content: `Вазифа: Тергов стенограммасининг овозни танлаш натижасидаги хатоларини тўғириланг. Фақат тўғириланган матнни қайтаринг, ҳеч қандай изоҳ ёзманг.
 
-Tuzatish qoidalari:
-1) Imlo: o'zbek lotin (o', g', sh, ch, ng) — "qayerda", "ko'rdim", "tushundim", "huquq", "modda".
-2) Ovoz tanlash xatolari: o'xshash tovushlarni to'g'ri so'zga almashtiring.
-3) Shovqin va ortiqcha: mazmunsiz qismlarni olib tashlang; faqat mantiqiy gap va so'zlarni qoldiring.
-4) Saqlang: huquqiy atamalar (JPK, modda, ayblov, guvoh), joy/ismlar, sanalar.
-5) Gap mazmuni o'zgarmasin: so'z tartibi va ma'no bir xil qolsin.
-6) Agar matn allaqachon to'g'ri bo'lsa, o'zgartirmasdan qaytaring.
+Тўғирилаш қоидалари:
+1) Имло: ЎЗБЕК КИРИЛЛ алифбосида ёзинг — "қаерда", "кўрдим", "тушундим", "ҳуқуқ", "модда".
+2) Овоз танлаш хатолари: ўхшаш товушларни тўғри сўзга алмаштиринг.
+3) Шовқин ва ортиқча: мазмунсиз қисмларни олиб ташланг; фақат мантиқий гап ва сўзларни қолдиринг.
+4) Сақланг: ҳуқуқий атамалар (ЖПК, модда, айблов, гувоҳ), жой/исмлар, санalar.
+5) Гап мазмуни ўзгармасин: сўз тартиби ва маъно бир хил қолсин.
+6) Агар матн аллақачон тўғри бўлса, ўзгартирмасдан қайтаринг.
+7) МУҲИМ: Жавобни фақат ЎЗБЕК КИРИЛЛ алифбосида қайтаринг.
 
-Matn:
+Матн:
 """
 ${text}
 """`,
@@ -526,7 +528,7 @@ export async function identifySpeakersInTextRobust(
   const trimmed = text.trim();
   const fallbackSegment: DialogSegment = {
     speakerId: lastSpeakerId,
-    speakerName: lastSpeakerId === "investigator" ? "Tergovchi" : secondRoleName,
+    speakerName: lastSpeakerId === "investigator" ? "Терговчи" : secondRoleName,
     text: trimmed,
     timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
   };
@@ -566,13 +568,13 @@ function getLangCode(lang: AppLanguage): string {
 function getLangLabel(lang: AppLanguage): string {
   switch (lang) {
     case AppLanguage.UZ_CYRL:
-      return "o'zbek (kirill)";
+      return "ўзбек (кирилл)";
     case AppLanguage.UZ_LATN:
-      return "o'zbek (lotin)";
+      return "ўзбек (лотин)";
     case AppLanguage.RU:
-      return "rus";
+      return "рус";
     default:
-      return "o'zbek";
+      return "ўзбек";
   }
 }
 
@@ -815,7 +817,7 @@ export async function askVirtualMentor(
   userApiKey?: string,
 ): Promise<MentorResponse> {
   const fallback: MentorResponse = {
-    text: "Javob vaqti tugadi. Qayta so'rang.",
+    text: "Жавоб вақти тугади. Қайта сўранг.",
     feedback: "",
     suggestion: "",
   };
@@ -850,12 +852,13 @@ export async function searchLegalDatabase(
   userApiKey?: string,
 ): Promise<LegalAnalysisResult> {
   const fallback: LegalAnalysisResult = {
-    analysis: "Qidiruv vaqti tugadi yoki tarmoq xatosi. Qayta urinib ko'ring.",
+    analysis: "Қидирув вақти тугади ёки тармоқ хатоси. Қайта уриниб кўринг.",
     articles: [],
     precedents: [],
   };
   try {
     const client = getTextClient(userApiKey);
+    const isCyrl = lang !== AppLanguage.RU;
     const response = await withTimeout(
       client.chat.completions
         .create({
@@ -863,9 +866,10 @@ export async function searchLegalDatabase(
           messages: [
             {
               role: "user",
-              content: `Search for legal information regarding: "${query}". Language: ${lang}.
-Return ONLY a JSON object:
-{"analysis":"detailed legal analysis in ${lang}","articles":[{"code":"...","number":"...","title":"...","summary":"..."}],"precedents":[{"source":"...","title":"...","link":"..."}]}`,
+              content: `Ўзбекистон Республикаси қонунчилиги бўйича қуйидаги мавзуда ҳуқуқий маълумот беринг: "${query}".
+${isCyrl ? "БАРЧА жавобларни ЎЗБЕК КИРИЛЛ алифбосида ёзинг." : "Отвечайте на русском языке."}
+ФАҚАТ JSON объект қайтаринг:
+{"analysis":"батафсил ҳуқуқий таҳлил","articles":[{"code":"...","number":"...","title":"...","summary":"..."}],"precedents":[{"source":"...","title":"...","link":"..."}]}`,
             },
           ],
           response_format: { type: "json_object" },
@@ -897,13 +901,15 @@ export async function generateAcademyQuiz(
   userApiKey?: string,
 ): Promise<QuizQuestion[]> {
   const client = getTextClient(userApiKey);
+  const isCyrl = lang !== AppLanguage.RU;
   const response = await client.chat.completions.create({
     model: TEXT_MODEL,
     messages: [
       {
         role: "user",
-        content: `Generate a quiz about "${topic}". Language: ${lang}. 5 questions.
-Return ONLY JSON: {"questions":[{"id":"1","question":"...","options":["A","B","C","D"],"correctAnswer":0,"explanation":"..."}]}`,
+        content: `"${topic}" мавзусида тест саволлари тузинг. 5 та савол.
+${isCyrl ? "БАРЧА саволлар ва жавоблар ЎЗБЕК КИРИЛЛ алифбосида бўлсин." : "Все вопросы и ответы на русском языке."}
+ФАҚАТ JSON қайтаринг: {"questions":[{"id":"1","question":"...","options":["А","Б","В","Г"],"correctAnswer":0,"explanation":"..."}]}`,
       },
     ],
     response_format: { type: "json_object" },
@@ -927,7 +933,7 @@ function parseGroqTranscription(raw: unknown): TranscriptSegment[] {
   if (segs.length > 1) {
     return segs.map((s, i) => ({
       id: `seg_${i + 1}`,
-      speaker: `Speaker ${(i % 2) + 1}`,
+      speaker: `Гапирувчи ${(i % 2) + 1}`,
       text: (s.text ?? "").trim(),
       timestamp: s.start !== undefined ? formatTimestamp(s.start) : "",
       stressLevel: undefined,
@@ -935,7 +941,7 @@ function parseGroqTranscription(raw: unknown): TranscriptSegment[] {
     }));
   }
 
-  return [{ id: "seg_1", speaker: "Speaker 1", text: fullText.trim(), timestamp: "00:00" }];
+  return [{ id: "seg_1", speaker: "Гапирувчи 1", text: fullText.trim(), timestamp: "00:00" }];
 }
 
 /**
@@ -990,9 +996,9 @@ export async function transcribeAudioFile(
   if (correctedLines.length === segments.length) {
     return segments.map((s, i) => ({ ...s, text: correctedLines[i].trim() }));
   }
-  return [{
+    return [{
     id: "seg_1",
-    speaker: segments[0].speaker ?? "Speaker 1",
+    speaker: segments[0].speaker ?? "Гапирувчи 1",
     text: corrected.trim(),
     timestamp: segments[0].timestamp ?? "00:00",
   }];
@@ -1036,13 +1042,15 @@ export async function generateTimelineFromText(
   userApiKey?: string,
 ): Promise<TimelineEvent[]> {
   const client = getTextClient(userApiKey);
+  const isCyrl = lang !== AppLanguage.RU;
   const response = await client.chat.completions.create({
     model: TEXT_MODEL,
     messages: [
       {
         role: "user",
-        content: `Extract timeline events from this text: "${text}". Language: ${lang}.
-Return ONLY JSON: {"events":[{"time":"...","date":"...","description":"...","location":"..."}]}`,
+        content: `Қуйидаги матндан воқеалар жадвалини ажратиб олинг: "${text}".
+${isCyrl ? "БАРЧА жавоблар ЎЗБЕК КИРИЛЛ алифбосида бўлсин." : "Ответы на русском языке."}
+ФАҚАТ JSON қайтаринг: {"events":[{"time":"...","date":"...","description":"...","location":"..."}]}`,
       },
     ],
     response_format: { type: "json_object" },
