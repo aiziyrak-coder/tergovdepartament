@@ -129,6 +129,39 @@ function isInvestigatorSegment(segment: DialogSegment): boolean {
   );
 }
 
+type DialogueKind = "question" | "answer";
+interface DialogueTurn {
+  kind: DialogueKind;
+  text: string;
+}
+
+/**
+ * Normalizes raw transcript to protocol-friendly Q/A turns.
+ * If diarization is unreliable (all turns detected as same speaker),
+ * fallback to strict alternation to keep official Savol/Javob structure.
+ */
+function normalizeDialogueTurns(transcript: DialogSegment[]): DialogueTurn[] {
+  const raw = transcript
+    .map((seg) => ({
+      text: (seg.text || "").trim(),
+      kind: isInvestigatorSegment(seg) ? ("question" as const) : ("answer" as const),
+    }))
+    .filter((t) => t.text.length > 0);
+
+  if (raw.length === 0) return [];
+
+  const uniqueKinds = new Set(raw.map((t) => t.kind));
+  if (uniqueKinds.size === 1) {
+    const startKind: DialogueKind = raw[0].kind;
+    return raw.map((t, idx) => ({
+      text: t.text,
+      kind: idx % 2 === 0 ? startKind : startKind === "question" ? "answer" : "question",
+    }));
+  }
+
+  return raw;
+}
+
 /**
  * Builds full protocol HTML in real bayonnoma format.
  * Dialogue is rendered as: "Гувоҳ: _________ F.I.SH", then alternating "Савол:" / "Жавоб:".
@@ -184,23 +217,29 @@ export function buildRealProtocolHtml(
     : `${roleLabel}нинг ҳуқуқ ва мажбуриятлари:`;
 
   const dialogueBlocks: string[] = [];
-  let needRoleHeader = true;
-  for (let i = 0; i < transcript.length; i++) {
-    const seg = transcript[i];
-    const text = (seg.text || "").trim();
-    if (!text) continue;
-    if (isInvestigatorSegment(seg)) {
-      dialogueBlocks.push(`<p class="qa"><strong>Савол:</strong> ${escapeHtml(text)}</p>`);
-    } else {
-      if (needRoleHeader) {
-        dialogueBlocks.push(
-          `<p class="role-sign"><strong>${escapeHtml(roleLabel)}</strong> _________ ${escapeHtml(personShortName || "____________")}</p>`
-        );
-        needRoleHeader = false;
+  const normalizedTurns = normalizeDialogueTurns(transcript);
+  for (let i = 0; i < normalizedTurns.length; i++) {
+    const current = normalizedTurns[i];
+    if (current.kind === "question") {
+      dialogueBlocks.push(
+        `<p class="role-sign"><strong>${escapeHtml(roleLabel)}</strong> _________ ${escapeHtml(personShortName || "____________")}</p>`
+      );
+      dialogueBlocks.push(`<p class="qa"><strong>Савол:</strong> ${escapeHtml(current.text)}</p>`);
+
+      const next = normalizedTurns[i + 1];
+      if (next && next.kind === "answer") {
+        dialogueBlocks.push(`<p class="qa"><strong>Жавоб:</strong> ${escapeHtml(next.text)}</p>`);
+        i += 1;
+      } else {
+        dialogueBlocks.push(`<p class="qa"><strong>Жавоб:</strong> ____________________________________________________________</p>`);
       }
-      dialogueBlocks.push(`<p class="qa"><strong>Жавоб:</strong> ${escapeHtml(text)}</p>`);
-      /* Guvoh/role ikki marta chiqmasin — faqat birinchi Javob oldida role-sign */
+      continue;
     }
+
+    dialogueBlocks.push(
+      `<p class="role-sign"><strong>${escapeHtml(roleLabel)}</strong> _________ ${escapeHtml(personShortName || "____________")}</p>`
+    );
+    dialogueBlocks.push(`<p class="qa"><strong>Жавоб:</strong> ${escapeHtml(current.text)}</p>`);
   }
   const dialogueHtml = dialogueBlocks.length
     ? dialogueBlocks.join("\n")
