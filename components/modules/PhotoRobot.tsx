@@ -226,7 +226,7 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
       setHistory([img]);
       setHistoryIndex(0);
       setStep('STUDIO');
-      toast("Вариант танланди. Таҳрирлась режимидасиз.", "info");
+      toast("Вариант танланди. Таҳрирлаш режимидасиз.", "info");
   };
 
   const applyEdit = async () => {
@@ -254,7 +254,7 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
       
       setSelectedImage(newImg);
       setEditPrompt('');
-      toast("Озгаришлар киритилди", "success");
+      toast("Ўзгаришлар киритилди", "success");
     } catch (e) {
       console.error(e);
       const errorMsg = e instanceof Error ? e.message : String(e);
@@ -314,7 +314,7 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
               img.src = selectedImage;
           });
           storageService.saveDocument({
-              title: "Fotorobot: " + (targetType === "HUMAN" ? features.gender : objectFeatures.category),
+              title: "Фоторобот: " + (targetType === "HUMAN" ? features.gender : objectFeatures.category),
               category: "PHOTOROBOT",
               mediaUrl: thumb,
               tags: ["AI", targetType],

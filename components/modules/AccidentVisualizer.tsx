@@ -178,15 +178,20 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
 
   const saveToArchive = () => {
       if (!analysisResult) return;
-      storageService.saveDocument({
-          title: `Автоҳалокат реконструксияси: ${analysisResult.timeOfDay || "Номаълум вақт"}`,
-          category: 'VIDEO',
-          description: editableSummary,
-          content: expertExplanation || '',
-          tags: ['Реконструксия', selectedView],
-          metadata: technicalDetails,
-      });
-      toast("Архивга сақланди.", "success");
+      try {
+          storageService.saveDocument({
+              title: `Автоҳалокат реконструксияси: ${analysisResult.timeOfDay || "Номаълум вақт"}`,
+              category: 'VIDEO',
+              description: editableSummary,
+              content: expertExplanation || '',
+              tags: ['Реконструксия', selectedView],
+              metadata: technicalDetails,
+          });
+          toast("Архивга сақланди.", "success");
+      } catch (e) {
+          const msg = e instanceof Error ? e.message : "Сақлаб бўлмади";
+          toast(msg.toLowerCase().includes("quota") ? "Хотира тўлган. Архивни тозаланг." : msg, "error");
+      }
   };
 
   const getViewLabel = (view: CameraView) => {
@@ -204,7 +209,7 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
       {/* HEADER */}
       <div className="h-20 border-b border-slate-200 bg-white flex items-center justify-between px-8 shrink-0 z-20 shadow-sm">
         <div className="flex items-center gap-6">
-             <button type="button" onClick={onBack} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-uzblue hover:text-white transition-all" aria-label="Ортага">
+             <button type="button" onClick={onBack} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-uzblue hover:text-white transition-all" aria-label="Ортга">
                 <ArrowLeft size={20}/>
              </button>
              <div>
@@ -288,14 +293,14 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
 
                     <div className="grid grid-cols-2 gap-3">
                         {Object.entries({
-                            "Tezlik V1": analysisResult.estimatedSpeedV1,
-                            "Tezlik V2": analysisResult.estimatedSpeedV2,
-                            "Ob-havo": analysisResult.weather,
+                            "Тезлик V1": analysisResult.estimatedSpeedV1,
+                            "Тезлик V2": analysisResult.estimatedSpeedV2,
+                            "Об-ҳаво": analysisResult.weather,
                             "Вақт": analysisResult.timeOfDay
                         }).map(([k, v], i) => (
                             <div key={i} className="bg-slate-50 p-3 rounded-lg border border-slate-100">
                                 <div className="text-[9px] text-slate-400 uppercase font-black mb-1">{k}</div>
-                                <div className="text-xs text-slate-800 font-bold truncate">{v || 'Noma\'lum'}</div>
+                                <div className="text-xs text-slate-800 font-bold truncate">{v || 'Номаълум'}</div>
                             </div>
                         ))}
                     </div>
@@ -332,7 +337,7 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
                         <p className="text-sm font-bold text-slate-500 uppercase tracking-widest animate-pulse">
                             {analyzing ? "Ҳужжатлар ўқилмоқда..." : "AI саҳналар яратмоқда..."}
                         </p>
-                        {generating && <p className="text-xs text-slate-400">4 та саҳна параллел генератсия қилинмоқда, ~30-60 сония</p>}
+                        {generating && <p className="text-xs text-slate-400">4 та саҳна кетма-кет генерация қилинмоқда (~1–2 дақиқа)</p>}
                     </div>
                 ) : frames.length > 0 ? (
                     <div className="w-full h-full flex flex-col gap-3">

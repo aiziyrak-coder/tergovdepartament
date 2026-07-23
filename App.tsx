@@ -109,7 +109,7 @@ const MainApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
       <div className="flex h-screen w-screen bg-[#F8FAFC] text-slate-900 font-sans selection:bg-uzblue/10 overflow-hidden relative" role="application" aria-label="Ziyrak AI Tergov platformasi">
         <main className="flex-1 relative z-10 flex flex-col h-full w-full overflow-hidden bg-white" role="main">
             <div className="flex-1 w-full h-full overflow-hidden relative">
-                <ErrorBoundary fallbackTitle="Modul xatosi" onReset={handleBack}>
+                <ErrorBoundary fallbackTitle="Модул хатоси" onReset={handleBack}>
                     {renderContent()}
                 </ErrorBoundary>
             </div>

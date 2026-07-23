@@ -253,7 +253,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                                   <div className="w-4 h-4 border-2 border-slate-300 rounded peer-checked:bg-uzblue peer-checked:border-uzblue transition-all"></div>
                                   <CheckCircle2 size={10} className="text-white absolute top-0.5 left-0.5 opacity-0 peer-checked:opacity-100 transition-opacity"/>
                               </div>
-                              <span className="text-xs font-bold text-slate-500 group-hover:text-slate-700">Есаб қолиш</span>
+                              <span className="text-xs font-bold text-slate-500 group-hover:text-slate-700">Эслаб қолиш</span>
                           </label>
                           <a href="#" className="text-xs font-bold text-uzblue hover:text-blue-700 transition-colors">Ёрдам керакми?</a>
                       </div>

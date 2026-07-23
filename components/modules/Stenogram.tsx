@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Upload, ArrowLeft, Save, FileAudio, Trash2, Loader2, Clock, Edit2, Check, User, Users, FileText, Download, UserPlus, ChevronDown, AlertCircle, Activity, CheckCircle2, Mic } from "lucide-react";
-import { transcribeAudioFile } from "../../services/geminiService";
+import { transcribeAudioFile, identifySpeakersInTextRobust, latinUzbekToCyrillic } from "../../services/geminiService";
 import { TranscriptSegment } from "../../types";
 import { storageService } from "../../services/storageService";
 import { useLanguage } from "../../contexts/LanguageContext";
@@ -104,9 +104,29 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
           const results = await transcribeAudioFile(mediaFile, language);
           
           if (results && results.length > 0) {
-              setSegments(results);
-              // Initialize speakers based on result
-              const initialSpeakers = Array.from(new Set(results.map(r => r.speaker)));
+              // AI speaker labeling on full transcript (better than index alternation)
+              let labeled = results;
+              try {
+                  const joined = results.map((r) => latinUzbekToCyrillic(r.text || "")).join("\n");
+                  const dialog = await identifySpeakersInTextRobust(
+                    joined,
+                    "investigator",
+                    "Гапирувчи 2",
+                  );
+                  if (dialog.length > 0) {
+                      labeled = dialog.map((d, i) => ({
+                          id: `seg_${i + 1}`,
+                          speaker: d.speakerName || (d.speakerId === "investigator" ? "Терговчи" : "Гапирувчи 2"),
+                          text: latinUzbekToCyrillic(d.text || ""),
+                          timestamp: results[Math.min(i, results.length - 1)]?.timestamp || "",
+                      }));
+                  }
+              } catch {
+                  // keep Whisper segments if speaker ID fails
+              }
+
+              setSegments(labeled);
+              const initialSpeakers = Array.from(new Set(labeled.map(r => r.speaker)));
               setAllSpeakers(initialSpeakers.length > 0 ? initialSpeakers : ['Гапирувчи 1', 'Гапирувчи 2']);
               setActiveTab('DOC');
               toast("Таҳлил муваффақиятли якунланди.", "success");
@@ -231,7 +251,7 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
     <div className="w-full h-full flex flex-col bg-[#F8FAFC] overflow-hidden relative font-sans text-slate-900">
         <div className="h-20 border-b border-slate-200 bg-white flex items-center justify-between px-8 shrink-0 z-20 shadow-sm">
             <div className="flex items-center gap-6">
-                <button type="button" onClick={onBack} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-all" aria-label="Ортага">
+                <button type="button" onClick={onBack} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-all" aria-label="Ортга">
                     <ArrowLeft size={20} className="text-slate-500"/>
                 </button>
                 <div>
@@ -451,14 +471,19 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
                         </div>
 
                         <button onClick={() => {
-                                    storageService.saveDocument({
+                                    try {
+                                      storageService.saveDocument({
                                         title: `Стенограмма – ${protocolData.date}`,
                                         category: 'STENOGRAM',
                                         tags: ['AI', 'ТАҲРИРЛАНГАН', 'СТЕНОГРАММА'],
                                         content: JSON.stringify(segments),
                                         metadata: { ...protocolData }
-                                    });
-                                    toast("Архивга сақланди", "success");
+                                      });
+                                      toast("Архивга сақланди", "success");
+                                    } catch (e) {
+                                      const msg = e instanceof Error ? e.message : "Сақлаб бўлмади";
+                                      toast(msg.toLowerCase().includes("quota") ? "Хотира тўлган. Архивни тозаланг." : msg, "error");
+                                    }
                                 }} className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-xs flex justify-center gap-2 hover:bg-slate-800 transition-all shadow-lg"><Save size={16}/> ЛОЙИҲАНИ САҚЛАШ</button>
                     </div>
                 </div>
@@ -469,7 +494,7 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
           open={deleteSegmentId !== null}
           title="Қаторни ўчириш"
           message="Ушбу стенограмма қатори ўчирилади. Давом этасизми?"
-          confirmLabel="Очириш"
+          confirmLabel="Ўчириш"
           cancelLabel="Бекор қилиш"
           variant="danger"
           onConfirm={confirmDeleteSegment}

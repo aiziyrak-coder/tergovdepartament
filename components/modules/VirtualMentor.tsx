@@ -87,7 +87,7 @@ const SAMPLE_DOCS_DB = [
     { type: 'Қарор', title: 'Жиноят ишини тугатиш тўғрисида Қарор', desc: 'Реабилитация ёки бошқа асослар' },
     { type: 'Қарор', title: 'Лавозимдан четлаштириш тўғрисида Қарор', desc: 'ЖПК 255-модда' },
     { type: 'Қарор', title: 'Мажбурий келтириш тўғрисида Қарор', desc: 'Гувоҳ ёки айбланувчига нисбатан' },
-    { type: 'Топшириқ', title: 'Халқаро ҳамkorlik доирасида сўровнома', desc: 'Бошқа давлатга юбориладиган сўров' },
+    { type: 'Топшириқ', title: 'Халқаро ҳамкорлик доирасида сўровнома', desc: 'Бошқа давлатга юбориладиган сўров' },
     { type: 'Қарор', title: 'Тиббий муассасага жойлаштириш ҳақида Қарор', desc: 'Экспертиза ўтказиш учун' }
 ];
 
@@ -145,18 +145,24 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
     setLoading(true);
 
     try {
+        const history = messages.map((m) => ({
+          role: (m.role === "model" ? "model" : "user") as "user" | "model",
+          content: m.content,
+        }));
         const response = await askVirtualMentor(
             query,
-            [],
+            history,
             mentorMode,
             `СИЗ: Ўзбекистон Республикаси ИИВ Тергов Департаментининг элита устози ва маслаҳатчисисиз. Режим: ${mentorMode}. МУҲИМ: Барча жавобларни ФАҚАТ ЎЗБЕК КИРИЛЛ алифбосида, расмий ва аниқ тилда беринг. Лотин алифбосидан фойдаланманг.`,
             AppLanguage.UZ_CYRL
         );
         const content = response.text || "Хатолик юз берди";
+        const isTimeout = content.includes("вақти тугади");
         setMessages(prev => [...prev, { id: Date.now().toString(), role: 'model', content: content, timestamp: new Date() }]);
         
-        // Auto TTS
-        if (voiceEnabled && content) {
+        if (isTimeout) {
+            toast("Жавоб вақти тугади. Қайта сўранг.", "warning");
+        } else if (voiceEnabled && content) {
             handleSpeak(content);
         }
 
@@ -221,7 +227,13 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
       try {
           const data = await searchLegalDatabase(libQuery, AppLanguage.UZ_CYRL);
           setLibResult(data);
-          toast("Hujjatlar topildi", "success");
+          const hasContent = (data.analysis?.trim().length ?? 0) > 0 || (data.articles?.length ?? 0) > 0;
+          const isFallback = (data.analysis || "").includes("вақти тугади");
+          toast(
+            isFallback ? "Қидирув муваффақиятсиз. Қайта уриниб кўринг." :
+            hasContent ? "Ҳужжатлар топилди" : "Маълумот топилмади",
+            isFallback ? "error" : hasContent ? "success" : "info",
+          );
       } catch (e) {
           const msg = e instanceof Error ? e.message : "Қидирувда хатолик.";
           toast(msg, "error");
@@ -235,6 +247,10 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
       setLoading(true);
       try {
           const questions = await generateAcademyQuiz(topic, AppLanguage.UZ_CYRL);
+          if (!questions || questions.length === 0) {
+              toast("Тест саволлари яратилмади. Қайта уриниб кўринг.", "error");
+              return;
+          }
           setActiveQuiz(questions);
           setQuizAnswers({});
           setQuizScore(null);
@@ -247,7 +263,7 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
   };
 
   const submitQuiz = () => {
-      if (!activeQuiz) return;
+      if (!activeQuiz || activeQuiz.length === 0) return;
       let correct = 0;
       activeQuiz.forEach((q, idx) => {
           if (quizAnswers[idx] === q.correctAnswer) correct++;
@@ -269,7 +285,7 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
         case MentorMode.PLANNER: return "Стратег (Planner)";
         case MentorMode.CRITIC: return "Танқидчи (Critic)";
         case MentorMode.QUALIFIER: return "Психолог (Profiler)";
-        default: return "Umumiy";
+        default: return "Умумий";
     }
   };
 
@@ -323,7 +339,7 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
                       <Bot size={16}/> MASLAHAT
                   </button>
                   <button onClick={() => setActiveTab('ACADEMY')} className={`px-5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${activeTab === 'ACADEMY' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
-                      <Star size={16}/> AKADEMIYA
+                      <Star size={16}/> АКАДЕМИЯ
                   </button>
               </div>
           </div>
@@ -688,7 +704,7 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
                                   <div className="flex items-center justify-between mb-6">
                                       <h2 className="text-2xl font-black text-slate-900 uppercase flex items-center gap-3">
                                           <FolderOpen className="text-amber-500" size={32}/>
-                                          Namunaviy <span className="text-amber-500">Hujjatlar</span>
+                                          Намунавий <span className="text-amber-500">Ҳужжатлар</span>
                                       </h2>
                                       <div className="flex bg-white border border-slate-200 rounded-xl p-1.5 shadow-sm">
                                           <Search size={18} className="text-slate-400 ml-2"/>

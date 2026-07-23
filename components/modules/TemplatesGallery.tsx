@@ -274,7 +274,7 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ onBack }) => {
               participants: [...prev.participants, { id: Date.now().toString(), role: newParticipant.role, name: newParticipant.name }]
           }));
           setNewParticipant({ ...newParticipant, name: '' });
-          toast("Одди истирокчи қўшилди", "success");
+          toast("Оддий иштирокчи қўшилди", "success");
       }
   };
 
@@ -320,7 +320,7 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ onBack }) => {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      toast("Hujjat yuklab olindi", "success");
+      toast("Ҳужжат юклаб олинди", "success");
   };
 
   const handlePrint = () => {
@@ -360,7 +360,7 @@ const TemplatesGallery: React.FC<TemplatesGalleryProps> = ({ onBack }) => {
                         <Search className="ml-3 text-slate-400" size={18}/>
                         <input 
                             type="text" 
-                            placeholder="Qidiruv (Mas: 'таниб олиш')..." 
+                            placeholder="Қидирув (мас: 'таниб олиш')..." 
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="bg-transparent pl-3 pr-4 py-2 text-sm text-slate-800 outline-none w-64 placeholder-slate-400 font-medium"

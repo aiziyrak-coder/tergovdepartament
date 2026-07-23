@@ -46,9 +46,9 @@ const Settings: React.FC<SettingsProps> = ({ onBack }) => {
             <div>
                 <h2 className="text-xl font-black text-slate-900 flex items-center gap-3 tracking-tight uppercase">
                     <SettingsIcon className="text-slate-600" size={24}/>
-                    Тизим <span className="text-slate-600">Сохламалари</span>
+                    Тизим <span className="text-slate-600">Созламалари</span>
                 </h2>
-                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Конфигуратсия ва Хавфсизлик</p>
+                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Конфигурация ва Хавфсизлик</p>
             </div>
         </div>
       </div>

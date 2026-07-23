@@ -6,7 +6,7 @@ import {
 import { ProtocolMetadata, ProtocolType, DialogSegment, AppLanguage, ProtocolLanguage } from "../../types";
 import { useToast } from "../../contexts/ToastContext";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { generateLegalProtocol, transcribeAndDiarizeByVoice, latinUzbekToCyrillic } from "../../services/geminiService";
+import { generateLegalProtocol, transcribeAndDiarizeByVoice, latinUzbekToCyrillic, arrayBufferToBase64Chunked } from "../../services/geminiService";
 import { PROTOCOL_TEMPLATES, type ProtocolTemplateEntry } from "../../config/protocolTemplates";
 
 /** Safe template getter */
@@ -328,10 +328,10 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
       }, 1000);
 
       setIsRecording(true);
-      toast("Овоз юзиш бошланди", "success");
+      toast("Овоз ёзиш бошланди", "success");
     } catch (e) {
       console.error("Microphone error:", e);
-      toast("Микрофонга уланиб бўлмади. Руқсатни текширинг.", "error");
+      toast("Микрофонга уланиб бўлмади. Рухсатни текширинг.", "error");
     }
   }, [toast]);
 
@@ -339,12 +339,12 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
     setIsRecording(false);
     stopEverything();
     setAudioLevel(0);
-    toast("Овоз юзиш тўхтатилди", "info");
+    toast("Овоз ёзиш тўхтатилди", "info");
   }, [stopEverything, toast]);
 
   const processAndGenerate = useCallback(async () => {
     if (!audioBlob) {
-      toast("Аввал овоз юзинг", "error");
+      toast("Аввал овоз ёзинг", "error");
       return;
     }
 
@@ -352,15 +352,11 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
     setProcessingStatus("Овоз таҳлил қилинмоқда...");
 
     try {
-      // Convert blob to base64
       const arrayBuffer = await audioBlob.arrayBuffer();
-      const base64 = btoa(
-        new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
-      );
+      const base64 = arrayBufferToBase64Chunked(arrayBuffer);
 
       const roleName = getTemplateEntry(selectedTemplate).role || "Гапирувчи";
 
-      // Transcribe + AI speaker diarization
       setProcessingStatus("Матн ажратилмоқда...");
       const dialogSegments = await transcribeAndDiarizeByVoice(
         base64,
@@ -370,24 +366,21 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
       );
 
       if (!dialogSegments || dialogSegments.length === 0) {
-        toast("Овозни таниб бўлмади. Қайта юзинг.", "error");
+        toast("Овозни таниб бўлмади. Қайта ёзинг.", "error");
         setIsProcessing(false);
         return;
       }
 
-      // Normalize Cyrillic for protocol
       const normalized: DialogSegment[] = dialogSegments.map((s) => ({
         ...s,
         text: latinUzbekToCyrillic(s.text || ""),
         timestamp: "",
       }));
 
-      // Store transcript for display
       const fullText = normalized.map((s) => `${s.speakerName}: ${s.text}`).join("\n\n");
       setTranscriptText(fullText);
 
-      // Generate protocol
-      setProcessingStatus("Баюннома шакллантирилмоқда...");
+      setProcessingStatus("Баённома шакллантирилмоқда...");
       const htmlContent = await generateLegalProtocol(
         "DICTATION",
         normalized,
@@ -399,7 +392,6 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
         getTemplateEntry(selectedTemplate)
       );
 
-      // Download
       const blob = new Blob([htmlContent], { type: "application/msword" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -409,11 +401,11 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
       a.click();
       URL.revokeObjectURL(url);
 
-      toast("Баюннома тайор ва юклаб олинди!", "success");
+      toast("Баённома тайёр ва юклаб олинди!", "success");
     } catch (e) {
       console.error("Processing error:", e);
       const msg = (e as Error)?.message || "Хатолик юз берди";
-      toast(`Хатолик: ${msg.substring(0, 80)}`, "error");
+      toast(msg.substring(0, 160), "error");
     } finally {
       setIsProcessing(false);
       setProcessingStatus("");
@@ -426,7 +418,7 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
     setLiveTranscript("");
     setInterimTranscript("");
     setRecordingTime(0);
-    toast("Юзув ўчирилди", "info");
+    toast("Ёзув ўчирилди", "info");
   }, [toast]);
 
   return (
@@ -438,7 +430,7 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
             type="button"
             onClick={onBack}
             className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-all text-slate-500"
-            aria-label="Ортага"
+            aria-label="Ортга"
           >
             <ArrowLeft size={20} />
           </button>
@@ -452,7 +444,7 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
               </h2>
               <div className="flex items-center gap-3 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
                 <span className="flex items-center gap-1">
-                  <Brain size={10} /> Овоз юзиш ва AI таҳлил
+                  <Brain size={10} /> Овоз ёзиш ва AI таҳлил
                 </span>
               </div>
             </div>

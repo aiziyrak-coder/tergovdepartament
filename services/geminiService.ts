@@ -53,7 +53,7 @@ function resolveApiKey(customKey?: string): string {
 // CLIENT FACTORY
 // ============================================================
 
-/** OpenAI client — GPT-4o (matn/vision), Whisper, DALL·E 3. */
+/** OpenAI client — GPT-4o (matn/vision), Whisper, gpt-image-1, TTS. */
 function getClient(customKey?: string): OpenAI {
   return new OpenAI({
     apiKey: resolveApiKey(customKey),
@@ -423,27 +423,42 @@ export async function transcribeAndDiarizeByVoice(
   secondRoleName: string,
   userApiKey?: string,
 ): Promise<DialogSegment[]> {
-  if (!audioBase64?.trim()) return [];
-  try {
-    const { ext } = normalizeAudioMimeType(mimeType);
-    const audioFile = base64ToFile(audioBase64, `audio/${ext}`, `audio.${ext}`);
-
-    const segments = await withTimeout(
-      transcribeWithWhisper(audioFile, AppLanguage.UZ_CYRL),
-      AI_AUDIO_DIARIZATION_TIMEOUT_MS,
-      null,
-    );
-
-    if (!segments || segments.length === 0) return [];
-
-    const transcribedText = segments
-      .map((s) => latinUzbekToCyrillic(s.text || ""))
-      .join(" ");
-
-    return identifySpeakersInTextRobust(transcribedText, lastSpeakerId, secondRoleName, userApiKey);
-  } catch {
-    return [];
+  if (!audioBase64?.trim()) {
+    throw new Error("Аудио маълумот бўш. Қайта ёзинг.");
   }
+
+  const { ext } = normalizeAudioMimeType(mimeType);
+  const audioFile = base64ToFile(audioBase64, `audio/${ext}`, `audio.${ext}`);
+
+  const segments = await withTimeout(
+    transcribeWithWhisper(audioFile, AppLanguage.UZ_CYRL),
+    AI_AUDIO_DIARIZATION_TIMEOUT_MS,
+    null,
+  );
+
+  if (!segments) {
+    throw new Error("Овоз таҳлили вақти тугади. Қисқароқ ёзинг ёки қайта уриниб кўринг.");
+  }
+  if (segments.length === 0) {
+    throw new Error("Овозни таниб бўлмади. Микрофон ва шовқинни текшириб қайта ёзинг.");
+  }
+
+  const transcribedText = segments
+    .map((s) => latinUzbekToCyrillic(s.text || ""))
+    .join(" ");
+
+  return identifySpeakersInTextRobust(transcribedText, lastSpeakerId, secondRoleName, userApiKey);
+}
+
+/** Chunked ArrayBuffer → base64 (avoids stack overflow on long recordings). */
+export function arrayBufferToBase64Chunked(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  const chunkSize = 8192;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, Math.min(i + chunkSize, bytes.length)));
+  }
+  return btoa(binary);
 }
 
 // ============================================================
@@ -648,7 +663,7 @@ export async function generateForensicVideo(
   return {
     videoUri: null,
     frames,
-    explanation: `AI tomonidan ${frames.length} ta kadrda rekonstruksiya qilindi. Kamera: ${view.replace(/_/g, " ")}. ${context}`,
+    explanation: `AI томонидан ${frames.length} та кадрда реконструкция қилинди. Камера: ${view.replace(/_/g, " ")}. ${context}`,
     technicalDetails: { model: IMAGE_MODEL, prompt: framePrompts[0] },
   };
 }

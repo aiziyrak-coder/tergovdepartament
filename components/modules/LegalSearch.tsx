@@ -27,7 +27,12 @@ const LegalSearch: React.FC<LegalSearchProps> = ({ onBack }) => {
       const data = await searchLegalDatabase(q);
       setResult(data);
       const hasContent = (data.analysis?.trim().length ?? 0) > 0 || (data.articles?.length ?? 0) > 0 || (data.precedents?.length ?? 0) > 0;
-      toast(hasContent ? "Қидирув натижалари тайёр" : "Маълумот топилмади. Сўровни ўзгартиб қайта уриниб кўринг.", hasContent ? "success" : "info");
+      const isFallback = (data.analysis || "").includes("вақти тугади");
+      toast(
+        isFallback ? "Қидирув муваффақиятсиз. Қайта уриниб кўринг." :
+        hasContent ? "Қидирув натижалари тайёр" : "Маълумот топилмади. Сўровни ўзгартиб қайта уриниб кўринг.",
+        isFallback ? "error" : hasContent ? "success" : "info",
+      );
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Қидирувда хатолик юз берди.";
       toast(msg, "error");
@@ -42,15 +47,15 @@ const LegalSearch: React.FC<LegalSearchProps> = ({ onBack }) => {
       {/* HEADER */}
       <div className="h-20 border-b border-slate-200 bg-white flex items-center justify-between px-8 shrink-0 z-20 shadow-sm">
             <div className="flex items-center gap-4">
-                <button type="button" onClick={onBack} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-all text-slate-500" aria-label="Ортага">
+                <button type="button" onClick={onBack} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-all text-slate-500" aria-label="Ортга">
                     <ArrowLeft size={20}/>
                 </button>
                 <div>
                     <h2 className="text-xl font-black text-slate-900 flex items-center gap-3 tracking-tight uppercase">
                         <Scale className="text-uzblue" size={24}/>
-                        Йуридик <span className="text-uzblue">Кыдирув</span>
+                        Юридик <span className="text-uzblue">Қидирув</span>
                     </h2>
-                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Лекс.uz Базасидан Интеллектуал Кыдирув</p>
+                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">AI асосидаги ҳуқуқий қидирув (Lex.uz ўрнини босмайди)</p>
                 </div>
             </div>
       </div>
@@ -64,13 +69,13 @@ const LegalSearch: React.FC<LegalSearchProps> = ({ onBack }) => {
                           type="search"
                           value={query}
                           onChange={(e) => setQuery(e.target.value)}
-                          placeholder="Савол яки калит сўзни киритинг (Масалан: 'Фирибгарлик учун ёд ')..."
+                          placeholder="Савол ёки калит сўзни киритинг (Масалан: 'Фирибгарлик учун жазо')..."
                           className="w-full bg-transparent p-4 text-lg text-slate-900 outline-none placeholder-slate-400 font-medium"
                           aria-label="Юридик қидирув сўрови"
                       />
                       <button type="submit" disabled={loading} className="bg-uzblue hover:bg-blue-600 text-white px-8 py-3 rounded-xl font-bold transition-all disabled:opacity-50 flex items-center gap-2">
                           {loading ? <Loader2 className="animate-spin"/> : <Search size={18}/>} 
-                          {loading ? 'ИЗЛАНМОЖДА' : 'КЫДИРУВ'}
+                          {loading ? 'ИЗЛАНМОҚДА' : 'ҚИДИРУВ'}
                       </button>
                   </div>
               </form>
@@ -80,7 +85,7 @@ const LegalSearch: React.FC<LegalSearchProps> = ({ onBack }) => {
               <div className="max-w-5xl mx-auto space-y-8 animate-in slide-in-from-bottom duration-500">
                   {!result.analysis?.trim() && (!result.articles?.length) && (!result.precedents?.length) && (
                       <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-center">
-                          <p className="text-amber-800 font-medium">Ушбу сўрўв бўйича маълумот топилмади. Калит сўзларни ўзгартиб қайта қидиринг.</p>
+                          <p className="text-amber-800 font-medium">Ушбу сўров бўйича маълумот топилмади. Калит сўзларни ўзгартиб қайта қидиринг.</p>
                       </div>
                   )}
                   <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-lg relative overflow-hidden">
