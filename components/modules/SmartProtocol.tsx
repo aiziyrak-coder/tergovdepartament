@@ -6,7 +6,7 @@ import {
 import { ProtocolMetadata, ProtocolType, DialogSegment, AppLanguage, ProtocolLanguage } from "../../types";
 import { useToast } from "../../contexts/ToastContext";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { generateLegalProtocol, transcribeAudio, latinUzbekToCyrillic } from "../../services/geminiService";
+import { generateLegalProtocol, transcribeAndDiarizeByVoice, latinUzbekToCyrillic } from "../../services/geminiService";
 import { PROTOCOL_TEMPLATES, type ProtocolTemplateEntry } from "../../config/protocolTemplates";
 
 /** Safe template getter */
@@ -358,49 +358,39 @@ const SmartProtocol: React.FC<SmartProtocolProps> = ({ onBack }) => {
         new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
       );
 
-      // Transcribe audio
+      const roleName = getTemplateEntry(selectedTemplate).role || "Гапирувчи";
+
+      // Transcribe + AI speaker diarization
       setProcessingStatus("Матн ажратилмоқда...");
-      const segments = await transcribeAudio(
+      const dialogSegments = await transcribeAndDiarizeByVoice(
         base64,
         audioBlob.type || "audio/webm",
-        "STENOGRAM",
-        true,
-        AppLanguage.UZ_CYRL
+        "investigator",
+        roleName,
       );
 
-      if (!segments || segments.length === 0) {
+      if (!dialogSegments || dialogSegments.length === 0) {
         toast("Овозни таниб бўлмади. Қайта юзинг.", "error");
         setIsProcessing(false);
         return;
       }
 
-      // Convert to DialogSegment format (no timestamps for protocol - only stenogram needs them)
-      // Speaker assignment: "Гапирувчи 1" / even turns → investigator (Савол:), odd → suspect (Жавоб:)
-      const dialogSegments: DialogSegment[] = segments.map((seg, idx) => {
-        const spk = (seg.speaker ?? "").toLowerCase();
-        const isInvestigator =
-          spk.includes("tergov") ||
-          spk.includes("терговч") ||
-          spk.includes("investigator") ||
-          spk.endsWith("1") ||
-          idx % 2 === 0;
-        return {
-          speakerId: isInvestigator ? "investigator" : "suspect",
-          speakerName: isInvestigator ? "Терговчи" : (getTemplateEntry(selectedTemplate).role || "Гапирувчи"),
-          text: latinUzbekToCyrillic(seg.text || ""),
-          timestamp: "",
-        };
-      });
+      // Normalize Cyrillic for protocol
+      const normalized: DialogSegment[] = dialogSegments.map((s) => ({
+        ...s,
+        text: latinUzbekToCyrillic(s.text || ""),
+        timestamp: "",
+      }));
 
       // Store transcript for display
-      const fullText = dialogSegments.map((s) => `${s.speakerName}: ${s.text}`).join("\n\n");
+      const fullText = normalized.map((s) => `${s.speakerName}: ${s.text}`).join("\n\n");
       setTranscriptText(fullText);
 
       // Generate protocol
       setProcessingStatus("Баюннома шакллантирилмоқда...");
       const htmlContent = await generateLegalProtocol(
         "DICTATION",
-        dialogSegments,
+        normalized,
         selectedTemplate,
         metadata,
         ProtocolLanguage.UZ_CYRILLIC,

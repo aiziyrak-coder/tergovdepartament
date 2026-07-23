@@ -173,10 +173,10 @@ const VirtualMentor: React.FC<VirtualMentorProps> = ({ onBack, onOpenTemplates }
       try {
           setIsSpeaking(true);
           await generateSpeech(text);
-          // generateSpeech is a no-op placeholder; speech not yet implemented
-          setIsSpeaking(false);
       } catch (e) {
           console.error("Speech generation failed", e);
+          toast("Овозли ўқишда хатолик. Қайта уриниб кўринг.", "error");
+      } finally {
           setIsSpeaking(false);
       }
   };

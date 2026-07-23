@@ -26,9 +26,11 @@ const Settings: React.FC<SettingsProps> = ({ onBack }) => {
         const key = localStorage.key(i);
         if (key?.startsWith("TERGOV_AI_")) appKeys.push(key);
       }
-      appKeys.forEach((key) => localStorage.removeItem(key));
+      appKeys
+        .filter((key) => key !== "TERGOV_AI_AUTH")
+        .forEach((key) => localStorage.removeItem(key));
       setClearing(false);
-      toast("Тизим кешлари тозаланди. Барча маҳаллий маълумотлар ўчирилди.", "success");
+      toast("Тизим кешлари тозаланди. Кириш сессияси сақланди.", "success");
     }, 800);
   };
 
@@ -122,12 +124,12 @@ const Settings: React.FC<SettingsProps> = ({ onBack }) => {
                     </p>
                 </div>
 
-                {/* DALL·E 3 */}
+                {/* gpt-image-1 */}
                 <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
                             <Lock size={18} className="text-violet-500"/>
-                            <span className="text-sm font-bold text-slate-700 uppercase tracking-wide">Расм Генератори (DALL·E 3)</span>
+                            <span className="text-sm font-bold text-slate-700 uppercase tracking-wide">Расм Генератори (gpt-image-1)</span>
                         </div>
                         <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1 ${
                           openaiOk ? "bg-violet-100 text-violet-700" : "bg-amber-100 text-amber-700"
@@ -138,7 +140,7 @@ const Settings: React.FC<SettingsProps> = ({ onBack }) => {
                     <div className="flex items-center gap-2">
                         <input
                             type="text"
-                            value="dall-e-3 · OpenAI Images API"
+                            value="gpt-image-1 · OpenAI Images API"
                             disabled
                             className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-mono text-slate-400 cursor-not-allowed select-none"
                         />

@@ -72,6 +72,12 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
       const selectedFiles = Array.from(e.target.files || []) as File[];
       
       for (const file of selectedFiles) {
+          // GPT-4o vision only accepts images — reject PDF with clear message
+          if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+              toast("PDF қўллаб-қувватланмайди. JPG/PNG/WEBP расм юкланг (PDF саҳифасини скриншот қилинг).", "warning");
+              continue;
+          }
+
           let processFile = file;
 
           // Handle HEIC conversion
@@ -99,11 +105,16 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
               if (!mimeType || mimeType === '') {
                   mimeType = getMimeTypeFromExtension(processFile.name, 'image/jpeg');
               }
+              if (!mimeType.startsWith('image/')) {
+                  toast("Фақат расм файллар қабул қилинади.", "warning");
+                  return;
+              }
               
               setFiles(prev => [...prev, { name: processFile.name, base64, mimeType }]);
           };
           reader.readAsDataURL(processFile);
       }
+      e.target.value = '';
   };
 
   const removeFile = (index: number) => {
@@ -218,10 +229,10 @@ const AccidentVisualizer: React.FC<ForensicVisualizerProps> = ({ onBack }) => {
                 </h3>
 
                 <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 bg-slate-50 rounded-xl cursor-pointer hover:border-uzblue hover:bg-blue-50 transition-all group relative overflow-hidden">
-                    <input type="file" multiple accept="image/png, image/jpeg, image/jpg, image/webp, application/pdf, .heic" className="hidden" onChange={handleFileUpload}/>
+                    <input type="file" multiple accept="image/png, image/jpeg, image/jpg, image/webp, .heic" className="hidden" onChange={handleFileUpload}/>
                     <div className="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none">
                         <Upload size={28} className="text-slate-400 group-hover:text-uzblue mb-3 transition-colors"/>
-                        <p className="text-xs font-bold text-slate-600 group-hover:text-uzblue">Файл юклаш (JPG/PNG/PDF)</p>
+                        <p className="text-xs font-bold text-slate-600 group-hover:text-uzblue">Расм юклаш (JPG/PNG/WEBP)</p>
                     </div>
                 </label>
 

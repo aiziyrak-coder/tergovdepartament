@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
     console.log('🔐 Vite Build - API Key Status:');
     console.log('   Mode:', mode);
     console.log('   OPENAI_API_KEY:', openaiKey ? '✅ Found (ChatGPT / GPT-4o)' : '❌ NOT FOUND — .env ga qo\'ying');
-    console.log('   Models: gpt-4o · whisper-1 · dall-e-3');
+    console.log('   Models: gpt-4o · whisper-1 · gpt-image-1 · tts-1');
     console.log('   Proxy: /api/openai → https://api.openai.com');
 
     return {

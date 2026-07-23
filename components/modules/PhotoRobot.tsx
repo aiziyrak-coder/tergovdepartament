@@ -293,6 +293,41 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
       toast("ЖПГ файл юклаб олинди", "success");
   };
 
+  const saveToArchive = async () => {
+      if (!selectedImage) return;
+      try {
+          // Compress to JPEG thumbnail so localStorage quota is not blown
+          const thumb = await new Promise<string>((resolve, reject) => {
+              const img = new Image();
+              img.onload = () => {
+                  const canvas = document.createElement("canvas");
+                  const max = 512;
+                  const scale = Math.min(1, max / Math.max(img.width, img.height));
+                  canvas.width = Math.max(1, Math.round(img.width * scale));
+                  canvas.height = Math.max(1, Math.round(img.height * scale));
+                  const ctx = canvas.getContext("2d");
+                  if (!ctx) return reject(new Error("Canvas yo'q"));
+                  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                  resolve(canvas.toDataURL("image/jpeg", 0.72));
+              };
+              img.onerror = () => reject(new Error("Rasm o'qilmadi"));
+              img.src = selectedImage;
+          });
+          storageService.saveDocument({
+              title: "Fotorobot: " + (targetType === "HUMAN" ? features.gender : objectFeatures.category),
+              category: "PHOTOROBOT",
+              mediaUrl: thumb,
+              tags: ["AI", targetType],
+              description: "AI орқали шакллантирилган реалистик фото (архивда кичиклаштирилган нусха)",
+          });
+          toast("Архивга сақланди!", "success");
+          onBack();
+      } catch (e) {
+          const msg = e instanceof Error ? e.message : "Архивга сақлаб бўлмади";
+          toast(msg.includes("Quota") || msg.includes("quota") ? "Хотира тўлган. Аввал архивни тозаланг ёки фақат юклаб олинг." : msg, "error");
+      }
+  };
+
   return (
     <div className="w-full h-full bg-[#F8FAFC] flex flex-col overflow-hidden text-slate-700 relative">
       
@@ -608,7 +643,7 @@ const PhotoRobot: React.FC<PhotoRobotProps> = ({ onBack }) => {
                         <button onClick={downloadImage} className="px-8 py-4 bg-white border border-slate-200 text-slate-700 rounded-2xl font-bold text-sm shadow-sm hover:bg-slate-50 flex items-center gap-3 transition-all active:scale-95">
                             <Download size={20}/> ЖПГ ЮКЛАБ ОЛИШ
                         </button>
-                        <button onClick={() => { storageService.saveDocument({ title: 'Fotorobot: ' + (targetType==='HUMAN'?features.gender:objectFeatures.category), category: 'PHOTOROBOT', mediaUrl: selectedImage!, tags: ['AI', targetType], description: 'AI орқали шакллантирилган реалистик фото' }); toast("Архивга сақланди!", "success"); onBack(); }} className="px-10 py-4 bg-uzblue text-white rounded-2xl font-black text-sm shadow-xl shadow-uzblue/20 hover:bg-uzblue/90 flex items-center gap-3 transition-all active:scale-95">
+                        <button onClick={saveToArchive} className="px-10 py-4 bg-uzblue text-white rounded-2xl font-black text-sm shadow-xl shadow-uzblue/20 hover:bg-uzblue/90 flex items-center gap-3 transition-all active:scale-95">
                             <Save size={20}/> АРХИВГА САҚЛАШ
                         </button>
                     </div>

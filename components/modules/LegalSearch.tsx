@@ -18,7 +18,7 @@ const LegalSearch: React.FC<LegalSearchProps> = ({ onBack }) => {
     e.preventDefault();
     const q = query.trim();
     if (!q) {
-        toast("Κыдирув сўрўвини киритинг", "warning");
+        toast("Қидирув сўровини киритинг", "warning");
       return;
     }
     setLoading(true);
@@ -27,7 +27,7 @@ const LegalSearch: React.FC<LegalSearchProps> = ({ onBack }) => {
       const data = await searchLegalDatabase(q);
       setResult(data);
       const hasContent = (data.analysis?.trim().length ?? 0) > 0 || (data.articles?.length ?? 0) > 0 || (data.precedents?.length ?? 0) > 0;
-      toast(hasContent ? "Кыдирув натижалари тайор" : "Маълумот топилмади. Сўрўвни ўзгартиб қайта уриниб кўринг.", hasContent ? "success" : "info");
+      toast(hasContent ? "Қидирув натижалари тайёр" : "Маълумот топилмади. Сўровни ўзгартиб қайта уриниб кўринг.", hasContent ? "success" : "info");
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Қидирувда хатолик юз берди.";
       toast(msg, "error");
@@ -89,6 +89,9 @@ const LegalSearch: React.FC<LegalSearchProps> = ({ onBack }) => {
                           <h3 className="text-xl font-bold text-slate-900 uppercase tracking-wide">AI Хулосаси</h3>
                       </div>
                       <p className="text-lg text-slate-700 leading-relaxed whitespace-pre-wrap font-medium">{result.analysis}</p>
+                      <p className="mt-4 text-[11px] text-amber-700 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2 font-medium">
+                        Эслатма: натижалар AI таҳлилига асосланган. Расмий манба учун Lex.uz ёки амалдаги кодекс матнларини текширинг.
+                      </p>
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -110,7 +113,9 @@ const LegalSearch: React.FC<LegalSearchProps> = ({ onBack }) => {
                               <div key={idx} className="bg-white border border-slate-200 rounded-2xl p-6 hover:border-uzgreen transition-all hover:shadow-md">
                                   <div className="flex items-center gap-2 mb-3 text-uzgreen text-xs font-bold uppercase"><ScrollText size={14}/> {prec.source}</div>
                                   <h4 className="text-slate-800 font-medium mb-2">{prec.title}</h4>
-                                  {prec.link && <a href={prec.link} target="_blank" className="text-xs text-blue-600 hover:underline flex items-center gap-1 font-bold"><ExternalLink size={12}/> Манбани очиш</a>}
+                                  {prec.link && /^https?:\/\//i.test(prec.link) && !/example\.|placeholder|fake/i.test(prec.link) && (
+                                    <a href={prec.link} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline flex items-center gap-1 font-bold"><ExternalLink size={12}/> Манбани очиш</a>
+                                  )}
                               </div>
                           ))}
                       </div>

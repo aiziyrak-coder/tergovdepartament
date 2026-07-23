@@ -23,7 +23,8 @@ import { buildRealProtocolHtml } from "./realProtocolHtml";
 // ============================================================
 const TEXT_MODEL = "gpt-4o";
 const WHISPER_MODEL = "whisper-1";
-const IMAGE_MODEL = "dall-e-3";
+const IMAGE_MODEL = "gpt-image-1";
+const TTS_MODEL = "tts-1";
 
 /** Brauzer → Vite/Nginx proxy → api.openai.com (CORS + kalit himoyasi). */
 const OPENAI_BASE_URL = import.meta.env.VITE_OPENAI_BASE_URL || "/api/openai/v1";
@@ -454,8 +455,12 @@ export async function analyzeForensicDocuments(
   userApiKey?: string,
 ): Promise<DocumentAnalysisResult> {
   const client = getClient(userApiKey);
+  const imageFiles = files.filter((f) => (f.mimeType || "").startsWith("image/"));
+  if (imageFiles.length === 0) {
+    throw new Error("Таҳлил учун камида битта расм керак (JPG/PNG/WEBP). PDF қабул қилинмайди.");
+  }
 
-  const imageContent = files.map((f) => ({
+  const imageContent = imageFiles.map((f) => ({
     type: "image_url" as const,
     image_url: { url: `data:${f.mimeType};base64,${f.base64}` },
   }));
@@ -520,39 +525,84 @@ export async function generateLegalProtocol(
 }
 
 // ============================================================
-// IMAGE GENERATION — OpenAI DALL·E 3
+// IMAGE GENERATION — OpenAI gpt-image-1
 // ============================================================
 
-type DalleSize = "1024x1024" | "1792x1024" | "1024x1792";
+type ImageSize = "1024x1024" | "1536x1024" | "1024x1536";
 
-function dalleSizeForAspect(aspectRatio: "portrait" | "landscape" | "square"): DalleSize {
-  if (aspectRatio === "portrait") return "1024x1792";
-  if (aspectRatio === "landscape") return "1792x1024";
+function imageSizeForAspect(aspectRatio: "portrait" | "landscape" | "square"): ImageSize {
+  if (aspectRatio === "portrait") return "1024x1536";
+  if (aspectRatio === "landscape") return "1536x1024";
   return "1024x1024";
 }
 
-/**
- * Generates a photorealistic image via OpenAI DALL·E 3.
- * Returns a base64 data URL.
- */
-async function dalleImage(
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function formatOpenAIError(err: unknown): string {
+  const anyErr = err as { message?: string; error?: { message?: string } };
+  const msg = anyErr?.error?.message || anyErr?.message || (err instanceof Error ? err.message : String(err));
+  const lower = msg.toLowerCase();
+  if (lower.includes("content_policy") || lower.includes("safety") || lower.includes("rejected")) {
+    return "Расм OpenAI хавфсизлик сиёсати туфайли рад этилди. Тавсифни юмшоқроқ қилиб қайта уриниб кўринг.";
+  }
+  if (lower.includes("rate_limit") || lower.includes("429")) {
+    return "OpenAI лимитига етилди. Бир оз кутинг ва қайта уриниб кўринг.";
+  }
+  return msg || "Расм яратиб бўлмади.";
+}
+
+/** Generates an image via gpt-image-1. Returns a base64 data URL. */
+async function generateAiImage(
   prompt: string,
   aspectRatio: "portrait" | "landscape" | "square" = "square",
   userApiKey?: string,
 ): Promise<string> {
   const client = getClient(userApiKey);
-  const response = await client.images.generate({
-    model: IMAGE_MODEL,
-    prompt: prompt.slice(0, 3900),
-    n: 1,
-    size: dalleSizeForAspect(aspectRatio),
-    quality: "standard",
-    response_format: "b64_json",
-  });
+  const safePrompt =
+    `${prompt.slice(0, 3000)}. Style: photorealistic, clean, no gore, no blood, no violence, suitable for professional training materials.`;
+  try {
+    const response = await client.images.generate({
+      model: IMAGE_MODEL,
+      prompt: safePrompt,
+      n: 1,
+      // gpt-image-1 supported sizes
+      size: imageSizeForAspect(aspectRatio) as "1024x1024",
+    });
+    const b64 = response.data?.[0]?.b64_json;
+    if (!b64) throw new Error("Расм яратиб бўлмади. OpenAI жавоби бўш.");
+    return `data:image/png;base64,${b64}`;
+  } catch (err) {
+    throw new Error(formatOpenAIError(err));
+  }
+}
 
-  const b64 = response.data?.[0]?.b64_json;
-  if (!b64) throw new Error("Расм яратиб бўлмади. OpenAI DALL·E жавоби бўш.");
-  return `data:image/png;base64,${b64}`;
+async function generateImagesSequential(
+  prompts: string[],
+  aspectRatio: "portrait" | "landscape" | "square",
+  userApiKey?: string,
+): Promise<string[]> {
+  const images: string[] = [];
+  let lastError = "";
+  for (let i = 0; i < prompts.length; i++) {
+    try {
+      images.push(await generateAiImage(prompts[i], aspectRatio, userApiKey));
+      if (i < prompts.length - 1) await sleep(800);
+    } catch (err) {
+      lastError = err instanceof Error ? err.message : String(err);
+      await sleep(1500);
+      try {
+        images.push(await generateAiImage(prompts[i], aspectRatio, userApiKey));
+      } catch (err2) {
+        lastError = err2 instanceof Error ? err2.message : String(err2);
+      }
+    }
+  }
+  if (images.length === 0) {
+    throw new Error(lastError || "Расмлар яратилмади. OpenAI API калитини текширинг.");
+  }
+  return images;
 }
 
 // ============================================================
@@ -568,10 +618,10 @@ const CAMERA_STYLE: Record<string, string> = {
 };
 
 const ACCIDENT_STAGES = [
-  "moments before collision: vehicles approaching, normal traffic, no damage visible yet",
-  "the moment of collision: vehicles making contact, impact point clearly visible, debris flying",
-  "immediately after collision: vehicles at rest, visible damage, skid marks on asphalt, smoke",
-  "forensic overview scene: police on scene, vehicles marked, full accident scene documented",
+  "moments before: two vehicles approaching an urban intersection, normal traffic, intact cars",
+  "near-miss contact: vehicles very close at intersection, mild impact illustration, no injuries visible",
+  "aftermath: vehicles stopped on asphalt with light bumper damage and tire marks, empty street",
+  "overview documentation: parked damaged vehicles marked with cones, calm empty road scene for training",
 ];
 
 export async function generateForensicVideo(
@@ -588,22 +638,12 @@ export async function generateForensicVideo(
     analysis.timeOfDay     ? `Time of day: ${analysis.timeOfDay}`  : "",
   ].filter(Boolean).join(". ");
 
-  const baseStyle = `${cameraStyle}. Photorealistic, no visible human faces (privacy), no blood, professional forensic quality.`;
+  const baseStyle = `${cameraStyle}. Photorealistic educational traffic-safety illustration, no people faces, no blood, no gore.`;
   const framePrompts = ACCIDENT_STAGES.map(
-    (stage) => `Forensic traffic accident reconstruction. ${context}. Scene: ${stage}. Style: ${baseStyle}`,
+    (stage) => `Educational traffic accident reconstruction for investigator training. ${context}. Scene: ${stage}. Style: ${baseStyle}`,
   );
 
-  const settled = await Promise.allSettled(
-    framePrompts.map((p) => dalleImage(p, "landscape")),
-  );
-  const frames = settled
-    .filter((r): r is PromiseFulfilledResult<string> => r.status === "fulfilled")
-    .map((r) => r.value);
-
-  if (frames.length === 0) {
-    const firstError = settled.find((r) => r.status === "rejected") as PromiseRejectedResult | undefined;
-    throw new Error(firstError?.reason?.message ?? "Кадрлар яратилмади. OpenAI API калитини текширинг.");
-  }
+  const frames = await generateImagesSequential(framePrompts, "landscape");
 
   return {
     videoUri: null,
@@ -614,7 +654,7 @@ export async function generateForensicVideo(
 }
 
 // ============================================================
-// PHOTOROBOT — OpenAI DALL·E 3
+// PHOTOROBOT — OpenAI gpt-image-1
 // ============================================================
 
 export async function generatePhotorobotVariants(
@@ -625,35 +665,16 @@ export async function generatePhotorobotVariants(
 ): Promise<string[]> {
   const actualCount = Math.max(1, Math.min(count, 5));
   const fullPrompt =
-    `Forensic identification portrait, photorealistic: ${prompt}. ` +
-    `Sharp facial details, neutral solid white background, professional studio lighting, high quality, realistic face.`;
+    `Professional identification studio portrait photograph: ${prompt}. ` +
+    `Sharp facial details, neutral solid white background, soft studio lighting, realistic face, passport-style photo.`;
 
-  const settled = await Promise.allSettled(
-    Array.from({ length: actualCount }, (_, i) =>
-      dalleImage(`${fullPrompt} Variant ${i + 1}.`, "portrait", userApiKey),
-    ),
+  const prompts = Array.from({ length: actualCount }, (_, i) =>
+    `${fullPrompt} Slight natural variation ${i + 1}.`,
   );
-
-  const images = settled
-    .filter((r): r is PromiseFulfilledResult<string> => r.status === "fulfilled")
-    .map((r) => r.value);
-
-  for (let need = actualCount - images.length; need > 0; need--) {
-    try {
-      images.push(await dalleImage(`${fullPrompt} Additional variant ${images.length + 1}.`, "portrait", userApiKey));
-    } catch { break; }
-  }
-
-  if (images.length === 0) {
-    const firstError = settled.find((r) => r.status === "rejected") as PromiseRejectedResult | undefined;
-    throw new Error(firstError?.reason?.message ?? "Расм яратилмади. OpenAI API калитини текширинг.");
-  }
-  return images;
+  return generateImagesSequential(prompts, "portrait", userApiKey);
 }
 
-/**
- * Edits a photorobot: GPT-4o describes the image, DALL·E 3 regenerates.
- */
+/** Edits a photorobot: GPT-4o describes, gpt-image-1 regenerates with changes. */
 export async function editPhotorobotImage(
   imageUrl: string,
   editInstruction: string,
@@ -680,8 +701,8 @@ export async function editPhotorobotImage(
     descResponse.choices[0]?.message?.content ?? "{}", {},
   );
   const finalPrompt = desc.fullDescription || editInstruction;
-  return dalleImage(
-    `Forensic identification portrait: ${finalPrompt}. Realistic, neutral white background, sharp details.`,
+  return generateAiImage(
+    `Professional identification studio portrait: ${finalPrompt}. Realistic, neutral white background, sharp details.`,
     "portrait",
     userApiKey,
   );
@@ -749,8 +770,10 @@ export async function searchLegalDatabase(
             role: "user",
             content: `Ўзбекистон Республикаси қонунчилиги бўйича қуйидаги мавзуда ҳуқуқий маълумот беринг: "${query}".
 БАРЧА жавобларни ЎЗБЕК КИРИЛЛ алифбосида ёзинг.
+МУҲИМ: Бу AI таҳлили — расмий Lex.uz ўрнини босмайди. Фақат ишончли умумий маълумот беринг.
+Ҳақиқий URL билмасангиз "link" майдонини бўш қолдиринг (уйдирма ҳавола қўйманг).
 ФАҚАТ JSON объект қайтаринг:
-{"analysis":"батафсил ҳуқуқий таҳлил","articles":[{"code":"...","number":"...","title":"...","summary":"..."}],"precedents":[{"source":"...","title":"...","link":"..."}]}`,
+{"analysis":"батафсил ҳуқуқий таҳлил (AI баҳоси)","articles":[{"code":"...","number":"...","title":"...","summary":"..."}],"precedents":[{"source":"...","title":"...","link":""}]}`,
           }]),
           response_format: { type: "json_object" },
         })
@@ -815,9 +838,46 @@ export async function generateTimelineFromText(
 }
 
 // ============================================================
-// TTS (disabled)
+// TTS — OpenAI tts-1
 // ============================================================
-export async function generateSpeech(_text: string, _userApiKey?: string): Promise<null> { return null; }
+let currentSpeechAudio: HTMLAudioElement | null = null;
+
+export async function generateSpeech(text: string, userApiKey?: string): Promise<string | null> {
+  const cleaned = text.replace(/\s+/g, " ").trim().slice(0, 3500);
+  if (!cleaned) return null;
+
+  const client = getClient(userApiKey);
+  const response = await client.audio.speech.create({
+    model: TTS_MODEL,
+    voice: "alloy",
+    input: cleaned,
+    response_format: "mp3",
+  });
+
+  const buffer = await response.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  const chunk = 8192;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, Math.min(i + chunk, bytes.length)));
+  }
+  const dataUrl = `data:audio/mpeg;base64,${btoa(binary)}`;
+
+  if (currentSpeechAudio) {
+    currentSpeechAudio.pause();
+    currentSpeechAudio = null;
+  }
+  const audio = new Audio(dataUrl);
+  currentSpeechAudio = audio;
+  await audio.play();
+  await new Promise<void>((resolve) => {
+    audio.onended = () => resolve();
+    audio.onerror = () => resolve();
+  });
+  if (currentSpeechAudio === audio) currentSpeechAudio = null;
+  return dataUrl;
+}
+
 export async function playGeneratedAudio(_buffer: AudioBuffer): Promise<void> {}
 
 // Keep getLangLabel exported for components
