@@ -27,7 +27,14 @@ const IMAGE_MODEL = "gpt-image-1";
 const TTS_MODEL = "tts-1";
 
 /** Brauzer → Vite/Nginx proxy → api.openai.com (CORS + kalit himoyasi). */
-const OPENAI_BASE_URL = import.meta.env.VITE_OPENAI_BASE_URL || "/api/openai/v1";
+function resolveOpenAIBaseUrl(): string {
+  const fromEnv = import.meta.env.VITE_OPENAI_BASE_URL?.trim();
+  if (fromEnv) return fromEnv;
+  if (typeof window !== "undefined") {
+    return `${window.location.origin}/api/openai/v1`;
+  }
+  return "/api/openai/v1";
+}
 
 declare const __OPENAI_CONFIGURED__: boolean;
 
@@ -57,7 +64,7 @@ function resolveApiKey(customKey?: string): string {
 function getClient(customKey?: string): OpenAI {
   return new OpenAI({
     apiKey: resolveApiKey(customKey),
-    baseURL: OPENAI_BASE_URL,
+    baseURL: resolveOpenAIBaseUrl(),
     dangerouslyAllowBrowser: true,
   });
 }
