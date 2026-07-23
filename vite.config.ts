@@ -5,16 +5,19 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, process.cwd(), '');
-
-    const openrouterKey = env.OPENROUTER_API_KEY || process.env.OPENROUTER_API_KEY || '';
-    const groqKey = env.GROQ_API_KEY || process.env.GROQ_API_KEY || '';
-    const geminiKey = env.GEMINI_API_KEY || process.env.GEMINI_API_KEY || '';
+    const openaiKey =
+        env.OPENAI_API_KEY ||
+        process.env.OPENAI_API_KEY ||
+        env.VITE_OPENAI_API_KEY ||
+        '';
+    const loginUser = env.LOGIN_USER || process.env.LOGIN_USER || 'admin';
+    const loginPassword = env.LOGIN_PASSWORD || process.env.LOGIN_PASSWORD || '123';
 
     console.log('🔐 Vite Build - API Key Status:');
     console.log('   Mode:', mode);
-    console.log('   OPENROUTER_API_KEY:', openrouterKey ? '✅ Found' : '❌ NOT FOUND');
-    console.log('   GROQ_API_KEY:', groqKey ? '✅ Found' : '❌ NOT FOUND');
-    console.log('   GEMINI_API_KEY:', geminiKey ? '✅ Found' : '❌ NOT FOUND (audio will use Groq fallback)');
+    console.log('   OPENAI_API_KEY:', openaiKey ? '✅ Found (ChatGPT / GPT-4o)' : '❌ NOT FOUND — .env ga qo\'ying');
+    console.log('   Models: gpt-4o · whisper-1 · dall-e-3');
+    console.log('   Proxy: /api/openai → https://api.openai.com');
 
     return {
         server: {
@@ -24,12 +27,46 @@ export default defineConfig(({ mode }) => {
                 host: 'localhost',
                 port: 3000,
             },
+            proxy: {
+                '/api/openai': {
+                    target: 'https://api.openai.com',
+                    changeOrigin: true,
+                    secure: true,
+                    rewrite: (p) => p.replace(/^\/api\/openai/, ''),
+                    configure: (proxy) => {
+                        proxy.on('proxyReq', (proxyReq) => {
+                            if (openaiKey) {
+                                proxyReq.setHeader('Authorization', `Bearer ${openaiKey}`);
+                            }
+                        });
+                    },
+                },
+            },
+        },
+        preview: {
+            port: 3000,
+            host: '0.0.0.0',
+            proxy: {
+                '/api/openai': {
+                    target: 'https://api.openai.com',
+                    changeOrigin: true,
+                    secure: true,
+                    rewrite: (p) => p.replace(/^\/api\/openai/, ''),
+                    configure: (proxy) => {
+                        proxy.on('proxyReq', (proxyReq) => {
+                            if (openaiKey) {
+                                proxyReq.setHeader('Authorization', `Bearer ${openaiKey}`);
+                            }
+                        });
+                    },
+                },
+            },
         },
         plugins: [tailwindcss(), react()],
         define: {
-            'process.env.OPENROUTER_API_KEY': JSON.stringify(openrouterKey),
-            'process.env.GROQ_API_KEY': JSON.stringify(groqKey),
-            'process.env.GEMINI_API_KEY': JSON.stringify(geminiKey),
+            'process.env.LOGIN_USER': JSON.stringify(loginUser),
+            'process.env.LOGIN_PASSWORD': JSON.stringify(loginPassword),
+            __OPENAI_CONFIGURED__: JSON.stringify(Boolean(openaiKey)),
         },
         resolve: {
             alias: {

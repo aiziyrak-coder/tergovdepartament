@@ -3,6 +3,7 @@ import { ArrowLeft, Settings as SettingsIcon, Globe, Shield, Database, Trash2, C
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useToast } from "../../contexts/ToastContext";
 import { ConfirmModal } from "../ui/ConfirmModal";
+import { isOpenAIConfigured } from "../../services/geminiService";
 
 interface SettingsProps {
   onBack: () => void;
@@ -13,6 +14,7 @@ const Settings: React.FC<SettingsProps> = ({ onBack }) => {
   const { toast } = useToast();
   const [clearing, setClearing] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const openaiOk = isOpenAIConfigured();
 
   const handleClearCacheClick = () => setShowClearConfirm(true);
   const handleClearCacheConfirm = () => {
@@ -83,52 +85,94 @@ const Settings: React.FC<SettingsProps> = ({ onBack }) => {
              </div>
 
              <div className="space-y-4">
-                {/* OpenRouter Key */}
+                {/* OpenAI ChatGPT */}
                 <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
                             <Lock size={18} className="text-emerald-500"/>
-                            <span className="text-sm font-bold text-slate-700 uppercase tracking-wide">OpenRouter API Калити</span>
+                            <span className="text-sm font-bold text-slate-700 uppercase tracking-wide">OpenAI ChatGPT (GPT-4o)</span>
                         </div>
-                        <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1">
-                            <CheckCircle2 size={12}/> Химояланган
+                        <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1 ${
+                          openaiOk ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
+                        }`}>
+                            <CheckCircle2 size={12}/> {openaiOk ? "Фаол" : "Калит керак"}
+                        </span>
+                    </div>
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="text"
+                                value="api.openai.com · proxy /api/openai"
+                                disabled
+                                className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-mono text-slate-400 cursor-not-allowed select-none"
+                            />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="password"
+                                value={openaiOk ? "OPENAI_API_KEY · .env" : "sk-... · .env га қўйинг"}
+                                disabled
+                                className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-mono text-slate-400 cursor-not-allowed select-none"
+                            />
+                        </div>
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-2 font-medium flex items-center gap-1">
+                        <Shield size={10}/>
+                        Матн, кўриш ва ҳужжат таҳлили. Модель: gpt-4o
+                    </p>
+                </div>
+
+                {/* DALL·E 3 */}
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                            <Lock size={18} className="text-violet-500"/>
+                            <span className="text-sm font-bold text-slate-700 uppercase tracking-wide">Расм Генератори (DALL·E 3)</span>
+                        </div>
+                        <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1 ${
+                          openaiOk ? "bg-violet-100 text-violet-700" : "bg-amber-100 text-amber-700"
+                        }`}>
+                            <CheckCircle2 size={12}/> {openaiOk ? "Фаол" : "Калит керак"}
                         </span>
                     </div>
                     <div className="flex items-center gap-2">
                         <input
-                            type="password"
-                            value="sk-or-v1-...EnvVariableProtected"
+                            type="text"
+                            value="dall-e-3 · OpenAI Images API"
                             disabled
                             className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-mono text-slate-400 cursor-not-allowed select-none"
                         />
                     </div>
                     <p className="text-[10px] text-slate-400 mt-2 font-medium flex items-center gap-1">
                         <Shield size={10}/>
-                        Матн, кўриш, расм генерацияси учун. openrouter.ai дан олинади.
+                        Фоторобот ва ЖЖОБ саҳна расмлари учун.
                     </p>
                 </div>
-                {/* Groq Key (fallback) */}
+
+                {/* Whisper */}
                 <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
                             <Lock size={18} className="text-blue-500"/>
-                            <span className="text-sm font-bold text-slate-700 uppercase tracking-wide">Groq API Калити (Захира)</span>
+                            <span className="text-sm font-bold text-slate-700 uppercase tracking-wide">OpenAI Whisper (Аудио Транскрипция)</span>
                         </div>
-                        <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1">
-                            <CheckCircle2 size={12}/> Химояланган
+                        <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-1 ${
+                          openaiOk ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-700"
+                        }`}>
+                            <CheckCircle2 size={12}/> {openaiOk ? "Фаол" : "Калит керак"}
                         </span>
                     </div>
                     <div className="flex items-center gap-2">
                         <input
-                            type="password"
-                            value="gsk_...EnvVariableProtected"
+                            type="text"
+                            value="whisper-1 · api.openai.com"
                             disabled
                             className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-mono text-slate-400 cursor-not-allowed select-none"
                         />
                     </div>
                     <p className="text-[10px] text-slate-400 mt-2 font-medium flex items-center gap-1">
                         <Shield size={10}/>
-                        OpenRouter орқали аудио ишламаганда захира сифатида фойдаланилади.
+                        MP3, WAV, M4A, OGG, FLAC, WebM. OpenAI Whisper модели орқали.
                     </p>
                 </div>
              </div>

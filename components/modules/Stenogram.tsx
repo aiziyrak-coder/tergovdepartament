@@ -11,11 +11,11 @@ interface StenogramProps {
   onBack: () => void;
 }
 
-// Maksimal fayl hajmi 25MB (Base64 encoding bilan hisoblaganda API limiti uchun xavfsiz chegara)
+// Maksimal fayl hajmi 25MB (OpenAI Whisper limiti)
 const MAX_FILE_SIZE = 25 * 1024 * 1024;
 
-// Groq Whisper qo'llab-quvvatlaydigan audio formatlar
-const GROQ_SUPPORTED_EXTS = new Set(['mp3', 'wav', 'wave', 'ogg', 'flac', 'm4a', 'mp4', 'webm', 'opus', 'mpeg', 'mpga']);
+// OpenAI Whisper qo'llab-quvvatlaydigan audio formatlar
+const SUPPORTED_AUDIO_EXTS = new Set(['mp3', 'wav', 'wave', 'ogg', 'flac', 'm4a', 'mp4', 'webm', 'opus', 'mpeg', 'mpga']);
 
 
 
@@ -82,7 +82,7 @@ const Stenogram: React.FC<StenogramProps> = ({ onBack }) => {
           }
 
           const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
-          if (!GROQ_SUPPORTED_EXTS.has(ext)) {
+          if (!SUPPORTED_AUDIO_EXTS.has(ext)) {
               toast(`"${ext.toUpperCase()}" формат қўллаб-қувватланмайди. Илтимос MP3, WAV, M4A, OGG, FLAC ёки WebM файл юкланг.`, "error");
               return;
           }
