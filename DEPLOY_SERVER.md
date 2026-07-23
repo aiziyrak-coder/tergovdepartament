@@ -46,12 +46,25 @@ server {
     server_name tergov.cdcgroup.uz;
     root /var/www/tergov/dist;
     index index.html;
+
     location / {
         try_files $uri $uri/ /index.html;
     }
-    # ... ssl, proxy va boshqalar
+
+    # OpenAI API proxy (Virtual Murabbiy, Bayonnoma, Whisper, TTS)
+    location /api/openai/ {
+        proxy_pass https://api.openai.com/;
+        proxy_ssl_server_name on;
+        proxy_set_header Host api.openai.com;
+        proxy_set_header Authorization "Bearer YOUR_OPENAI_API_KEY";
+        proxy_read_timeout 120s;
+    }
+
+    # ... ssl va boshqalar
 }
 ```
+
+`YOUR_OPENAI_API_KEY` o‘rniga `.env` dagi haqiqiy kalitni qo‘ying yoki `env` fayl orqali o‘qing.
 
 Agar `root` boshqa joyda bo‘lsa, `dist` ichidagi fayllarni o‘sha joyga nusxalang:
 
@@ -84,7 +97,7 @@ Agar serverda `.env` yoki `.env.local` ishlatilsa, `git pull` ularni o‘zgartir
 # .env faylini yaratish yoki tahrirlash
 nano /var/www/tergov/.env
 # Keyingi qator qo'shing:
-GEMINI_API_KEY=aslini_kiriting_shu_yerga
+OPENAI_API_KEY=sk-your_key_here
 ```
 
 Build dan keyin env o‘qiladi; Vite loyihalarda `.env` build vaqtida ishlatiladi.
@@ -106,7 +119,7 @@ cd /var/www/tergov
 # 4. API kalitni o'rnating (aslini kiritishni unutmang)
 nano .env
 # Quyidagilarni kiriting:
-# GEMINI_API_KEY=aslini_kiriting_shu_yerga
+# OPENAI_API_KEY=sk-your_key_here
 
 # 5. Loyihadan yangiliklarni oling
 git pull origin main
