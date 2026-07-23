@@ -166,7 +166,11 @@ const MENTOR_QUERY_TIMEOUT_MS       = 40000;
 // AUDIO TRANSCRIPTION — OpenAI Whisper
 // ============================================================
 
-function getLangCode(_lang?: AppLanguage): string { return "uz"; }
+function getLangCode(_lang?: AppLanguage): string | undefined {
+  // OpenAI whisper-1 API rasmiy ro'yxatida "uz" yo'q — language yuborilsa 400 qaytaradi.
+  // Tilni avto-aniqlash ishlatiladi; natija latinUzbekToCyrillic orqali kirillga o'tkaziladi.
+  return undefined;
+}
 function getLangLabel(_lang?: AppLanguage): string { return "ўзбек (кирилл)"; }
 
 /**
@@ -184,11 +188,13 @@ async function transcribeWithWhisper(
     segments?: Array<{ id?: number; start?: number; end?: number; text?: string }>;
   };
 
+  const langCode = getLangCode(lang);
   const result = await client.audio.transcriptions.create({
     file,
     model: WHISPER_MODEL,
-    language: getLangCode(lang),
+    ...(langCode ? { language: langCode } : {}),
     response_format: "verbose_json",
+    prompt: "O'zbek tilida tergov stenogrammasi. Suhbat savol-javob shaklida.",
   }) as unknown as VerboseJson;
 
   const fullText = result.text?.trim() ?? "";
