@@ -32,3 +32,5 @@ jabrlanuvchi_sorogi.zip
 .env
 .env.local
 .env.*.local
+_redeploy.py
+*_redeploy*.py
